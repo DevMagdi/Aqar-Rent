@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 
 from app.api.deps import DbDep, SettingsDep, client_ip, get_otp_provider
 from app.schemas.auth import (

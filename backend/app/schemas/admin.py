@@ -4,11 +4,10 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import Literal
-from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 
-from app.models.enums import PromoType, ReportReason
+from app.models.enums import PromoType
 
 
 class AdminLoginIn(BaseModel):

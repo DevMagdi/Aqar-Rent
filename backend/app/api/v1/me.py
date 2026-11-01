@@ -4,14 +4,15 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile, status as http_status
+from fastapi import APIRouter, File, Form, UploadFile
+from fastapi import status as http_status
 from sqlalchemy import delete, func, select
 
 from app.api.deps import CurrentUser, DbDep, SettingsDep, StorageDep
 from app.core.errors import AppError
-from app.models.catalog import Listing, Location
-from app.models.commerce import AdPeriod, Order
-from app.models.enums import DocType, MediaType
+from app.models.catalog import Listing
+from app.models.commerce import Order
+from app.models.enums import DocType
 from app.models.identity import Device, OtpCode, User, VerificationDocument
 from app.models.social import ContactEvent, Favorite
 from app.schemas.auth import UserOut
@@ -61,6 +62,7 @@ def patch_me(payload: MePatch, user: CurrentUser, db: DbDep) -> UserOut:
 def delete_me(user: CurrentUser, db: DbDep, storage: StorageDep) -> Msg:
     from app.models.enums import UserStatus, UserVerificationStatus
 
+    original_phone = user.phone
     # Financial records (orders/payments/ad periods) are kept — owner_id stays.
     user.phone = f"deleted_{user.id.hex}@anonymized.invalid"
     user.full_name = None
@@ -69,9 +71,11 @@ def delete_me(user: CurrentUser, db: DbDep, storage: StorageDep) -> Msg:
     user.status = UserStatus.deleted.value
     user.verification_status = UserVerificationStatus.unverified.value
     # PII: drop verification files + rows, devices, favorites, pending OTPs.
-    docs = db.execute(
-        select(VerificationDocument).where(VerificationDocument.user_id == user.id)
-    ).scalars().all()
+    docs = (
+        db.execute(select(VerificationDocument).where(VerificationDocument.user_id == user.id))
+        .scalars()
+        .all()
+    )
     for doc in docs:
         try:
             storage.delete(doc.file_key)
@@ -80,7 +84,7 @@ def delete_me(user: CurrentUser, db: DbDep, storage: StorageDep) -> Msg:
         db.delete(doc)
     db.execute(delete(Device).where(Device.user_id == user.id))
     db.execute(delete(Favorite).where(Favorite.user_id == user.id))
-    db.execute(delete(OtpCode).where(OtpCode.phone == user.phone))
+    db.execute(delete(OtpCode).where(OtpCode.phone == original_phone))
     db.flush()
     return Msg(message="account anonymized")
 
@@ -116,8 +120,12 @@ def upload_verification(
     file: UploadFile = File(...),
 ) -> VerificationOut:
     if doc_type not in ALLOWED_DOC_TYPES:
-        raise AppError("INVALID_DOC_TYPE", "Unsupported document type", status_code=422,
-                       details={"allowed": sorted(ALLOWED_DOC_TYPES)})
+        raise AppError(
+            "INVALID_DOC_TYPE",
+            "Unsupported document type",
+            status_code=422,
+            details={"allowed": sorted(ALLOWED_DOC_TYPES)},
+        )
     if file.content_type not in ALLOWED_DOC_TYPES_MIME:
         raise AppError("INVALID_MEDIA_TYPE", "Document must be JPEG/PNG/WebP/PDF", status_code=415)
     payload = file.file.read(MAX_DOC_BYTES + 1)
@@ -126,8 +134,9 @@ def upload_verification(
 
     from uuid import uuid4
 
-    ext = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp",
-           "application/pdf": "pdf"}.get(file.content_type, "bin")
+    ext = {"image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "application/pdf": "pdf"}.get(
+        file.content_type, "bin"
+    )
     key = f"users/{user.id}/verification/{uuid4()}.{ext}"
     storage.put(key, payload, file.content_type or "application/octet-stream")
 
@@ -151,11 +160,15 @@ def upload_verification(
 
 @router.get("/verification", response_model=VerificationListOut)
 def get_verification(user: CurrentUser, db: DbDep, storage: StorageDep) -> VerificationListOut:
-    docs = db.execute(
-        select(VerificationDocument)
-        .where(VerificationDocument.user_id == user.id)
-        .order_by(VerificationDocument.created_at.desc())
-    ).scalars().all()
+    docs = (
+        db.execute(
+            select(VerificationDocument)
+            .where(VerificationDocument.user_id == user.id)
+            .order_by(VerificationDocument.created_at.desc())
+        )
+        .scalars()
+        .all()
+    )
     return VerificationListOut(
         items=[
             VerificationOut(
@@ -178,12 +191,14 @@ def get_verification(user: CurrentUser, db: DbDep, storage: StorageDep) -> Verif
 
 @router.get("/listings", response_model=list[MeListingOut], summary="My listings + stats")
 def my_listings(user: CurrentUser, db: DbDep, storage: StorageDep) -> list[MeListingOut]:
-    rows = db.execute(
-        select(Listing).where(Listing.owner_id == user.id).order_by(Listing.created_at.desc())
-    ).scalars().all()
-    names = location_names(
-        db, [r.governorate_id for r in rows] + [r.city_id for r in rows]
+    rows = (
+        db.execute(select(Listing).where(Listing.owner_id == user.id).order_by(Listing.created_at.desc()))
+        .scalars()
+        .all()
     )
+    ids: list[UUID | None] = [r.governorate_id for r in rows]
+    ids += [r.city_id for r in rows]
+    names = location_names(db, ids)
     # contact clicks per listing
     clicks: dict[UUID, int] = {}
     if rows:
@@ -207,10 +222,8 @@ def my_listings(user: CurrentUser, db: DbDep, storage: StorageDep) -> list[MeLis
                 governorate_id=str(row.governorate_id),
                 city_id=str(row.city_id),
                 district_id=str(row.district_id) if row.district_id else None,
-                governorate_name=names.get(row.governorate_id).name_ar
-                if names.get(row.governorate_id)
-                else None,
-                city_name=names.get(row.city_id).name_ar if names.get(row.city_id) else None,
+                governorate_name=names[row.governorate_id].name_ar if row.governorate_id in names else None,
+                city_name=names[row.city_id].name_ar if row.city_id in names else None,
                 thumb_url=storage.public_url(row.media[0].thumb_key or row.media[0].file_key)
                 if row.media
                 else None,
@@ -231,12 +244,11 @@ def my_listings(user: CurrentUser, db: DbDep, storage: StorageDep) -> list[MeLis
 
 @router.get("/orders", response_model=OrdersPage, summary="My orders")
 def my_orders(user: CurrentUser, db: DbDep, settings: SettingsDep) -> OrdersPage:
-    rows = db.execute(
-        select(Order)
-        .where(Order.owner_id == user.id)
-        .order_by(Order.created_at.desc())
-        .limit(51)
-    ).scalars().all()
+    rows = (
+        db.execute(select(Order).where(Order.owner_id == user.id).order_by(Order.created_at.desc()).limit(51))
+        .scalars()
+        .all()
+    )
     has_more = len(rows) > 50
     rows = rows[:50]
     return OrdersPage(

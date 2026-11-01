@@ -12,7 +12,7 @@ import mimetypes
 from fastapi import APIRouter, Query, Request
 from fastapi.responses import Response
 
-from app.api.deps import DbDep, StorageDep
+from app.api.deps import StorageDep
 from app.core.errors import AppError
 
 router = APIRouter(prefix="/files", tags=["files"])

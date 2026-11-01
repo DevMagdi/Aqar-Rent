@@ -40,9 +40,7 @@ class Location(TimestampMixin, Base):
 class Listing(TimestampMixin, Base):
     __tablename__ = "listings"
 
-    owner_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="RESTRICT"), index=True
-    )
+    owner_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="RESTRICT"), index=True)
     title: Mapped[str] = mapped_column(String(200))
     property_type: Mapped[str] = mapped_column(String(20))  # enums.PropertyType
     rental_type: Mapped[str] = mapped_column(String(20))  # enums.RentalType
@@ -61,9 +59,7 @@ class Listing(TimestampMixin, Base):
     governorate_id: Mapped[UUID] = mapped_column(
         Uuid, ForeignKey("locations.id", ondelete="RESTRICT"), index=True
     )
-    city_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("locations.id", ondelete="RESTRICT"), index=True
-    )
+    city_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("locations.id", ondelete="RESTRICT"), index=True)
     district_id: Mapped[UUID | None] = mapped_column(
         Uuid, ForeignKey("locations.id", ondelete="RESTRICT"), nullable=True, index=True
     )
@@ -103,9 +99,7 @@ class Listing(TimestampMixin, Base):
 class ListingMedia(TimestampMixin, Base):
     __tablename__ = "listing_media"
 
-    listing_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("listings.id", ondelete="CASCADE"), index=True
-    )
+    listing_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("listings.id", ondelete="CASCADE"), index=True)
     type: Mapped[str] = mapped_column(String(10), default="photo")  # enums.MediaType
     file_key: Mapped[str] = mapped_column(String(512))
     thumb_key: Mapped[str | None] = mapped_column(String(512), nullable=True)

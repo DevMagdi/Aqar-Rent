@@ -24,7 +24,7 @@ from app.core.security import (
 from app.integrations.otp import OTPProvider
 from app.models.enums import UserStatus
 from app.models.identity import Device, OtpCode, User
-from app.services.common import utcnow, user_dict
+from app.services.common import as_uuid, user_dict, utcnow
 
 
 def request_otp(
@@ -35,9 +35,7 @@ def request_otp(
     ip: str | None = None,
 ) -> dict[str, Any]:
     if ip:
-        check_rate_limit(
-            f"otp:ip:{ip}", settings.otp_max_requests_per_ip_hour, window_seconds=3600
-        )
+        check_rate_limit(f"otp:ip:{ip}", settings.otp_max_requests_per_ip_hour, window_seconds=3600)
     hour_ago = utcnow() - timedelta(hours=1)
     recent = db.execute(
         select(func.count())
@@ -53,8 +51,9 @@ def request_otp(
         )
 
     code = generate_otp_code()
-    # One live code per number: invalidate previous ones on each request.
-    db.execute(delete(OtpCode).where(OtpCode.phone == phone, OtpCode.purpose == "login"))
+    # Keep this hour's rows so the "max 5 requests/hour" counter works, but drop
+    # stale rows; verification always uses the LATEST code, older ones are dead.
+    db.execute(delete(OtpCode).where(OtpCode.phone == phone, OtpCode.created_at < hour_ago))
     db.add(
         OtpCode(
             phone=phone,
@@ -93,28 +92,36 @@ def verify_otp(
     if as_expired(otp, settings):
         db.delete(otp)
         db.flush()
+        db.commit()  # persist the burn even though the response is 4xx
         raise AppError("OTP_EXPIRED", "Code expired, request a new one", status_code=400)
 
     if otp.attempts >= settings.otp_max_attempts:
-        db.delete(otp)
+        db.execute(delete(OtpCode).where(OtpCode.phone == phone))
         db.flush()
+        db.commit()
         raise AppError("OTP_MAX_ATTEMPTS", "Too many wrong attempts, request a new code", status_code=400)
 
     if otp.code_hash != hash_otp(settings, phone, code):
         otp.attempts += 1
         maxed = otp.attempts >= settings.otp_max_attempts
         if maxed:
-            db.delete(otp)
+            db.execute(delete(OtpCode).where(OtpCode.phone == phone))
         db.flush()
+        db.commit()  # attempts must persist across the 4xx response
         raise AppError(
             "OTP_INVALID",
             "Wrong code" + (", too many attempts — request a new one" if maxed else ""),
             status_code=400,
-            details={"attempts_left": max(0, settings.otp_max_attempts - (otp.attempts if not maxed else settings.otp_max_attempts))},
+            details={
+                "attempts_left": max(
+                    0,
+                    settings.otp_max_attempts - otp.attempts if not maxed else 0,
+                )
+            },
         )
 
-    # Success: burn the code and issue tokens.
-    db.delete(otp)
+    # Success: burn ALL codes for this number and issue tokens.
+    db.execute(delete(OtpCode).where(OtpCode.phone == phone))
     user = db.execute(select(User).where(User.phone == phone)).scalar_one_or_none()
     now = utcnow()
     if user is None:
@@ -145,9 +152,7 @@ def as_expired(otp: OtpCode, settings: Settings) -> bool:
     return exp is None or exp <= utcnow()
 
 
-def _issue_tokens(
-    db: Session, settings: Settings, user: User, device: Device
-) -> dict[str, Any]:
+def _issue_tokens(db: Session, settings: Settings, user: User, device: Device) -> dict[str, Any]:
     refresh = create_refresh_token(settings, user.id, device.id)
     device.refresh_token_hash = hash_token(refresh)
     device.last_seen_at = utcnow()
@@ -169,17 +174,18 @@ def refresh_tokens(db: Session, settings: Settings, refresh_token: str) -> dict[
     except jwt.PyJWTError as exc:
         raise AppError("INVALID_REFRESH_TOKEN", "Refresh token is invalid", status_code=401) from exc
 
-    device_id = payload.get("sid")
+    device_id = as_uuid(payload.get("sid"))
     device = db.get(Device, device_id) if device_id else None
     presented = hash_token(refresh_token)
     if device is None or device.refresh_token_hash != presented:
-        # Token reuse / revoked session: kill it hard.
+        # Token reuse / revoked session: kill it hard (must survive the 401).
         if device is not None:
             device.refresh_token_hash = None
             db.flush()
+            db.commit()
         raise AppError("INVALID_REFRESH_TOKEN", "Refresh token is invalid", status_code=401)
 
-    user = db.get(User, payload.get("sub"))
+    user = db.get(User, as_uuid(payload.get("sub")))
     if user is None or user.status != UserStatus.active:
         raise AppError("ACCOUNT_BANNED", "Account is not active", status_code=403)
 
@@ -203,7 +209,7 @@ def logout(db: Session, settings: Settings, refresh_token: str | None) -> None:
         payload = decode_token(settings, refresh_token, expected_kind="refresh")
     except jwt.PyJWTError:
         return  # logging out with a bad token is a no-op, never an error
-    device_id = payload.get("sid")
+    device_id = as_uuid(payload.get("sid"))
     device = db.get(Device, device_id) if device_id else None
     if device and device.refresh_token_hash == hash_token(refresh_token):
         device.refresh_token_hash = None

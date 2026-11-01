@@ -5,8 +5,8 @@ from __future__ import annotations
 from datetime import date
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, Query, Request, UploadFile, status as http_status
-from sqlalchemy import select
+from fastapi import APIRouter, File, Form, Query, Request, UploadFile
+from fastapi import status as http_status
 
 from app.api.deps import (
     CurrentUser,
@@ -14,14 +14,12 @@ from app.api.deps import (
     OptionalUser,
     SettingsDep,
     StorageDep,
-    client_ip,
-    get_storage,
 )
 from app.core.errors import AppError
 from app.core.geo import APPROX_RADIUS_M, approx_point
 from app.core.rate_limit import check_rate_limit
-from app.models.catalog import Listing, ListingMedia
-from app.models.enums import ContactChannel, ListingStatus, MediaType, ReportReason
+from app.models.catalog import Listing
+from app.models.enums import ContactChannel, ListingStatus
 from app.models.identity import User
 from app.models.social import ContactEvent
 from app.schemas.listings import (
@@ -33,12 +31,10 @@ from app.schemas.listings import (
     MediaOut,
     ReportIn,
     ReportOut,
-    SearchItemOut,
     SearchResultOut,
 )
 from app.services import listing_service
-from app.services.common import utcnow
-from app.services.listing_service import get_owned_listing, listing_is_publicly_visible, location_names
+from app.services.listing_service import get_owned_listing, listing_is_publicly_visible
 from app.services.moderation_service import create_report
 from app.services.search_service import SearchParams, search_listings
 
@@ -147,7 +143,6 @@ def _detail(
         lat, lon = approx_point(listing.latitude, listing.longitude, str(listing.id))
         accuracy = APPROX_RADIUS_M
 
-    names = location_names(db, [listing.governorate_id, listing.city_id, listing.district_id])
     owner = db.get(User, listing.owner_id)
     verified_badge = bool(owner and owner.verification_status == "approved")
 
@@ -223,9 +218,7 @@ def get_listing(
 
 
 @router.patch("/{listing_id}", response_model=ListingDetailOut, summary="Update a listing")
-def patch_listing(
-    listing_id: UUID, payload: ListingPatch, user: CurrentUser, db: DbDep
-) -> ListingDetailOut:
+def patch_listing(listing_id: UUID, payload: ListingPatch, user: CurrentUser, db: DbDep) -> ListingDetailOut:
     listing = get_owned_listing(db, listing_id, user)
     data = payload.model_dump(exclude_unset=True)
     listing = listing_service.update_listing(db, user, listing, data)
@@ -278,17 +271,13 @@ def upload_media(
 
 
 @router.delete("/{listing_id}/media/{media_id}", status_code=http_status.HTTP_204_NO_CONTENT)
-def remove_media(
-    listing_id: UUID, media_id: UUID, user: CurrentUser, db: DbDep, storage: StorageDep
-) -> None:
+def remove_media(listing_id: UUID, media_id: UUID, user: CurrentUser, db: DbDep, storage: StorageDep) -> None:
     listing = get_owned_listing(db, listing_id, user)
     listing_service.delete_media(db, storage, listing, media_id)
 
 
 @router.post("/{listing_id}/submit", response_model=ListingDetailOut, summary="Submit for moderation")
-def submit(
-    listing_id: UUID, user: CurrentUser, db: DbDep, storage: StorageDep
-) -> ListingDetailOut:
+def submit(listing_id: UUID, user: CurrentUser, db: DbDep, storage: StorageDep) -> ListingDetailOut:
     listing = get_owned_listing(db, listing_id, user)
     listing = listing_service.submit_listing(db, user, listing)
     return _detail(db, listing, viewer=user, storage=storage)
@@ -320,9 +309,7 @@ def contact(
     if listing is None or not listing_is_publicly_visible(db, listing):
         raise AppError("LISTING_NOT_FOUND", "Listing not found", status_code=404)
     settings = request.app.state.settings
-    check_rate_limit(
-        f"contact:{user.id}", settings.contact_rate_limit_per_hour, window_seconds=3600
-    )
+    check_rate_limit(f"contact:{user.id}", settings.contact_rate_limit_per_hour, window_seconds=3600)
     owner = db.get(User, listing.owner_id)
     if owner is None or owner.status != "active":
         raise AppError("OWNER_UNAVAILABLE", "Owner contact is not available", status_code=404)
@@ -335,9 +322,7 @@ def contact(
 
 
 @router.post("/{listing_id}/report", response_model=ReportOut, summary="Report a listing")
-def report_listing(
-    listing_id: UUID, payload: ReportIn, user: CurrentUser, db: DbDep
-) -> ReportOut:
+def report_listing(listing_id: UUID, payload: ReportIn, user: CurrentUser, db: DbDep) -> ReportOut:
     listing = db.get(Listing, listing_id)
     if listing is None or not listing_is_publicly_visible(db, listing):
         raise AppError("LISTING_NOT_FOUND", "Listing not found", status_code=404)

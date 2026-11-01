@@ -2,9 +2,8 @@
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends
-
 import pyotp
+from fastapi import APIRouter, Depends
 from sqlalchemy import select
 
 from app.api.deps import AnyStaff, DbDep, SettingsDep, client_ip
@@ -29,9 +28,7 @@ def login(
 
     check_rate_limit(f"admin-login:{ip}", max_hits=20, window_seconds=300)
 
-    staff = db.execute(
-        select(StaffUser).where(StaffUser.email == payload.email.lower())
-    ).scalar_one_or_none()
+    staff = db.execute(select(StaffUser).where(StaffUser.email == payload.email.lower())).scalar_one_or_none()
     if staff is None or staff.status != StaffStatus.active.value:
         # Same error for unknown/disabled to avoid account enumeration.
         raise AppError("INVALID_CREDENTIALS", "Invalid email, password or 2FA code", status_code=401)

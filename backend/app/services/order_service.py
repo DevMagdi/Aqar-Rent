@@ -19,9 +19,9 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.core.errors import AppError
 from app.models.catalog import Listing, Plan
+from app.models.commerce import Order, PromoCode
 from app.models.enums import ListingStatus, OrderStatus, PaymentMethod, PromoType
 from app.models.identity import User
-from app.models.commerce import Order, PromoCode
 from app.services.common import as_utc, utcnow
 
 BANK_TRANSFER = "bank_transfer"
@@ -68,9 +68,7 @@ def compute_totals(plan: Plan, weeks: int, promo: PromoCode | None = None) -> di
 def validate_promo(
     db: Session, code: str, weeks: int, plan: Plan, *, consume_view: bool = False
 ) -> tuple[PromoCode | None, dict[str, float]]:
-    promo = db.execute(
-        select(PromoCode).where(PromoCode.code == code.upper().strip())
-    ).scalar_one_or_none()
+    promo = db.execute(select(PromoCode).where(PromoCode.code == code.upper().strip())).scalar_one_or_none()
     if promo is None or not promo.active:
         raise AppError("PROMO_INVALID", "Promo code is not valid", status_code=400)
     now = utcnow()
@@ -97,8 +95,13 @@ def create_order(
     if listing is None or listing.owner_id != owner.id:
         raise AppError("LISTING_NOT_FOUND", "Listing not found", status_code=404)
 
-    # BR-5: payment is only requested after moderator approval.
-    if listing.status != ListingStatus.approved.value:
+    # BR-5: payment is only requested after moderator approval. Listings that
+    # are Active/Expired were approved before (published) → renewals allowed.
+    approved_before = listing.published_at is not None and listing.status in (
+        ListingStatus.active.value,
+        ListingStatus.expired.value,
+    )
+    if listing.status != ListingStatus.approved.value and not approved_before:
         raise AppError(
             "ORDER_NOT_APPROVED",
             "Payment can only be requested after the listing is approved by a moderator",
@@ -110,7 +113,8 @@ def create_order(
         raise AppError("INVALID_METHOD", "Unsupported payment method", status_code=422)
 
     plan = get_default_plan(db)  # BR-1
-    promo, totals = compute_totals(plan, weeks)  # BR-2 + BR-1 math
+    promo = None
+    totals = compute_totals(plan, weeks)  # BR-2 + BR-1 math
     if promo_code:
         promo, totals = validate_promo(db, promo_code, weeks, plan)
 

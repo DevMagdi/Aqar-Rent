@@ -32,7 +32,12 @@ def create_token(
     days: int | None = None,
     extra: dict[str, Any] | None = None,
 ) -> str:
-    payload: dict[str, Any] = {"sub": subject, "kind": kind, "iat": int(_now().timestamp())}
+    payload: dict[str, Any] = {
+        "sub": subject,
+        "kind": kind,
+        "iat": int(_now().timestamp()),
+        "jti": secrets.token_hex(8),  # guarantees unique tokens even within the same second
+    }
     if minutes is not None:
         payload["exp"] = int((_now() + timedelta(minutes=minutes)).timestamp())
     if days is not None:
@@ -51,9 +56,7 @@ def decode_token(settings: Settings, token: str, expected_kind: str | None = Non
 
 
 def create_access_token(settings: Settings, user_id: str | UUID) -> str:
-    return create_token(
-        settings, subject=str(user_id), kind=KIND_ACCESS, minutes=settings.jwt_access_minutes
-    )
+    return create_token(settings, subject=str(user_id), kind=KIND_ACCESS, minutes=settings.jwt_access_minutes)
 
 
 def create_refresh_token(settings: Settings, user_id: str | UUID, device_id: str | UUID) -> str:
@@ -81,7 +84,7 @@ def hash_token(token: str) -> str:
 
 
 def hash_otp(settings: Settings, phone: str, code: str) -> str:
-    return hashlib.sha256(f"{settings.secret_key}:{phone}:{code}".encode("utf-8")).hexdigest()
+    return hashlib.sha256(f"{settings.secret_key}:{phone}:{code}".encode()).hexdigest()
 
 
 def generate_otp_code() -> str:

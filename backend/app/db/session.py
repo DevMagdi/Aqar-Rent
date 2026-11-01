@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Generator
 
+from fastapi import Request
 from sqlalchemy import Engine, create_engine, event
 from sqlalchemy.orm import Session, sessionmaker
 
@@ -38,7 +39,7 @@ def setup_app_db(app, settings: Settings) -> None:
     app.state.settings = settings
 
 
-def get_db(request) -> Generator[Session, None, None]:
+def get_db(request: Request) -> Generator[Session, None, None]:
     session: Session = request.app.state.session_factory()
     try:
         yield session

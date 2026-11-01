@@ -76,7 +76,9 @@ def expire_pending_fawry_orders(db: Session, now=None) -> int:
     )
     count = 0
     for order in orders:
-        expiry = as_utc(order.expires_at) or (as_utc(order.created_at) + timedelta(hours=48))
+        created = as_utc(order.created_at)
+        fallback = created + timedelta(hours=48) if created else None
+        expiry = as_utc(order.expires_at) or fallback
         if expiry is not None and expiry <= now:
             order.status = OrderStatus.expired.value
             count += 1
@@ -104,9 +106,7 @@ def send_ad_ending_reminders(db: Session, now=None) -> int:
         listing = db.get(Listing, period.listing_id)
         if listing is None:
             continue
-        if notification_has(
-            db, listing.owner_id, "ad_ending_soon", "ad_period_id", str(period.id)
-        ):
+        if notification_has(db, listing.owner_id, "ad_ending_soon", "ad_period_id", str(period.id)):
             continue
         ends = as_utc(period.ends_at)
         days_left = max(0, (ends - now).days) if ends else 2

@@ -25,18 +25,21 @@ def verification_queue(
     staff: StaffUser = Depends(require_roles(StaffRole.moderator)),
     status: str = Query(default=DocStatus.pending.value),
 ) -> list[VerificationQueueItemOut]:
-    rows = db.execute(
-        select(VerificationDocument)
-        .where(VerificationDocument.status == status)
-        .order_by(VerificationDocument.created_at.asc())
-        .limit(200)
-    ).scalars().all()
-    users = {
-        u.id: u
-        for u in db.execute(
-            select(User).where(User.id.in_([r.user_id for r in rows]))
-        ).scalars()
-    } if rows else {}
+    rows = (
+        db.execute(
+            select(VerificationDocument)
+            .where(VerificationDocument.status == status)
+            .order_by(VerificationDocument.created_at.asc())
+            .limit(200)
+        )
+        .scalars()
+        .all()
+    )
+    users = (
+        {u.id: u for u in db.execute(select(User).where(User.id.in_([r.user_id for r in rows]))).scalars()}
+        if rows
+        else {}
+    )
     out = []
     for r in rows:
         u = users.get(r.user_id)

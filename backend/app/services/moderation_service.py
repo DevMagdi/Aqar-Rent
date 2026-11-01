@@ -9,7 +9,7 @@ from __future__ import annotations
 import uuid
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.core.errors import AppError
@@ -68,9 +68,7 @@ def owner_has_approved_verification(db: Session, owner_id: uuid.UUID) -> bool:
     return row > 0
 
 
-def approve_listing(
-    db: Session, staff_id: uuid.UUID, listing: Listing, ip: str | None = None
-) -> Listing:
+def approve_listing(db: Session, staff_id: uuid.UUID, listing: Listing, ip: str | None = None) -> Listing:
     if listing.status != ListingStatus.submitted.value:
         raise AppError(
             "INVALID_STATE",
@@ -230,7 +228,7 @@ def auto_submit_reported_listing(db: Session, listing_id: uuid.UUID) -> bool:
         return False
     listing.status = ListingStatus.submitted.value
     db.execute(
-        Report.__table__.update()
+        update(Report)
         .where(Report.listing_id == listing_id, Report.status == ReportStatus.open.value)
         .values(status=ReportStatus.reviewing.value, updated_at=utcnow())
     )
@@ -238,9 +236,7 @@ def auto_submit_reported_listing(db: Session, listing_id: uuid.UUID) -> bool:
     return True
 
 
-def create_report(
-    db: Session, listing: Listing, reporter: User, reason: str, note: str | None
-) -> Report:
+def create_report(db: Session, listing: Listing, reporter: User, reason: str, note: str | None) -> Report:
     report = Report(
         listing_id=listing.id,
         reporter_id=reporter.id,
@@ -275,15 +271,24 @@ def act_on_report(
         report.status = ReportStatus.resolved.value
         lb = _snapshot(listing, ["status"])
         listing.status = ListingStatus.removed.value
-        log_audit(db, staff_id, "listing.remove", "listing", listing.id, lb,
-                  _snapshot(listing, ["status"]), ip)
+        log_audit(
+            db, staff_id, "listing.remove", "listing", listing.id, lb, _snapshot(listing, ["status"]), ip
+        )
     elif action == "to_moderation":
         report.status = ReportStatus.reviewing.value
         if listing.status in (ListingStatus.approved.value, ListingStatus.active.value):
             lb = _snapshot(listing, ["status"])
             listing.status = ListingStatus.submitted.value
-            log_audit(db, staff_id, "listing.to_moderation", "listing", listing.id, lb,
-                      _snapshot(listing, ["status"]), ip)
+            log_audit(
+                db,
+                staff_id,
+                "listing.to_moderation",
+                "listing",
+                listing.id,
+                lb,
+                _snapshot(listing, ["status"]),
+                ip,
+            )
     else:
         raise AppError("INVALID_ACTION", "Unknown report action", status_code=422)
     db.flush()

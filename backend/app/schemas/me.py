@@ -8,7 +8,6 @@ from typing import Literal
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
 from app.core.phone import normalize_phone
-from app.schemas.auth import UserOut
 
 
 class MePatch(BaseModel):

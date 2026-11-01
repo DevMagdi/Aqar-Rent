@@ -35,20 +35,14 @@ class User(TimestampMixin, Base):
     # Super Admin can raise the default 5-active-listing cap per user (BR-7).
     listing_cap: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
-    devices: Mapped[list[Device]] = relationship(
-        back_populates="user", cascade="all, delete-orphan"
-    )
-    listings: Mapped[list[Any]] = relationship(
-        "Listing", back_populates="owner", lazy="selectin"
-    )
+    devices: Mapped[list[Device]] = relationship(back_populates="user", cascade="all, delete-orphan")
+    listings: Mapped[list[Any]] = relationship("Listing", back_populates="owner", lazy="selectin")
 
 
 class Device(TimestampMixin, Base):
     __tablename__ = "devices"
 
-    user_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True
-    )
+    user_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     platform: Mapped[str] = mapped_column(String(20), default="web")  # android | ios | web
     push_token: Mapped[str | None] = mapped_column(String(512), nullable=True)
     refresh_token_hash: Mapped[str | None] = mapped_column(String(64), nullable=True, index=True)
@@ -70,9 +64,7 @@ class OtpCode(TimestampMixin, Base):
 class VerificationDocument(TimestampMixin, Base):
     __tablename__ = "verification_documents"
 
-    user_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True
-    )
+    user_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     file_key: Mapped[str] = mapped_column(String(512))
     doc_type: Mapped[str] = mapped_column(String(40))  # enums.DocType
     status: Mapped[str] = mapped_column(String(20), default=DocStatus.pending.value, index=True)

@@ -17,6 +17,7 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.core.security import hash_password
 from app.models.catalog import Listing, ListingMedia, Location, Plan
+from app.models.commerce import PromoCode
 from app.models.enums import (
     Furnished,
     ListingStatus,
@@ -25,10 +26,8 @@ from app.models.enums import (
     RentalType,
     StaffRole,
     StaffStatus,
-    UserStatus,
     UserVerificationStatus,
 )
-from app.models.commerce import PromoCode
 from app.models.identity import StaffUser, User, VerificationDocument
 from app.services.listing_service import activate_listing
 from app.services.media import process_photo
@@ -40,15 +39,33 @@ NS = uuid.UUID("6ba7b810-9dad-11d1-80b4-00c04fd430c8")  # uuid.NAMESPACE_URL
 
 # (name_en, name_ar)
 GOVERNORATES: list[tuple[str, str]] = [
-    ("Cairo", "القاهرة"), ("Giza", "الجيزة"), ("Alexandria", "الإسكندرية"),
-    ("Qalyubia", "القليوبية"), ("Sharqia", "الشرقية"), ("Dakahlia", "الدقهلية"),
-    ("Beheira", "البحيرة"), ("Gharbia", "الغربية"), ("Monufia", "المنوفية"),
-    ("Kafr El Sheikh", "كفر الشيخ"), ("Damietta", "دمياط"), ("Port Said", "بورسعيد"),
-    ("Ismailia", "الإسماعيلية"), ("Suez", "السويس"), ("Faiyum", "الفيوم"),
-    ("Beni Suef", "بني سويف"), ("Minya", "المنيا"), ("Assiut", "أسيوط"),
-    ("Sohag", "سوهاج"), ("Qena", "قنا"), ("Luxor", "الأقصر"), ("Aswan", "أسوان"),
-    ("Red Sea", "البحر الأحمر"), ("New Valley", "الوادي الجديد"),
-    ("Matrouh", "مطروح"), ("North Sinai", "شمال سيناء"), ("South Sinai", "جنوب سيناء"),
+    ("Cairo", "القاهرة"),
+    ("Giza", "الجيزة"),
+    ("Alexandria", "الإسكندرية"),
+    ("Qalyubia", "القليوبية"),
+    ("Sharqia", "الشرقية"),
+    ("Dakahlia", "الدقهلية"),
+    ("Beheira", "البحيرة"),
+    ("Gharbia", "الغربية"),
+    ("Monufia", "المنوفية"),
+    ("Kafr El Sheikh", "كفر الشيخ"),
+    ("Damietta", "دمياط"),
+    ("Port Said", "بورسعيد"),
+    ("Ismailia", "الإسماعيلية"),
+    ("Suez", "السويس"),
+    ("Faiyum", "الفيوم"),
+    ("Beni Suef", "بني سويف"),
+    ("Minya", "المنيا"),
+    ("Assiut", "أسيوط"),
+    ("Sohag", "سوهاج"),
+    ("Qena", "قنا"),
+    ("Luxor", "الأقصر"),
+    ("Aswan", "أسوان"),
+    ("Red Sea", "البحر الأحمر"),
+    ("New Valley", "الوادي الجديد"),
+    ("Matrouh", "مطروح"),
+    ("North Sinai", "شمال سيناء"),
+    ("South Sinai", "جنوب سيناء"),
 ]
 
 # Main city per non-metro governorate (English, Arabic, governorate)
@@ -152,7 +169,7 @@ def _upsert_location(
     return loc
 
 
-def seed_locations(db: Session) -> dict[str, uuid.UUID]:
+def seed_locations(db: Session) -> dict[str, dict[str, uuid.UUID]]:
     gov_ids: dict[str, uuid.UUID] = {}
     for en, ar in GOVERNORATES:
         loc = _upsert_location(db, f"gov:{en}", LocationLevel.governorate.value, en, ar, None)
@@ -163,7 +180,7 @@ def seed_locations(db: Session) -> dict[str, uuid.UUID]:
         loc = _upsert_location(db, f"city:{en}", LocationLevel.city.value, en, ar, gov_ids[gov])
         city_ids[en] = loc.id
 
-    for en, ar, city, gov in DISTRICTS:
+    for en, ar, city, _gov in DISTRICTS:
         _upsert_location(db, f"dist:{city}:{en}", LocationLevel.district.value, en, ar, city_ids[city])
 
     db.flush()
@@ -240,28 +257,76 @@ def seed_demo(db: Session, settings: Settings) -> None:
         db.add(tenant)
         db.flush()
 
+    plan = db.execute(select(Plan).where(Plan.active.is_(True))).scalars().first()
+    assert plan is not None, "run seed_plan first"
+
     if db.execute(select(func.count()).select_from(Listing).where(Listing.owner_id == owner.id)).scalar_one():
         return
 
-    plan = db.execute(select(Plan).where(Plan.active.is_(True))).scalars().first()
-    cairo = db.execute(select(Location).where(Location.name_en == "Cairo", Location.level == "governorate")).scalars().first()
-    cairo_city = db.execute(select(Location).where(Location.name_en == "Cairo", Location.level == "city")).scalars().first()
-    maadi = db.execute(select(Location).where(Location.name_en == "Maadi")).scalars().first()
-    dokki = db.execute(select(Location).where(Location.name_en == "Dokki")).scalars().first()
-    giza = db.execute(select(Location).where(Location.name_en == "Giza", Location.level == "governorate")).scalars().first()
-    giza_city = db.execute(select(Location).where(Location.name_en == "Giza", Location.level == "city")).scalars().first()
+    def _loc(name: str, level: str) -> Location | None:
+        return (
+            db.execute(select(Location).where(Location.name_en == name, Location.level == level))
+            .scalars()
+            .first()
+        )
+
+    cairo = _loc("Cairo", "governorate")
+    cairo_city = _loc("Cairo", "city")
+    maadi = _loc("Maadi", "district")
+    dokki = _loc("Dokki", "district")
+    giza = _loc("Giza", "governorate")
+    giza_city = _loc("Giza", "city")
+    assert cairo is not None and cairo_city is not None, "run seed_locations first"
+    assert giza is not None and giza_city is not None, "run seed_locations first"
+    if maadi is None or dokki is None:
+        maadi, dokki = cairo_city, cairo_city  # district optional in degraded seeds
 
     demos = [
-        ("شقة مفروشة في المعادي", PropertyType.apartment, Furnished.furnished, 12000,
-         3, 2, 120.0, 30.0404, 31.2622, cairo.id, cairo_city.id, maadi.id if maadi else None,
-         "شارع9 المعادي، قريب من محطة المترو"),
-        ("استوديو في الدقي", PropertyType.studio, Furnished.unfurnished, 4500,
-         1, 1, 45.0, 30.0370, 31.2100, giza.id if giza else cairo.id,
-         giza_city.id if giza_city else cairo_city.id, dokki.id if dokki else None,
-         "استوديو دور ثالث مع مصعد"),
-        ("مكتب تجاري في وسط البلد", PropertyType.office, Furnished.semi, 8000,
-         0, 1, 90.0, 30.0444, 31.2357, cairo.id, cairo_city.id, None,
-         "مكتب مناسب لشركة ناشئة، تكييف مركزي"),
+        (
+            "شقة مفروشة في المعادي",
+            PropertyType.apartment,
+            Furnished.furnished,
+            12000,
+            3,
+            2,
+            120.0,
+            30.0404,
+            31.2622,
+            cairo.id,
+            cairo_city.id,
+            maadi.id if maadi else None,
+            "شارع9 المعادي، قريب من محطة المترو",
+        ),
+        (
+            "استوديو في الدقي",
+            PropertyType.studio,
+            Furnished.unfurnished,
+            4500,
+            1,
+            1,
+            45.0,
+            30.0370,
+            31.2100,
+            giza.id if giza else cairo.id,
+            giza_city.id if giza_city else cairo_city.id,
+            dokki.id if dokki else None,
+            "استوديو دور ثالث مع مصعد",
+        ),
+        (
+            "مكتب تجاري في وسط البلد",
+            PropertyType.office,
+            Furnished.semi,
+            8000,
+            0,
+            1,
+            90.0,
+            30.0444,
+            31.2357,
+            cairo.id,
+            cairo_city.id,
+            None,
+            "مكتب مناسب لشركة ناشئة، تكييف مركزي",
+        ),
     ]
     for i, demo in enumerate(demos):
         (title, ptype, furn, price, beds, baths, area, lat, lon, gov, city, dist, addr) = demo
@@ -315,8 +380,12 @@ def seed_demo(db: Session, settings: Settings) -> None:
             storage.put(tk, t2, "image/jpeg")
             db.add(
                 ListingMedia(
-                    listing_id=listing.id, type="photo", file_key=fk, thumb_key=tk,
-                    sort_order=n - 1, phash=h2,
+                    listing_id=listing.id,
+                    type="photo",
+                    file_key=fk,
+                    thumb_key=tk,
+                    sort_order=n - 1,
+                    phash=h2,
                 )
             )
         db.flush()
@@ -358,9 +427,9 @@ def _demo_jpeg(color=(70, 130, 180), seed=0) -> bytes:
 
 
 def run_seed(db: Session, settings: Settings, demo: bool = False) -> dict[str, int]:
-    locations = seed_locations(db)
-    plan = seed_plan(db)
-    admin = seed_super_admin(db, settings)
+    seed_locations(db)
+    seed_plan(db)
+    seed_super_admin(db, settings)
     if demo:
         seed_demo(db, settings)
     db.commit()

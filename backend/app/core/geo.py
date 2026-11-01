@@ -15,7 +15,7 @@ _OFFSET_M = 80  # guaranteed inside the 150 m circle
 
 
 def _offset_angle(listing_id: str) -> float:
-    digest = hashlib.sha256(f"aqar:{listing_id}".encode("utf-8")).digest()
+    digest = hashlib.sha256(f"aqar:{listing_id}".encode()).digest()
     n = int.from_bytes(digest[:4], "big")
     return (n / 2**32) * 2 * math.pi
 

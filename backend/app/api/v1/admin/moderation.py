@@ -7,11 +7,10 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 
-from app.api.deps import DbDep, StorageDep, client_ip
-from app.api.deps import require_roles
+from app.api.deps import DbDep, StorageDep, client_ip, require_roles
 from app.core.errors import AppError
 from app.models.catalog import Listing, Location
-from app.models.enums import ListingStatus, StaffRole
+from app.models.enums import StaffRole
 from app.models.identity import StaffUser, User
 from app.models.social import Report
 from app.schemas.admin import ListingAdminDetailOut, QueueItemOut, RejectIn
@@ -31,24 +30,22 @@ def moderation_queue(
     staff: StaffUser = Depends(require_roles(StaffRole.moderator)),
     status: str = Query(default="submitted"),
 ) -> list[QueueItemOut]:
-    rows = db.execute(
-        select(Listing)
-        .where(Listing.status == status)
-        .order_by(Listing.created_at.asc())
-        .limit(200)
-    ).scalars().all()
+    rows = (
+        db.execute(
+            select(Listing).where(Listing.status == status).order_by(Listing.created_at.asc()).limit(200)
+        )
+        .scalars()
+        .all()
+    )
     if not rows:
         return []
     owners = {
-        u.id: u
-        for u in db.execute(
-            select(User).where(User.id.in_([r.owner_id for r in rows]))
-        ).scalars()
+        u.id: u for u in db.execute(select(User).where(User.id.in_([r.owner_id for r in rows]))).scalars()
     }
-    locs = db.execute(
-        select(Location).where(Location.id.in_([r.governorate_id for r in rows]))
-    ).scalars().all()
-    gov_names = {l.id: l.name_ar for l in locs}
+    locs = (
+        db.execute(select(Location).where(Location.id.in_([r.governorate_id for r in rows]))).scalars().all()
+    )
+    gov_names = {loc.id: loc.name_ar for loc in locs}
     report_counts = dict(
         db.execute(
             select(Report.listing_id, func.count())

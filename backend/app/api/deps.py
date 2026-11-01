@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Callable
+from collections.abc import Callable
+from typing import Annotated
 from uuid import UUID
 
 import jwt
@@ -41,9 +42,7 @@ def client_ip(request: Request) -> str:
     return request.client.host if request.client else "unknown"
 
 
-def _current_user(
-    request: Request, db: Session, credentials: HTTPAuthorizationCredentials | None
-) -> User:
+def _current_user(request: Request, db: Session, credentials: HTTPAuthorizationCredentials | None) -> User:
     from app.core.security import decode_token
 
     settings: Settings = request.app.state.settings
@@ -53,7 +52,9 @@ def _current_user(
         payload = decode_token(settings, credentials.credentials, expected_kind="access")
     except jwt.PyJWTError as exc:
         raise AppError("INVALID_TOKEN", "Access token is invalid or expired", status_code=401) from exc
-    user = db.get(User, payload.get("sub"))
+    from app.services.common import as_uuid
+
+    user = db.get(User, as_uuid(payload.get("sub")))
     if user is None or user.status == UserStatus.deleted:
         raise AppError("INVALID_TOKEN", "Account no longer exists", status_code=401)
     if user.status == UserStatus.banned:
@@ -93,7 +94,9 @@ def _staff_from_token(request: Request, db: Session, credentials) -> StaffUser:
         payload = decode_token(settings, credentials.credentials, expected_kind="staff")
     except jwt.PyJWTError as exc:
         raise AppError("INVALID_TOKEN", "Staff token is invalid or expired", status_code=401) from exc
-    staff = db.get(StaffUser, payload.get("sub"))
+    from app.services.common import as_uuid
+
+    staff = db.get(StaffUser, as_uuid(payload.get("sub")))
     if staff is None or staff.status != "active":
         raise AppError("INVALID_TOKEN", "Staff account is not active", status_code=401)
     return staff

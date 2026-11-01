@@ -4,7 +4,8 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Query, status as http_status
+from fastapi import APIRouter
+from fastapi import status as http_status
 from sqlalchemy import select
 
 from app.api.deps import CurrentUser, DbDep, SettingsDep
@@ -14,7 +15,6 @@ from app.models.commerce import Order
 from app.schemas.orders import (
     OrderCreateIn,
     OrderOut,
-    OrdersPage,
     PlanOut,
     PromoValidateIn,
     PromoValidateOut,
@@ -32,9 +32,11 @@ router = APIRouter(tags=["plans & orders"])
 @router.get("/plans", response_model=list[PlanOut], summary="Active ad plans (Public)")
 def list_plans(db: DbDep) -> list[PlanOut]:
     """BR-1: prices live in the plans table — never hard-coded in the client."""
-    rows = db.execute(
-        select(Plan).where(Plan.active.is_(True)).order_by(Plan.priority_weight, Plan.created_at)
-    ).scalars().all()
+    rows = (
+        db.execute(select(Plan).where(Plan.active.is_(True)).order_by(Plan.priority_weight, Plan.created_at))
+        .scalars()
+        .all()
+    )
     return [
         PlanOut(
             id=str(p.id),
@@ -77,6 +79,7 @@ def get_order(order_id: UUID, user: CurrentUser, db: DbDep, settings: SettingsDe
 @router.post("/promo/validate", response_model=PromoValidateOut, summary="Validate a promo code")
 def promo_validate(payload: PromoValidateIn, user: CurrentUser, db: DbDep) -> PromoValidateOut:
     plan = get_default_plan(db)
+    subtotal = totals_subtotal(db, payload.weeks, plan)
     try:
         promo, totals = validate_promo(db, payload.code, payload.weeks, plan)
     except AppError as exc:
@@ -84,13 +87,13 @@ def promo_validate(payload: PromoValidateIn, user: CurrentUser, db: DbDep) -> Pr
             valid=False,
             code=payload.code.upper().strip(),
             discount=0,
-            subtotal=totals_subtotal(db, payload.weeks, plan),
-            total=totals_subtotal(db, payload.weeks, plan),
+            subtotal=subtotal,
+            total=subtotal,
             message=exc.message,
         )
     return PromoValidateOut(
         valid=True,
-        code=promo.code,
+        code=promo.code if promo else payload.code.upper().strip(),
         discount=totals["discount"],
         subtotal=totals["subtotal"],
         total=totals["total"],

@@ -13,7 +13,6 @@ from app.models.catalog import Listing
 from app.models.enums import StaffRole, UserStatus
 from app.models.identity import StaffUser, User
 from app.schemas.admin import AdminUserOut, AdminUserPatchIn
-from app.schemas.common import ActionOut
 from app.services.moderation_service import log_audit
 
 router = APIRouter(prefix="/users", tags=["admin-users"])

@@ -22,15 +22,13 @@ def process_photo(data: bytes) -> tuple[bytes, bytes, str]:
     if len(data) > MAX_INPUT_BYTES:
         raise AppError("FILE_TOO_LARGE", "Image too large", status_code=413)
     try:
-        img = Image.open(io.BytesIO(data))
-        img.load()
+        opened = Image.open(io.BytesIO(data))
+        opened.load()
     except Exception as exc:  # noqa: BLE001
         raise AppError("INVALID_IMAGE", "File is not a valid image", status_code=415) from exc
 
-    img = ImageOps.exif_transpose(img)
-    if img.mode not in ("RGB", "L"):
-        img = img.convert("RGB")
-    elif img.mode == "L":
+    img = ImageOps.exif_transpose(opened)
+    if img.mode != "RGB":
         img = img.convert("RGB")
 
     if max(img.size) > MAX_DIMENSION:

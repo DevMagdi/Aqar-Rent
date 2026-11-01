@@ -10,6 +10,7 @@ from app.models.catalog import Listing
 from app.models.commerce import AdPeriod, Order, Payment
 from app.models.enums import (
     AdPeriodStatus,
+    DocStatus,
     ListingStatus,
     OrderStatus,
     PaymentStatus,
@@ -20,7 +21,6 @@ from app.models.enums import (
 from app.models.identity import AuditLog, StaffUser, User, VerificationDocument
 from app.models.social import ContactEvent, Report
 from app.schemas.admin import AuditLogOut, DashboardOut
-from app.models.enums import DocStatus
 
 router = APIRouter(tags=["admin-dashboard"])
 
@@ -32,9 +32,7 @@ def dashboard(db: DbDep, staff: StaffUser = Depends(require_roles(StaffRole.mode
         select(func.count()).select_from(User).where(User.status == UserStatus.banned.value)
     ).scalar_one()
 
-    status_rows = db.execute(
-        select(Listing.status, func.count()).group_by(Listing.status)
-    ).all()
+    status_rows = db.execute(select(Listing.status, func.count()).group_by(Listing.status)).all()
     listings_by_status = {s: n for s, n in status_rows}
     for s in ListingStatus:
         listings_by_status.setdefault(s.value, 0)
@@ -50,23 +48,17 @@ def dashboard(db: DbDep, staff: StaffUser = Depends(require_roles(StaffRole.mode
         .where(VerificationDocument.status == DocStatus.pending.value)
     ).scalar_one()
 
-    order_rows = db.execute(
-        select(Order.status, func.count()).group_by(Order.status)
-    ).all()
+    order_rows = db.execute(select(Order.status, func.count()).group_by(Order.status)).all()
     orders_by_status = {s: n for s, n in order_rows}
-    for s in OrderStatus:
-        orders_by_status.setdefault(s.value, 0)
+    for ostatus in OrderStatus:
+        orders_by_status.setdefault(ostatus.value, 0)
 
     revenue = db.execute(
-        select(func.coalesce(func.sum(Payment.amount), 0)).where(
-            Payment.status == PaymentStatus.paid.value
-        )
+        select(func.coalesce(func.sum(Payment.amount), 0)).where(Payment.status == PaymentStatus.paid.value)
     ).scalar_one()
     contacts = db.execute(select(func.count()).select_from(ContactEvent)).scalar_one()
     active_ads = db.execute(
-        select(func.count())
-        .select_from(AdPeriod)
-        .where(AdPeriod.status == AdPeriodStatus.active.value)
+        select(func.count()).select_from(AdPeriod).where(AdPeriod.status == AdPeriodStatus.active.value)
     ).scalar_one()
 
     return DashboardOut(

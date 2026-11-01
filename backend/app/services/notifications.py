@@ -9,7 +9,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.social import Notification
-from app.services.common import as_utc, utcnow
+from app.services.common import utcnow
 
 
 def create_notification(
@@ -43,8 +43,9 @@ def unread_count(db: Session, user_id: uuid.UUID) -> int:
 
 
 def mark_read(db: Session, user_id: uuid.UUID, ids: list[str] | None) -> int:
-    from sqlalchemy import update
     from uuid import UUID
+
+    from sqlalchemy import update
 
     now = utcnow()
     if ids:
@@ -65,16 +66,18 @@ def mark_read(db: Session, user_id: uuid.UUID, ids: list[str] | None) -> int:
             .values(read_at=now)
         )
     db.flush()
-    return result.rowcount or 0
+    return int(getattr(result, "rowcount", 0) or 0)
 
 
-def notification_has(
-    db: Session, user_id: uuid.UUID, type_: str, data_key: str, data_value: str
-) -> bool:
+def notification_has(db: Session, user_id: uuid.UUID, type_: str, data_key: str, data_value: str) -> bool:
     """Dedup helper for scheduled jobs (e.g. one 'ad ends in 2 days' per period)."""
-    rows = db.execute(
-        select(Notification.data).where(Notification.user_id == user_id, Notification.type == type_)
-    ).scalars().all()
+    rows = (
+        db.execute(
+            select(Notification.data).where(Notification.user_id == user_id, Notification.type == type_)
+        )
+        .scalars()
+        .all()
+    )
     for data in rows:
         if isinstance(data, dict) and data.get(data_key) == data_value:
             return True

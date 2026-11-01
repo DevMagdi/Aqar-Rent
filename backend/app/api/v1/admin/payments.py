@@ -65,13 +65,11 @@ def revenue(
 ) -> RevenueOut:
     paid = db.execute(
         select(func.coalesce(func.sum(Payment.amount), 0), func.count(Payment.id)).where(
-            Payment.status == PaymentStatus.paid.value
+            Payment.status.in_([PaymentStatus.paid.value, PaymentStatus.refunded.value])
         )
     ).one()
     refunded = db.execute(
-        select(func.coalesce(func.sum(Refund.amount), 0)).where(
-            Refund.status == RefundStatus.completed.value
-        )
+        select(func.coalesce(func.sum(Refund.amount), 0)).where(Refund.status == RefundStatus.completed.value)
     ).scalar_one()
     return RevenueOut(
         total_paid_egp=float(paid[0]),
@@ -89,13 +87,31 @@ def export_csv(
     buf = io.StringIO()
     writer = csv.writer(buf)
     writer.writerow(
-        ["payment_id", "order_id", "method", "amount", "status", "gateway_txn_id",
-         "owner_phone", "listing_id", "created_at"]
+        [
+            "payment_id",
+            "order_id",
+            "method",
+            "amount",
+            "status",
+            "gateway_txn_id",
+            "owner_phone",
+            "listing_id",
+            "created_at",
+        ]
     )
     for p, order, u in _payment_rows(db, None, 10_000):
         writer.writerow(
-            [p.id, p.order_id, p.method, p.amount, p.status, p.gateway_txn_id,
-             u.phone if u else "", order.listing_id, p.created_at]
+            [
+                p.id,
+                p.order_id,
+                p.method,
+                p.amount,
+                p.status,
+                p.gateway_txn_id,
+                u.phone if u else "",
+                order.listing_id,
+                p.created_at,
+            ]
         )
     buf.seek(0)
     return StreamingResponse(
@@ -133,13 +149,14 @@ def refund(
             Refund.status == RefundStatus.completed.value,
         )
     ).scalar_one()
-    amount = float(payment.amount) if payload.amount is None else float(payload.amount)
-    if amount <= 0 or amount + float(already) > float(payment.amount) + 1e-6:
+    refundable = float(payment.amount) - float(already)
+    amount = refundable if payload.amount is None else float(payload.amount)
+    if amount <= 0 or amount > refundable + 1e-6:
         raise AppError(
             "INVALID_REFUND_AMOUNT",
             "Refund exceeds the refundable amount",
             status_code=422,
-            details={"refundable": float(payment.amount) - float(already)},
+            details={"refundable": refundable},
         )
     refund_row = Refund(
         payment_id=payment.id,

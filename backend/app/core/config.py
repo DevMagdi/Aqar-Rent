@@ -48,7 +48,7 @@ class Settings(BaseSettings):
     s3_use_path_style: bool = True
 
     # Staff super admin (seeded from env)
-    staff_super_admin_email: str = "admin@aqar.local"
+    staff_super_admin_email: str = "admin@aqar-rent.dev"
     staff_super_admin_password: str = ""
     staff_super_admin_totp_secret: str = ""
 

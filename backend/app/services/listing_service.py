@@ -14,7 +14,7 @@ import uuid
 from datetime import date, timedelta
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
@@ -24,7 +24,6 @@ from app.models.catalog import Listing, ListingMedia, Location, Plan
 from app.models.commerce import AdPeriod
 from app.models.enums import (
     LISTING_CAP_STATUSES,
-    DocStatus,
     ListingStatus,
     LocationLevel,
     MediaType,
@@ -33,7 +32,6 @@ from app.models.identity import User, VerificationDocument
 from app.services.common import as_utc, utcnow
 from app.services.media import (
     ALLOWED_IMAGE_TYPES,
-    MAX_VIDEO_BYTES,
     hamming_distance,
     process_photo,
     validate_video,
@@ -82,9 +80,7 @@ def validate_location_hierarchy(
         raise AppError("INVALID_LOCATION", "governorate_id is not a governorate", status_code=422)
     city = db.get(Location, city_id)
     if city is None or city.level != LocationLevel.city or city.parent_id != gov.id:
-        raise AppError(
-            "INVALID_LOCATION", "city_id must belong to the given governorate", status_code=422
-        )
+        raise AppError("INVALID_LOCATION", "city_id must belong to the given governorate", status_code=422)
     if district_id is not None:
         dist = db.get(Location, district_id)
         if dist is None or dist.level != LocationLevel.district or dist.parent_id != city.id:
@@ -98,9 +94,7 @@ def validate_location_hierarchy(
 def create_listing(db: Session, owner: User, data: dict[str, Any]) -> Listing:
     check_listing_cap(db, owner)  # BR-7
     validate_content_rules(data.get("title", ""), data.get("description", ""))
-    validate_location_hierarchy(
-        db, data["governorate_id"], data["city_id"], data.get("district_id")
-    )
+    validate_location_hierarchy(db, data["governorate_id"], data["city_id"], data.get("district_id"))
     listing = Listing(owner_id=owner.id, status=ListingStatus.draft.value, **data)
     db.add(listing)
     db.flush()
@@ -171,9 +165,7 @@ def add_media(
     media_id = uuid.uuid4()
     if media_type == MediaType.photo.value:
         if content_type not in ALLOWED_IMAGE_TYPES:
-            raise AppError(
-                "INVALID_MEDIA_TYPE", "Photos must be JPEG, PNG or WebP", status_code=415
-            )
+            raise AppError("INVALID_MEDIA_TYPE", "Photos must be JPEG, PNG or WebP", status_code=415)
         photo, thumb, phash = process_photo(payload)
         file_key = f"listings/{listing.id}/media/{media_id}.jpg"
         thumb_key = f"listings/{listing.id}/media/{media_id}_thumb.jpg"
@@ -215,23 +207,31 @@ def delete_media(db: Session, storage: Storage, listing: Listing, media_id: uuid
 
 def _find_duplicate_photo(db: Session, listing: Listing) -> Listing | None:
     """Same owner re-using a photo across listings → anti-broker signal."""
-    media_rows = db.execute(
-        select(ListingMedia)
-        .join(Listing, ListingMedia.listing_id == Listing.id)
-        .where(
-            Listing.owner_id == listing.owner_id,
-            Listing.id != listing.id,
-            ListingMedia.phash.is_not(None),
+    media_rows = (
+        db.execute(
+            select(ListingMedia)
+            .join(Listing, ListingMedia.listing_id == Listing.id)
+            .where(
+                Listing.owner_id == listing.owner_id,
+                Listing.id != listing.id,
+                ListingMedia.phash.is_not(None),
+            )
         )
-    ).scalars().all()
-    mine = db.execute(
-        select(ListingMedia).where(
-            ListingMedia.listing_id == listing.id, ListingMedia.phash.is_not(None)
+        .scalars()
+        .all()
+    )
+    mine = (
+        db.execute(
+            select(ListingMedia).where(ListingMedia.listing_id == listing.id, ListingMedia.phash.is_not(None))
         )
-    ).scalars().all()
+        .scalars()
+        .all()
+    )
     for a in mine:
+        if not a.phash:
+            continue
         for b in media_rows:
-            if hamming_distance(a.phash, b.phash) <= DUP_PHASH_DISTANCE:
+            if b.phash and hamming_distance(a.phash, b.phash) <= DUP_PHASH_DISTANCE:
                 return db.get(Listing, b.listing_id)
     return None
 
@@ -239,9 +239,7 @@ def _find_duplicate_photo(db: Session, listing: Listing) -> Listing | None:
 def require_verification_uploaded(db: Session, owner: User) -> None:
     """BR-6: proof must be uploaded before the first listing can be submitted."""
     has_doc = db.execute(
-        select(func.count())
-        .select_from(VerificationDocument)
-        .where(VerificationDocument.user_id == owner.id)
+        select(func.count()).select_from(VerificationDocument).where(VerificationDocument.user_id == owner.id)
     ).scalar_one()
     if has_doc == 0:
         raise AppError(
@@ -262,11 +260,7 @@ def submit_listing(db: Session, owner: User, listing: Listing) -> Listing:
         )
     validate_content_rules(listing.title, listing.description)  # BR-12 re-check
 
-    photos = [
-        m
-        for m in listing.media
-        if m.type == MediaType.photo.value
-    ]
+    photos = [m for m in listing.media if m.type == MediaType.photo.value]
     if len(photos) < MIN_PHOTOS_TO_SUBMIT or len(listing.media) > MAX_MEDIA_PER_LISTING:
         raise AppError(
             "MEDIA_COUNT_INVALID",
@@ -307,11 +301,8 @@ def mark_rented(db: Session, owner: User, listing: Listing) -> Listing:
     listing.status = ListingStatus.rented.value
     # Stop any running ad period early — the ad is no longer shown.
     db.execute(
-        AdPeriod.__table__.update()
-        .where(
-            AdPeriod.listing_id == listing.id,
-            AdPeriod.status == "active",
-        )
+        update(AdPeriod)
+        .where(AdPeriod.listing_id == listing.id, AdPeriod.status == "active")
         .values(status="ended", updated_at=utcnow())
     )
     db.flush()

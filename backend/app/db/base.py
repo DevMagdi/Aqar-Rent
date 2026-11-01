@@ -35,9 +35,7 @@ def _now() -> datetime:
 class TimestampMixin:
     """Every table has id UUID, created_at, updated_at (per spec)."""
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        Uuid, primary_key=True, default=uuid.uuid4, comment="Primary key"
-    )
+    id: Mapped[uuid.UUID] = mapped_column(Uuid, primary_key=True, default=uuid.uuid4, comment="Primary key")
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), default=_now
     )

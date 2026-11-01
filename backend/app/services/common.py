@@ -5,7 +5,6 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from typing import Any
 
-from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.models.identity import User
@@ -13,6 +12,18 @@ from app.models.identity import User
 
 def utcnow() -> datetime:
     return datetime.now(UTC)
+
+
+def as_uuid(value: Any) -> Any:
+    """JWT claims carry string ids; Uuid columns need real UUIDs on db.get()."""
+    from uuid import UUID
+
+    if value is None or isinstance(value, UUID):
+        return value
+    try:
+        return UUID(str(value))
+    except ValueError:
+        return None
 
 
 def as_utc(dt: datetime | None) -> datetime | None:

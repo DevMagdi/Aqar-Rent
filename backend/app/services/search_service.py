@@ -14,9 +14,9 @@ from sqlalchemy.types import Text
 from app.core.errors import AppError
 from app.core.geo import APPROX_RADIUS_M, approx_point
 from app.core.pagination import decode_cursor, encode_cursor
-from app.models.catalog import Listing, ListingMedia, Location, Plan
+from app.models.catalog import Listing, ListingMedia, Plan
 from app.models.commerce import AdPeriod
-from app.models.enums import ListingStatus, MediaType
+from app.models.enums import ListingStatus
 from app.services.common import utcnow
 
 SortKey = Literal["newest", "price_asc", "price_desc", "area"]
@@ -57,7 +57,10 @@ def parse_bbox(raw: str | None) -> tuple[float, float, float, float] | None:
         min_lon, min_lat, max_lon, max_lat = (float(p) for p in parts)
     except ValueError as exc:
         raise AppError("INVALID_BBOX", "bbox values must be numbers", status_code=422) from exc
-    if not (-180 <= min_lon <= 180 and -90 <= min_lat <= 90 and -180 <= max_lon <= 180 and -90 <= max_lat <= 90):
+    in_range = (
+        -180 <= min_lon <= 180 and -90 <= min_lat <= 90 and -180 <= max_lon <= 180 and -90 <= max_lat <= 90
+    )
+    if not in_range:
         raise AppError("INVALID_BBOX", "bbox out of range", status_code=422)
     if min_lon > max_lon or min_lat > max_lat:
         raise AppError("INVALID_BBOX", "bbox corners are swapped", status_code=422)
@@ -178,14 +181,12 @@ def _coerce(value: Any, kind: str) -> Any:
     return value
 
 
-def _keyset_clause(
-    columns: list[tuple[Any, str]], types: list[str], cursor_values: list[Any]
-) -> Any:
+def _keyset_clause(columns: list[tuple[Any, str]], types: list[str], cursor_values: list[Any]) -> Any:
     """(a,b,c) < (ca,cb,cc) expanded to SQL for the active direction."""
     if len(cursor_values) != len(columns):
         raise AppError("INVALID_CURSOR", "Cursor does not match sort order", status_code=400)
     clauses: list[Any] = []
-    for i, ((expr, direction), kind) in enumerate(zip(columns, types)):
+    for i, ((expr, direction), kind) in enumerate(zip(columns, types, strict=True)):
         value = _coerce(cursor_values[i], kind)
         strict = (expr < value) if direction == "desc" else (expr > value)
         prefix = [columns[j][0] == _coerce(cursor_values[j], types[j]) for j in range(i)]
@@ -207,7 +208,7 @@ def search_listings(db: Session, params: SearchParams, storage=None) -> dict[str
     stmt = (
         select(Listing)
         .where(*where)
-        .order_by(*[(expr, direction) for expr, direction in columns])
+        .order_by(*[expr.desc() if direction == "desc" else expr.asc() for expr, direction in columns])
         .limit(params.limit + 1)
     )
     rows = list(db.execute(stmt).scalars().all())
@@ -236,15 +237,16 @@ def search_listings(db: Session, params: SearchParams, storage=None) -> dict[str
 
 
 def _newest_cursor_values(db: Session, listing_id: uuid.UUID, now: datetime):
-    priority = db.execute(
-        select(func.max(Plan.priority_weight))
-        .join(AdPeriod, AdPeriod.plan_id == Plan.id)
-        .where(AdPeriod.listing_id == listing_id, *_ad_window_expr(now))
-    ).scalar_one() or 0.0
+    priority = (
+        db.execute(
+            select(func.max(Plan.priority_weight))
+            .join(AdPeriod, AdPeriod.plan_id == Plan.id)
+            .where(AdPeriod.listing_id == listing_id, *_ad_window_expr(now))
+        ).scalar_one()
+        or 0.0
+    )
     start = db.execute(
-        select(func.max(AdPeriod.starts_at)).where(
-            AdPeriod.listing_id == listing_id, *_ad_window_expr(now)
-        )
+        select(func.max(AdPeriod.starts_at)).where(AdPeriod.listing_id == listing_id, *_ad_window_expr(now))
     ).scalar_one()
     from app.services.common import as_utc
 

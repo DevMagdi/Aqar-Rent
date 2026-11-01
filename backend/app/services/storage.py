@@ -73,7 +73,7 @@ class LocalStorage(Storage):
         return f"/api/v1/files/public/{quote(key)}"
 
     def sign(self, key: str, expires: int) -> str:
-        msg = f"{key}:{expires}".encode("utf-8")
+        msg = f"{key}:{expires}".encode()
         return hmac.new(self.secret_key, msg, hashlib.sha256).hexdigest()
 
     def verify(self, key: str, expires: int, token: str) -> bool:
@@ -122,9 +122,7 @@ class S3Storage(Storage):
         return self.buckets["media"]
 
     def put(self, key: str, data: bytes, content_type: str) -> None:
-        self.client.put_object(
-            Bucket=self._bucket(key), Key=key, Body=data, ContentType=content_type
-        )
+        self.client.put_object(Bucket=self._bucket(key), Key=key, Body=data, ContentType=content_type)
 
     def read(self, key: str) -> bytes:
         try:
@@ -155,7 +153,6 @@ class S3Storage(Storage):
 
     def signed_url(self, key: str, expires_in: int = SIGN_TTL_SECONDS) -> str:
         bucket = self._bucket(key)
-        base = self.settings.s3_public_endpoint_url or self.settings.s3_endpoint_url or ""
         # boto3 presigner against the public endpoint so browsers can reach MinIO.
         client = self.client
         if self.settings.s3_public_endpoint_url and (

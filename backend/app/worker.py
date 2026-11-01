@@ -11,7 +11,6 @@ from app.services.jobs import run_hourly_jobs
 
 
 async def hourly(ctx: dict) -> dict[str, int]:
-    settings = ctx["settings"]
     factory = ctx["session_factory"]
     db = factory()
     try:

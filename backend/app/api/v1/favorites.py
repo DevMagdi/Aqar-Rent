@@ -4,15 +4,16 @@ from __future__ import annotations
 
 from uuid import UUID
 
-from fastapi import APIRouter, Query, status as http_status
+from fastapi import APIRouter, Query
+from fastapi import status as http_status
 from sqlalchemy import delete, select
 
 from app.api.deps import CurrentUser, DbDep, StorageDep
 from app.core.errors import AppError
+from app.core.geo import APPROX_RADIUS_M, approx_point
 from app.models.catalog import Listing
 from app.models.social import Favorite
 from app.schemas.listings import FavoriteItemOut, FavoritesOut, GeoOut
-from app.core.geo import APPROX_RADIUS_M, approx_point
 
 router = APIRouter(prefix="/favorites", tags=["favorites"])
 
@@ -33,9 +34,7 @@ def add_favorite(listing_id: UUID, user: CurrentUser, db: DbDep) -> dict:
 
 @router.delete("/{listing_id}", summary="Remove from favorites")
 def remove_favorite(listing_id: UUID, user: CurrentUser, db: DbDep) -> dict:
-    db.execute(
-        delete(Favorite).where(Favorite.user_id == user.id, Favorite.listing_id == listing_id)
-    )
+    db.execute(delete(Favorite).where(Favorite.user_id == user.id, Favorite.listing_id == listing_id))
     db.flush()
     return {"status": "removed", "listing_id": str(listing_id)}
 

@@ -23,12 +23,8 @@ from app.db.base import Base, JSONType, TimestampMixin
 class Favorite(TimestampMixin, Base):
     __tablename__ = "favorites"
 
-    user_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True
-    )
-    listing_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("listings.id", ondelete="CASCADE"), index=True
-    )
+    user_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    listing_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("listings.id", ondelete="CASCADE"), index=True)
 
     __table_args__ = (UniqueConstraint("user_id", "listing_id", name="uq_favorites_user_id_listing_id"),)
 
@@ -36,24 +32,16 @@ class Favorite(TimestampMixin, Base):
 class ContactEvent(TimestampMixin, Base):
     __tablename__ = "contact_events"
 
-    listing_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("listings.id", ondelete="CASCADE"), index=True
-    )
-    user_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True
-    )
+    listing_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("listings.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     channel: Mapped[str] = mapped_column(String(20))  # enums.ContactChannel
 
 
 class Report(TimestampMixin, Base):
     __tablename__ = "reports"
 
-    listing_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("listings.id", ondelete="CASCADE"), index=True
-    )
-    reporter_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True
-    )
+    listing_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("listings.id", ondelete="CASCADE"), index=True)
+    reporter_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     reason: Mapped[str] = mapped_column(String(30))  # enums.ReportReason
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
     status: Mapped[str] = mapped_column(String(20), default="open", index=True)
@@ -65,16 +53,10 @@ class Report(TimestampMixin, Base):
 class Contract(TimestampMixin, Base):
     __tablename__ = "contracts"
 
-    listing_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("listings.id", ondelete="RESTRICT"), index=True
-    )
+    listing_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("listings.id", ondelete="RESTRICT"), index=True)
     template: Mapped[str] = mapped_column(String(60), default="standard_v1")
-    owner_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="RESTRICT"), index=True
-    )
-    tenant_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="RESTRICT"), index=True
-    )
+    owner_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="RESTRICT"), index=True)
+    tenant_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="RESTRICT"), index=True)
     terms: Mapped[dict] = mapped_column(JSONType, default=dict)
     # National IDs etc. encrypted at rest (spec) — ciphertext only.
     ids_encrypted: Mapped[str | None] = mapped_column(Text, nullable=True)
@@ -82,9 +64,7 @@ class Contract(TimestampMixin, Base):
     reference_no: Mapped[str] = mapped_column(String(40), unique=True, index=True)
     pdf_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
     owner_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    tenant_confirmed_at: Mapped[datetime | None] = mapped_column(
-        DateTime(timezone=True), nullable=True
-    )
+    tenant_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 
 class Handover(TimestampMixin, Base):
@@ -114,9 +94,7 @@ class HandoverMedia(TimestampMixin, Base):
 class Notification(TimestampMixin, Base):
     __tablename__ = "notifications"
 
-    user_id: Mapped[UUID] = mapped_column(
-        Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True
-    )
+    user_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="CASCADE"), index=True)
     type: Mapped[str] = mapped_column(String(50), index=True)
     title: Mapped[str] = mapped_column(String(200))
     body: Mapped[str] = mapped_column(Text, default="")
