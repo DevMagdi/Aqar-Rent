@@ -1,0 +1,577 @@
+{
+  "info": {
+    "name": "Aqar Rent API — Phase 1",
+    "description": "إيجار مباشر — Phase 1 collection (auth OTP, listings lifecycle, moderation, search, favorites, reports, plans/orders, admin). Import into Postman, or into Bruno via Import → Postman Collection.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8000/api/v1" },
+    { "key": "phone", "value": "01012345678" },
+    { "key": "otp_code", "value": "" },
+    { "key": "access_token", "value": "" },
+    { "key": "refresh_token", "value": "" },
+    { "key": "admin_token", "value": "" },
+    { "key": "listing_id", "value": "" },
+    { "key": "governorate_id", "value": "" },
+    { "key": "city_id", "value": "" },
+    { "key": "doc_id", "value": "" },
+    { "key": "order_id", "value": "" },
+    { "key": "promo_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "POST /auth/otp/request",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const b = pm.response.json();",
+                  "pm.collectionVariables.set('otp_code', b.dev_code || '');",
+                  "pm.test('OTP sent', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/otp/request", "host": ["{{baseUrl}}"], "path": ["auth", "otp", "request"] },
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"{{phone}}\"\n}" }
+          }
+        },
+        {
+          "name": "POST /auth/otp/verify",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const b = pm.response.json();",
+                  "pm.collectionVariables.set('access_token', b.tokens.access_token);",
+                  "pm.collectionVariables.set('refresh_token', b.tokens.refresh_token);",
+                  "pm.test('tokens issued', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/otp/verify", "host": ["{{baseUrl}}"], "path": ["auth", "otp", "verify"] },
+            "body": { "mode": "raw", "raw": "{\n  \"phone\": \"{{phone}}\",\n  \"code\": \"{{otp_code}}\",\n  \"platform\": \"web\"\n}" }
+          }
+        },
+        {
+          "name": "POST /auth/refresh",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/refresh", "host": ["{{baseUrl}}"], "path": ["auth", "refresh"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}" }
+          }
+        },
+        {
+          "name": "POST /auth/logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"] },
+            "body": { "mode": "raw", "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Me",
+      "item": [
+        {
+          "name": "GET /me",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/me", "host": ["{{baseUrl}}"], "path": ["me"] }
+          }
+        },
+        {
+          "name": "PATCH /me",
+          "request": {
+            "method": "PATCH",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/me", "host": ["{{baseUrl}}"], "path": ["me"] },
+            "body": { "mode": "raw", "raw": "{\n  \"full_name\": \"أحمد محمد\",\n  \"language\": \"ar\"\n}" }
+          }
+        },
+        {
+          "name": "POST /me/devices",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/me/devices", "host": ["{{baseUrl}}"], "path": ["me", "devices"] },
+            "body": { "mode": "raw", "raw": "{\n  \"platform\": \"android\",\n  \"push_token\": \"example-token\"\n}" }
+          }
+        },
+        {
+          "name": "POST /me/verification (multipart)",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "formdata": [
+              { "key": "doc_type", "value": "electricity_bill", "type": "text" },
+              { "key": "file", "type": "file", "src": "/path/to/electricity-bill.jpg" }
+            ],
+            "url": { "raw": "{{baseUrl}}/me/verification", "host": ["{{baseUrl}}"], "path": ["me", "verification"] }
+          }
+        },
+        {
+          "name": "GET /me/verification",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/me/verification", "host": ["{{baseUrl}}"], "path": ["me", "verification"] }
+          }
+        },
+        {
+          "name": "GET /me/listings",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/me/listings", "host": ["{{baseUrl}}"], "path": ["me", "listings"] }
+          }
+        },
+        {
+          "name": "GET /me/orders",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/me/orders", "host": ["{{baseUrl}}"], "path": ["me", "orders"] }
+          }
+        },
+        {
+          "name": "DELETE /me",
+          "request": {
+            "method": "DELETE",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/me", "host": ["{{baseUrl}}"], "path": ["me"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Locations & Plans (public)",
+      "item": [
+        {
+          "name": "GET /locations (governorates)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const gov = pm.response.json();",
+                  "pm.collectionVariables.set('governorate_id', gov[0].id);",
+                  "pm.test('27 governorates', () => pm.expect(gov.length).to.eql(27));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/locations", "host": ["{{baseUrl}}"], "path": ["locations"] }
+          }
+        },
+        {
+          "name": "GET /locations?parent_id (cities)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/locations?parent_id={{governorate_id}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["locations"],
+              "query": [{ "key": "parent_id", "value": "{{governorate_id}}" }]
+            }
+          }
+        },
+        {
+          "name": "GET /plans",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/plans", "host": ["{{baseUrl}}"], "path": ["plans"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Listings",
+      "item": [
+        {
+          "name": "POST /listings (create draft)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const b = pm.response.json();",
+                  "pm.collectionVariables.set('listing_id', b.id);",
+                  "pm.test('created draft', () => { pm.response.to.have.status(201); pm.expect(b.status).to.eql('draft'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/listings", "host": ["{{baseUrl}}"], "path": ["listings"] },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"شقة مفروشة تطل على النيل\",\n  \"property_type\": \"apartment\",\n  \"rental_type\": \"residential\",\n  \"furnished\": \"furnished\",\n  \"rent_monthly\": 9500,\n  \"deposit_months\": 2,\n  \"area_m2\": 110.5,\n  \"bedrooms\": 2,\n  \"bathrooms\": 2,\n  \"floor\": 4,\n  \"has_elevator\": true,\n  \"finishing\": \"finished\",\n  \"building_age\": 5,\n  \"amenities\": { \"parking\": true, \"security\": true },\n  \"description\": \"وحدة جميلة قريبة من كل الخدمات.\",\n  \"governorate_id\": \"{{governorate_id}}\",\n  \"city_id\": \"{{city_id}}\",\n  \"address_text\": \"شارع9، المعادي، القاهرة\",\n  \"latitude\": 29.9602,\n  \"longitude\": 31.2570,\n  \"min_term_months\": 6\n}"
+            }
+          }
+        },
+        {
+          "name": "PATCH /listings/{id}",
+          "request": {
+            "method": "PATCH",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/listings/{{listing_id}}", "host": ["{{baseUrl}}"], "path": ["listings", "{{listing_id}}"] },
+            "body": { "mode": "raw", "raw": "{\n  \"rent_monthly\": 10000\n}" }
+          }
+        },
+        {
+          "name": "POST /listings/{id}/media (multipart photo)",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "formdata": [
+              { "key": "file", "type": "file", "src": "/path/to/photo-1.jpg" },
+              { "key": "media_type", "value": "photo", "type": "text" }
+            ],
+            "url": { "raw": "{{baseUrl}}/listings/{{listing_id}}/media", "host": ["{{baseUrl}}"], "path": ["listings", "{{listing_id}}", "media"] }
+          }
+        },
+        {
+          "name": "POST /listings/{id}/submit",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/listings/{{listing_id}}/submit", "host": ["{{baseUrl}}"], "path": ["listings", "{{listing_id}}", "submit"] }
+          }
+        },
+        {
+          "name": "POST /listings/{id}/mark-rented",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/listings/{{listing_id}}/mark-rented", "host": ["{{baseUrl}}"], "path": ["listings", "{{listing_id}}", "mark-rented"] }
+          }
+        },
+        {
+          "name": "GET /listings (search)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/listings?sort=newest&limit=20&property_type=apartment",
+              "host": ["{{baseUrl}}"],
+              "path": ["listings"],
+              "query": [
+                { "key": "q", "value": "" },
+                { "key": "governorate_id", "value": "" },
+                { "key": "min_price", "value": "" },
+                { "key": "max_price", "value": "" },
+                { "key": "property_type", "value": "apartment" },
+                { "key": "amenities", "value": "parking" },
+                { "key": "bbox", "value": "31.20,29.90,31.30,30.00" },
+                { "key": "sort", "value": "newest" },
+                { "key": "limit", "value": "20" },
+                { "key": "cursor", "value": "" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /listings/{id} (detail)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{baseUrl}}/listings/{{listing_id}}?exact=true", "host": ["{{baseUrl}}"], "path": ["listings", "{{listing_id}}"], "query": [{ "key": "exact", "value": "true" }] }
+          }
+        },
+        {
+          "name": "GET /listings/{id}/contact (logged-in only)",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/listings/{{listing_id}}/contact", "host": ["{{baseUrl}}"], "path": ["listings", "{{listing_id}}", "contact"] }
+          }
+        },
+        {
+          "name": "POST /listings/{id}/report",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/listings/{{listing_id}}/report", "host": ["{{baseUrl}}"], "path": ["listings", "{{listing_id}}", "report"] },
+            "body": { "mode": "raw", "raw": "{\n  \"reason\": \"broker\",\n  \"note\": \"يبدو وسيط\"\n}" }
+          }
+        },
+        {
+          "name": "PUT /favorites/{listing_id}",
+          "request": {
+            "method": "PUT",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/favorites/{{listing_id}}", "host": ["{{baseUrl}}"], "path": ["favorites", "{{listing_id}}"] }
+          }
+        },
+        {
+          "name": "GET /favorites",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/favorites", "host": ["{{baseUrl}}"], "path": ["favorites"] }
+          }
+        },
+        {
+          "name": "DELETE /favorites/{listing_id}",
+          "request": {
+            "method": "DELETE",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/favorites/{{listing_id}}", "host": ["{{baseUrl}}"], "path": ["favorites", "{{listing_id}}"] }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Orders & Promo",
+      "item": [
+        {
+          "name": "POST /orders (after approval — BR-5)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const b = pm.response.json();",
+                  "pm.collectionVariables.set('order_id', b.id);",
+                  "pm.test('order created', () => pm.response.to.have.status(201));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/orders", "host": ["{{baseUrl}}"], "path": ["orders"] },
+            "body": { "mode": "raw", "raw": "{\n  \"listing_id\": \"{{listing_id}}\",\n  \"weeks\": 1,\n  \"method\": \"bank_transfer\",\n  \"promo_code\": null\n}" }
+          }
+        },
+        {
+          "name": "GET /orders/{id}",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/orders/{{order_id}}", "host": ["{{baseUrl}}"], "path": ["orders", "{{order_id}}"] }
+          }
+        },
+        {
+          "name": "POST /promo/validate",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/promo/validate", "host": ["{{baseUrl}}"], "path": ["promo", "validate"] },
+            "body": { "mode": "raw", "raw": "{\n  \"code\": \"FIRSTAD\",\n  \"weeks\": 1\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "GET /notifications",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/notifications", "host": ["{{baseUrl}}"], "path": ["notifications"] }
+          }
+        },
+        {
+          "name": "POST /notifications/read",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{access_token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/notifications/read", "host": ["{{baseUrl}}"], "path": ["notifications", "read"] },
+            "body": { "mode": "raw", "raw": "{\n  \"ids\": []\n}" }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "POST /admin/auth/login (password + TOTP)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const b = pm.response.json();",
+                  "pm.collectionVariables.set('admin_token', b.access_token);",
+                  "pm.test('staff logged in', () => pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/auth/login", "host": ["{{baseUrl}}"], "path": ["admin", "auth", "login"] },
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@aqar-rent.dev\",\n  \"password\": \"ChangeMeAdmin!2026\",\n  \"totp_code\": \"123456\"\n}" }
+          }
+        },
+        {
+          "name": "GET /admin/dashboard",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/admin/dashboard", "host": ["{{baseUrl}}"], "path": ["admin", "dashboard"] }
+          }
+        },
+        {
+          "name": "GET /admin/listings (moderation queue)",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/admin/listings?status=submitted", "host": ["{{baseUrl}}"], "path": ["admin", "listings"], "query": [{ "key": "status", "value": "submitted" }] }
+          }
+        },
+        {
+          "name": "POST /admin/listings/{id}/approve",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/admin/listings/{{listing_id}}/approve", "host": ["{{baseUrl}}"], "path": ["admin", "listings", "{{listing_id}}", "approve"] }
+          }
+        },
+        {
+          "name": "POST /admin/listings/{id}/reject",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/listings/{{listing_id}}/reject", "host": ["{{baseUrl}}"], "path": ["admin", "listings", "{{listing_id}}", "reject"] },
+            "body": { "mode": "raw", "raw": "{\n  \"reason_code\": \"fake_photos\",\n  \"note\": \"الصور غير حقيقية\"\n}" }
+          }
+        },
+        {
+          "name": "GET /admin/verifications",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/admin/verifications?status=pending", "host": ["{{baseUrl}}"], "path": ["admin", "verifications"], "query": [{ "key": "status", "value": "pending" }] }
+          }
+        },
+        {
+          "name": "POST /admin/verifications/{id}/decision",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/verifications/{{doc_id}}/decision", "host": ["{{baseUrl}}"], "path": ["admin", "verifications", "{{doc_id}}", "decision"] },
+            "body": { "mode": "raw", "raw": "{\n  \"decision\": \"approve\"\n}" }
+          }
+        },
+        {
+          "name": "GET /admin/reports",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/admin/reports?status=open", "host": ["{{baseUrl}}"], "path": ["admin", "reports"], "query": [{ "key": "status", "value": "open" }] }
+          }
+        },
+        {
+          "name": "GET /admin/users",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/admin/users?status=active", "host": ["{{baseUrl}}"], "path": ["admin", "users"], "query": [{ "key": "status", "value": "active" }] }
+          }
+        },
+        {
+          "name": "PATCH /admin/users/{id} (ban / listing cap)",
+          "request": {
+            "method": "PATCH",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/users/USER_ID", "host": ["{{baseUrl}}"], "path": ["admin", "users", "USER_ID"] },
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"banned\",\n  \"listing_cap\": 10\n}" }
+          }
+        },
+        {
+          "name": "GET /admin/payments",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/admin/payments?status=paid", "host": ["{{baseUrl}}"], "path": ["admin", "payments"], "query": [{ "key": "status", "value": "paid" }] }
+          }
+        },
+        {
+          "name": "GET /admin/payments/revenue",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/admin/payments/revenue", "host": ["{{baseUrl}}"], "path": ["admin", "payments", "revenue"] }
+          }
+        },
+        {
+          "name": "GET /admin/payments/export (CSV)",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/admin/payments/export", "host": ["{{baseUrl}}"], "path": ["admin", "payments", "export"] }
+          }
+        },
+        {
+          "name": "GET /admin/plans",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/admin/plans", "host": ["{{baseUrl}}"], "path": ["admin", "plans"] }
+          }
+        },
+        {
+          "name": "POST /admin/promo-codes",
+          "request": {
+            "method": "POST",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": { "raw": "{{baseUrl}}/admin/promo-codes", "host": ["{{baseUrl}}"], "path": ["admin", "promo-codes"] },
+            "body": { "mode": "raw", "raw": "{\n  \"code\": \"EARLY50\",\n  \"type\": \"percent\",\n  \"value\": 50,\n  \"max_uses\": 100\n}" }
+          }
+        },
+        {
+          "name": "GET /admin/audit-logs",
+          "request": {
+            "method": "GET",
+            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{admin_token}}" }] },
+            "url": { "raw": "{{baseUrl}}/admin/audit-logs?limit=50", "host": ["{{baseUrl}}"], "path": ["admin", "audit-logs"], "query": [{ "key": "limit", "value": "50" }] }
+          }
+        }
+      ]
+    }
+  ]
+}
