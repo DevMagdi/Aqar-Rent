@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import io
+import os
 import uuid
 
 import pytest
@@ -34,12 +35,15 @@ ADMIN_TOTP = "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP"
 
 @pytest.fixture
 def settings(tmp_path) -> Settings:
+    # TEST_DATABASE_URL (e.g. postgresql+psycopg://…) makes the same suite run
+    # against PostgreSQL+PostGIS — CI does exactly that in its postgres matrix.
+    db_url = os.environ.get("TEST_DATABASE_URL") or f"sqlite:///{tmp_path}/test.db"
     return Settings(
         _env_file=None,
         app_env="test",
         debug=True,
         secret_key="test-secret-key-for-pytest-only-32bytes!!",
-        database_url=f"sqlite:///{tmp_path}/test.db",
+        database_url=db_url,
         storage_backend="local",
         storage_local_root=str(tmp_path / "storage"),
         bcrypt_rounds=4,
@@ -61,6 +65,8 @@ def _reset_rate_limits():
 @pytest.fixture
 def app(settings):
     application = create_app(settings)
+    if not settings.database_url.startswith("sqlite"):
+        Base.metadata.drop_all(application.state.engine)  # shared server DB
     Base.metadata.create_all(application.state.engine)
     yield application
     application.state.engine.dispose()

@@ -89,9 +89,9 @@ def _filters(params: SearchParams, now: datetime) -> list[Any]:
         like = f"%{_escape_like(params.q)}%"
         where.append(
             or_(
-                Listing.title.like(like, escape="\\"),
-                Listing.description.like(like, escape="\\"),
-                Listing.address_text.like(like, escape="\\"),
+                Listing.title.ilike(like, escape="\\"),
+                Listing.description.ilike(like, escape="\\"),
+                Listing.address_text.ilike(like, escape="\\"),
             )
         )
     if params.governorate_id:
