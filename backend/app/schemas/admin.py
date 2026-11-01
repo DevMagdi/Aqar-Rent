@@ -120,11 +120,41 @@ class RefundIn(BaseModel):
     reason: str = Field(default="", max_length=1_000)
 
 
+class RevenueSlice(BaseModel):
+    bucket: str  # ISO date (YYYY-MM-DD) or month (YYYY-MM-MM)
+    total_egp: float
+
+
+class MethodTotal(BaseModel):
+    method: str
+    total_egp: float
+
+
 class RevenueOut(BaseModel):
     total_paid_egp: float
     total_refunded_egp: float
     net_egp: float
     count_paid: int
+    daily: list[RevenueSlice] = []
+    monthly: list[RevenueSlice] = []
+    by_method: list[MethodTotal] = []
+
+
+class BankTransferOut(BaseModel):
+    id: str
+    order_id: str
+    listing_id: str | None = None
+    owner_phone: str | None = None
+    amount: float
+    status: str
+    reference: str | None = None
+    receipt_url: str | None = None
+    reject_reason: str | None = None
+    created_at: datetime | None = None
+
+
+class BankTransferRejectIn(BaseModel):
+    reason: str = Field(default="", max_length=1_000)
 
 
 class PlanAdminIn(BaseModel):

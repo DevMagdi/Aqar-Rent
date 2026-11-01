@@ -114,20 +114,20 @@ Every decision the spec left open, made here so review is easy. Business rules
     otherwise renewal after expiry would be impossible, contradicting BR-3's renew rule).
     `draft/submitted/rejected/rented/removed` → `409 ORDER_NOT_APPROVED`.
 33. **Plan selection**: orders use the active plan with the lowest `priority_weight`
-    (single "Weekly" plan seeded). `orders.plan_id` is not in the given schema; Phase 2 will
-    add it when tiers become purchasable.
+    (single "Weekly" plan seeded). Migration `0002` (Phase 2) added `orders.plan_id` so
+    every order records which plan priced it; the price snapshot stays in the totals.
 34. **Order `expires_at`**: set to `created_at + 48 h` for Fawry at creation (consumed by the
     hourly expiry job). Gateway binding (`gateway`, `gateway_ref`) happens in Phase 2; for
     bank transfers we set `gateway=manual` and generate the unique `AQR-…` reference at
     creation so the checkout page can already show it.
-35. **Payment endpoints that need a gateway** (`POST /orders/{id}/bank-receipt`,
-    `POST /payments/webhook`, `GET /orders/{id}/receipt`, refunds by Finance) are Phase 2;
-    the admin refund endpoint and payment listing/CSV/revenue **are** in Phase 1 because the
-    spec's admin list requires them — they operate on `payments` rows (created by seed/tests
-    until the gateway lands).
+35. **Payment endpoints** (`POST /orders/{id}/bank-receipt`, `POST /payments/webhook`,
+    `GET /orders/{id}/receipt`, checkout re-mint, bank-transfer approval, refunds through the
+    provider) all landed in Phase 2; the Phase 1 admin payment listing/CSV/revenue endpoints
+    were extended in place (filters + breakdowns) without breaking their contract.
 36. **Promos (BR-9)**: `percent` (0–100] of the order subtotal or `free_weeks` (whole weeks
     free, capped at ordered weeks); `max_uses=NULL` = unlimited; consumption increments
-    `used_count` **at order creation**. Codes are case-insensitive (stored uppercase).
+    `used_count` **at order creation** via one atomic conditional `UPDATE` (no overuse under
+    concurrency). Codes are case-insensitive (stored uppercase).
 37. **Money**: `Numeric(12,2)` in the DB, floats in JSON; totals always `round(…, 2)`.
 
 ## Accounts & data lifecycle
@@ -160,13 +160,59 @@ Every decision the spec left open, made here so review is easy. Business rules
 45. CI (GitHub Actions): `ruff` + `mypy` (mypy-lite config) + pytest on **SQLite and
     PostgreSQL+PostGIS**; the postgres job runs `alembic upgrade head` first so the migration
     (including the PostGIS trigger/index path) is exercised on every push/PR.
-46. Coverage: **93 % overall**, every module under `app/services/*` ≥ 70 % (spec target).
+46. Coverage: **92 % overall after Phase 2**, every module under `app/services/*` ≥ 73 %
+    (payment orchestration 87 %, Paymob adapter 83 %, receipts 92 %) — spec target kept.
+
+## Payments (Phase 2)
+
+47. **Provider selection**: `PAYMENT_PROVIDER=mock` by default — offline, deterministic, and
+    used by the whole test suite; `paymob` in production. The webhook endpoint detects the
+    provider from the payload shape (mock: `provider` field; Paymob: `type`+`obj`), never
+    from configuration alone.
+48. **Paymob** follows the official Accept REST flow (auth token → `/api/ecommerce/orders` →
+    `/api/acceptance/payment_keys` for cards; `/api/acceptance/payments/pay` for the
+    Vodafone Cash invoice and the Fawry kiosk reference). Every endpoint URL is configurable
+    (`PAYMOB_*_URL`, `PAYMOB_IFRAME_URL_TEMPLATE`); callback verification is HMAC-SHA512 over
+    the 20 documented ordered fields, delivered as the `?hmac=` query parameter.
+    Refunds call `/api/acceptance/void_refund/refund`. **No card data ever touches our
+    servers** — only gateway references and transaction ids are stored.
+49. **Duplicate pending orders**: a payable fawry/wallet/bank reference blocks any new order
+    for the same listing (`409 DUPLICATE_PENDING_ORDER`); an ephemeral pending *card*
+    checkout is superseded (marked `failed`) by a new card attempt instead of blocking.
+50. **BR-7 at checkout**: a new order is refused when the owner already has `listing_cap`
+    (default 5) listings with a running ad and the ordered listing is not among them.
+    Renewals of a live listing are always allowed.
+51. **Free orders** (100 % percent promo, or `free_weeks ≥ weeks`): settled at creation
+    (`status=paid`, `gateway=promo`, txn id `FREE-…`) — the gateway is skipped and the ad
+    starts immediately (BR-5 approval still applies).
+52. **Webhook pipeline**: HMAC check → parse → locate order by `gateway_ref` →
+    `SELECT … FOR UPDATE` → idempotent settle keyed on the unique `payments.gateway_txn_id`
+    (duplicates/replays never create a second payment or ad period). Amount mismatches and
+    unknown orders are logged and answered `200 ignored` so gateways do not retry-storm;
+    `WEBHOOK_IP_ALLOWLIST` optionally restricts source IPs; bad signature → 401.
+53. **Money**: `Numeric(12,2)` in the DB; all Phase 2 arithmetic (gateway piasters, refunds,
+    revenue sums, ad-period shortening) is `Decimal`; JSON keeps the Phase 1 float shape at
+    the API boundary only.
+54. **Bank transfers**: receipt is a JPEG/PNG/WebP ≤ 5 MB stored privately; Finance approves
+    (payment recorded, ad goes live, owner notified) or rejects with a reason (owner
+    re-uploads; the order stays pending and does **not** auto-expire).
+55. **Refunds (BR-8)**: full refund cancels the order's ad period and hides the listing once
+    no period is running; partial refunds shorten the period proportionally to the refunded
+    amount. Gateway-backed payments go through `provider.refund`; manual/bank/promo payments
+    are recorded only. Provider refunds are stored in `refunds.gateway_ref` (migration0002).
+56. **Receipts**: PDF via ReportLab + `arabic-reshaper` + `python-bidi` with the embedded
+    Amiri font (SIL OFL, `backend/app/assets/fonts/`, license included). Generated lazily on
+    `GET /orders/{id}/receipt` (owner or staff) and pre-warmed by the worker sweep every
+    10 minutes; stored at `receipts/<order_id>.pdf` in object storage.
+57. **Consecutive renewals**: a paid renewal for a listing with a running ad **stacks** —
+    `starts_at` = the current period's `ends_at`; after expiry (or a refund that ended the
+    period) a new purchase starts immediately. BR-4 ordering follows the newest ad start.
+58. **Order rate limiting**: `POST /orders` is capped per user
+    (`ORDER_RATE_LIMIT_PER_HOUR`, default 30/h) on top of the existing per-IP guards.
 
 ## Deferred to later phases (per the spec's own phasing)
 
-47. Phase 2: PaymentProvider adapters (Paymob, mock), Fawry/Vodafone Cash, bank-receipt
-    upload, webhook signature/idempotency, PDF receipts, scheduled ad activation on payment.
-48. Phase 3: web/mobile/admin UIs, push notifications (schema + in-app API exist now).
-49. Phase 4: contract PDF generator & handover checklists (tables + enums already migrated).
+59. Phase 3: web/mobile/admin UIs, push notifications (schema + in-app API exist now).
+60. Phase 4: contract PDF generator & handover checklists (tables + enums already migrated).
     The contract feature will state it is a **private agreement template** and does not
     replace official registration.

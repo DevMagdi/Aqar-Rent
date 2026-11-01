@@ -110,6 +110,49 @@ def get_any_staff(
     return _staff_from_token(request, db, credentials)
 
 
+def get_optional_user_or_staff(
+    request: Request,
+    db: DbDep,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
+) -> tuple[User | None, StaffUser | None]:
+    """Accept EITHER a user token or a staff token (receipts, shared docs)."""
+    if credentials is None or not credentials.credentials:
+        return None, None
+    try:
+        return _current_user(request, db, credentials), None
+    except AppError:
+        pass
+    try:
+        return None, _staff_from_token(request, db, credentials)
+    except AppError:
+        return None, None
+
+
+def get_optional_staff(
+    request: Request,
+    db: DbDep,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
+) -> StaffUser | None:
+    """Staff token when present/valid, None otherwise (owner-OR-staff routes)."""
+    if credentials is None or not credentials.credentials:
+        return None
+    import jwt as _jwt
+
+    from app.core.security import decode_token
+
+    settings: Settings = request.app.state.settings
+    try:
+        payload = decode_token(settings, credentials.credentials, expected_kind="staff")
+    except _jwt.PyJWTError:
+        return None
+    from app.services.common import as_uuid
+
+    staff = db.get(StaffUser, as_uuid(payload.get("sub")))
+    if staff is None or staff.status != "active":
+        return None
+    return staff
+
+
 def require_roles(*roles: StaffRole | str) -> Callable:
     allowed = {r.value if isinstance(r, StaffRole) else r for r in roles}
     allowed.add(StaffRole.super_admin.value)  # super admin can do everything
@@ -141,6 +184,8 @@ StorageDep = Annotated[Storage, Depends(get_storage)]
 
 
 AnyStaff = Annotated[StaffUser, Depends(get_any_staff)]
+OptionalStaff = Annotated[StaffUser | None, Depends(get_optional_staff)]
+UserOrStaff = Annotated[tuple["User | None", "StaffUser | None"], Depends(get_optional_user_or_staff)]
 
 
 def uuid_path(value: str) -> UUID:

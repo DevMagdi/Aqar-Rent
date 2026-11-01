@@ -49,12 +49,31 @@ class OrderOut(BaseModel):
     paid_at: datetime | None = None
     created_at: datetime | None = None
     bank_instructions: BankInstructions | None = None
+    plan_id: str | None = None
+    checkout_url: str | None = None  # gateway checkout (card iframe / invoice)
+    payment_reference: str | None = None  # e.g. Fawry reference code
+    receipt_ready: bool = False
 
 
 class OrdersPage(BaseModel):
     items: list[OrderOut]
     next_cursor: str | None = None
     limit: int = 20
+
+
+class CheckoutOut(BaseModel):
+    """Fresh checkout details for a pending gateway order (re-minted key)."""
+
+    checkout_url: str | None = None
+    payment_reference: str | None = None
+    expires_at: datetime | None = None
+
+
+class BankReceiptOut(BaseModel):
+    order_id: str
+    status: str
+    receipt_url: str | None = None
+    reject_reason: str | None = None
 
 
 class PromoValidateIn(BaseModel):
