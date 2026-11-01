@@ -132,7 +132,7 @@ Every decision the spec left open, made here so review is easy. Business rules
 
 ## Accounts & data lifecycle
 
-38. **DELETE /me** anonymizes the user (phone → `deleted_{id}@anonymized.invalid`, name/email
+38. **DELETE /me** anonymizes the user (phone → `deleted_{12-hex-digits}` (fits `VARCHAR(20)`; not a valid mobile, so it can never log in), name/email
     cleared, status `deleted`), deletes devices, favorites, pending OTPs and verification
     documents **including their files**, and **keeps** orders/payments/ad periods (financial
     records) still linked to the anonymized owner. Contact reveals for deleted owners return

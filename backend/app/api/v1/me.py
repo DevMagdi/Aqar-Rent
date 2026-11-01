@@ -64,7 +64,8 @@ def delete_me(user: CurrentUser, db: DbDep, storage: StorageDep) -> Msg:
 
     original_phone = user.phone
     # Financial records (orders/payments/ad periods) are kept — owner_id stays.
-    user.phone = f"deleted_{user.id.hex}@anonymized.invalid"
+    # Compact marker: users.phone is VARCHAR(20) (enforced by PostgreSQL).
+    user.phone = f"deleted_{user.id.hex[:12]}"
     user.full_name = None
     user.email = None
     user.city = None
