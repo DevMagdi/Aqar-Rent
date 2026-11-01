@@ -75,5 +75,6 @@ def test_migration_is_versioned(tmp_path):
     )
     conn = sqlite3.connect(db_path)
     versions = [r[0] for r in conn.execute("SELECT version_num FROM alembic_version")]
-    assert versions == ["0001"]
+    # Head revision advanced with Phase 2 (0002: orders.plan_id, refunds.gateway_ref).
+    assert versions == ["0002"]
     conn.close()

@@ -33,6 +33,10 @@ class Order(TimestampMixin, Base):
     promo_code_id: Mapped[UUID | None] = mapped_column(
         Uuid, ForeignKey("promo_codes.id", ondelete="SET NULL"), nullable=True
     )
+    # BR-1: which plan priced this order (price snapshot lives in subtotal).
+    plan_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("plans.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     status: Mapped[str] = mapped_column(String(20), default="pending", index=True)
     method: Mapped[str] = mapped_column(String(30))  # enums.PaymentMethod
     gateway: Mapped[str | None] = mapped_column(String(30), nullable=True)
@@ -73,6 +77,8 @@ class Refund(TimestampMixin, Base):
     payment_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("payments.id", ondelete="RESTRICT"), index=True)
     amount: Mapped[float] = mapped_column(Numeric(12, 2))
     reason: Mapped[str] = mapped_column(Text, default="")
+    # Gateway's refund transaction reference (None for manual/bank refunds).
+    gateway_ref: Mapped[str | None] = mapped_column(String(120), nullable=True)
     issued_by: Mapped[UUID | None] = mapped_column(
         Uuid, ForeignKey("staff_users.id", ondelete="SET NULL"), nullable=True
     )

@@ -1,7 +1,8 @@
 """Hourly scheduled jobs (spec §SCHEDULED JOBS).
 
-1. End ad periods past ends_at → listings become Expired and disappear from search.
-2. Expire pending Fawry orders after 48 hours.
+1. End ad periods past ends_at → listings become Expired and disappear from search
+   (+ "ad expired" notification to the owner).
+2. Expire pending Fawry/Vodafone-Cash orders after 48 hours.
 3. Send "ad ends in 2 days" reminders.
 4. Auto-send a listing to moderation when 3 distinct users report it.
 
@@ -58,17 +59,32 @@ def end_expired_ad_periods(db: Session, now=None) -> int:
         ).scalar_one()
         if still_running == 0:
             listing.status = ListingStatus.expired.value
+            if not notification_has(db, listing.owner_id, "ad_expired", "ad_period_id", str(period.id)):
+                ends = as_utc(period.ends_at)
+                create_notification(
+                    db,
+                    listing.owner_id,
+                    "ad_expired",
+                    "انتهى إعلانك ⏰",
+                    f"انتهت فترة إعلان «{listing.title}» وتم إخفاؤه من البحث — جدد ليعود.",
+                    {
+                        "ad_period_id": str(period.id),
+                        "listing_id": str(listing.id),
+                        "ended_at": ends.isoformat() if ends else None,
+                    },
+                )
     db.flush()
     return len(stale)
 
 
 def expire_pending_fawry_orders(db: Session, now=None) -> int:
+    """Fawry + wallet (Vodafone Cash) references die after 48 h (spec)."""
     now = now or utcnow()
     orders = (
         db.execute(
             select(Order).where(
                 Order.status == OrderStatus.pending.value,
-                Order.method == PaymentMethod.fawry.value,
+                Order.method.in_([PaymentMethod.fawry.value, PaymentMethod.vodafone_cash.value]),
             )
         )
         .scalars()

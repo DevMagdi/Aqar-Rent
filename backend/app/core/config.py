@@ -59,17 +59,34 @@ class Settings(BaseSettings):
     bank_iban: str = ""
     bank_swift: str = ""
 
-    # Phase 2 placeholders (documented now, used later)
+    # Phase 2 — payments
+    payment_provider: str = "mock"  # mock (dev/tests) | paymob
+    webhook_secret: str = ""  # HMAC secret for the Mock provider webhooks
+    webhook_ip_allowlist: str = ""  # comma-separated IPs/CIDRs; empty = allow all
+    order_rate_limit_per_hour: int = 30  # POST /orders per user
+    bank_receipt_max_mb: int = 5  # bank transfer receipt upload cap
+
     paymob_base_url: str = "https://accept.paymob.com"
     paymob_api_key: str = ""
     paymob_integration_id_card: str = ""
     paymob_integration_id_wallet: str = ""
+    paymob_integration_id_fawry: str = ""  # kiosk/fawry integration (falls back to wallet id)
     paymob_hmac_secret: str = ""
     paymob_iframe_id: str = ""
-    fawry_base_url: str = ""
+    paymob_currency: str = "EGP"
+    # Endpoint overrides — defaults are built from paymob_base_url; set these
+    # if Paymob ever changes a path (nothing endpoint-ish is hard-coded).
+    paymob_auth_url: str = ""
+    paymob_orders_url: str = ""
+    paymob_payment_keys_url: str = ""
+    paymob_pay_url: str = ""
+    paymob_refund_url: str = ""
+    paymob_iframe_url_template: str = ""  # {iframe_id} {payment_type} {token} placeholders
+
+    fawry_base_url: str = ""  # reserved: standalone Fawry (currently via Paymob kiosk)
     fawry_merchant_id: str = ""
     fawry_security_code: str = ""
-    fawry_expiry_hours: int = 48
+    fawry_expiry_hours: int = 48  # pending fawry/wallet orders expire after this
 
     @property
     def cors_origin_list(self) -> list[str]:

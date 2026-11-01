@@ -332,9 +332,20 @@ def activate_listing(
     order_id: uuid.UUID | None = None,
     now=None,
 ) -> AdPeriod:
-    """Open a paid ad period and make the listing publicly visible (BR-3)."""
+    """Open a paid ad period and make the listing publicly visible (BR-3).
+
+    Consecutive renewal: when the listing already has a running ad period the
+    new one stacks after its end (no gap, no overlap) — otherwise it starts now.
+    """
     now = now or utcnow()
-    starts = now
+    latest_end = db.execute(
+        select(func.max(AdPeriod.ends_at)).where(
+            AdPeriod.listing_id == listing.id,
+            AdPeriod.status == "active",
+            AdPeriod.ends_at > now,
+        )
+    ).scalar_one_or_none()
+    starts = as_utc(latest_end) or now
     ends = starts + timedelta(days=plan.duration_days * weeks)
     period = AdPeriod(
         listing_id=listing.id,

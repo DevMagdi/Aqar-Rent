@@ -10,6 +10,7 @@ from sqlalchemy import select
 
 from app.api.deps import CurrentUser, DbDep, SettingsDep
 from app.core.errors import AppError
+from app.core.rate_limit import check_rate_limit
 from app.models.catalog import Plan
 from app.models.commerce import Order
 from app.schemas.orders import (
@@ -19,6 +20,7 @@ from app.schemas.orders import (
     PromoValidateIn,
     PromoValidateOut,
 )
+from app.services import payment_service
 from app.services.order_service import (
     create_order,
     get_default_plan,
@@ -56,6 +58,7 @@ def list_plans(db: DbDep) -> list[PlanOut]:
     summary="Create an order (only after moderator approval — BR-5)",
 )
 def post_order(payload: OrderCreateIn, user: CurrentUser, db: DbDep, settings: SettingsDep) -> OrderOut:
+    check_rate_limit(f"orders:{user.id}", settings.order_rate_limit_per_hour, 3600)
     order = create_order(
         db,
         settings,
@@ -65,7 +68,8 @@ def post_order(payload: OrderCreateIn, user: CurrentUser, db: DbDep, settings: S
         method=payload.method.value,
         promo_code=payload.promo_code,
     )
-    return OrderOut(**order_to_dict(order, settings))
+    checkout = payment_service.initiate_checkout(db, settings, order, user)
+    return OrderOut(**order_to_dict(order, settings, db=db, checkout=checkout))
 
 
 @router.get("/orders/{order_id}", response_model=OrderOut, summary="Order detail (owner)")
@@ -73,7 +77,7 @@ def get_order(order_id: UUID, user: CurrentUser, db: DbDep, settings: SettingsDe
     order = db.get(Order, order_id)
     if order is None or order.owner_id != user.id:
         raise AppError("ORDER_NOT_FOUND", "Order not found", status_code=404)
-    return OrderOut(**order_to_dict(order, settings))
+    return OrderOut(**order_to_dict(order, settings, db=db))
 
 
 @router.post("/promo/validate", response_model=PromoValidateOut, summary="Validate a promo code")
