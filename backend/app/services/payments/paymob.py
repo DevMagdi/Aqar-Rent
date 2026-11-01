@@ -111,7 +111,7 @@ class PaymobProvider(PaymentProvider):
         if not template:
             template = (
                 f"{self.base}/api/acceptance/iframes/{{iframe_id}}"
-                "?payment_type={{payment_type}}&token={{token}}"
+                "?payment_type={payment_type}&token={token}"
             )
         return template
 

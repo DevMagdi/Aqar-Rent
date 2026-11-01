@@ -52,6 +52,9 @@ def settings(tmp_path) -> Settings:
         staff_super_admin_email=ADMIN_EMAIL,
         staff_super_admin_password=ADMIN_PASSWORD,
         staff_super_admin_totp_secret=ADMIN_TOTP,
+        # Phase 2 payments: offline mock gateway with a known HMAC secret.
+        payment_provider="mock",
+        webhook_secret="test-webhook-secret-32bytes!!!!",
     )
 
 

@@ -11,10 +11,9 @@ from sqlalchemy import select
 from app.api.deps import (
     CurrentUser,
     DbDep,
-    OptionalStaff,
-    OptionalUser,
     SettingsDep,
     StorageDep,
+    UserOrStaff,
     client_ip,
 )
 from app.core.errors import AppError
@@ -137,9 +136,9 @@ def order_receipt(
     db: DbDep,
     settings: SettingsDep,
     storage: StorageDep,
-    user: OptionalUser,
-    staff: OptionalStaff,
+    caller: UserOrStaff,
 ) -> Response:
+    user, staff = caller
     order = db.get(Order, order_id)
     if order is None:
         raise AppError("ORDER_NOT_FOUND", "Order not found", status_code=404)

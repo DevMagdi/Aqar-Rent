@@ -110,6 +110,24 @@ def get_any_staff(
     return _staff_from_token(request, db, credentials)
 
 
+def get_optional_user_or_staff(
+    request: Request,
+    db: DbDep,
+    credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(bearer_scheme)],
+) -> tuple[User | None, StaffUser | None]:
+    """Accept EITHER a user token or a staff token (receipts, shared docs)."""
+    if credentials is None or not credentials.credentials:
+        return None, None
+    try:
+        return _current_user(request, db, credentials), None
+    except AppError:
+        pass
+    try:
+        return None, _staff_from_token(request, db, credentials)
+    except AppError:
+        return None, None
+
+
 def get_optional_staff(
     request: Request,
     db: DbDep,
@@ -167,6 +185,7 @@ StorageDep = Annotated[Storage, Depends(get_storage)]
 
 AnyStaff = Annotated[StaffUser, Depends(get_any_staff)]
 OptionalStaff = Annotated[StaffUser | None, Depends(get_optional_staff)]
+UserOrStaff = Annotated[tuple["User | None", "StaffUser | None"], Depends(get_optional_user_or_staff)]
 
 
 def uuid_path(value: str) -> UUID:
