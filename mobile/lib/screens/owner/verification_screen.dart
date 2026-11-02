@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../api/api_client.dart';
 import '../models/models.dart';
+import '../../core/theme.dart';
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
@@ -107,7 +108,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
             label: Text(_uploading ? 'جارٍ الرفع…' : 'اختيار ورفع مستند'),
           ),
           if (_error != null)
-            Padding(padding: const EdgeInsets.only(top: 8), child: Text('$_error', style: const TextStyle(color: Colors.red))),
+            Padding(padding: const EdgeInsets.only(top: 8), child: Text('$_error', style: const TextStyle(color: AppColors.danger))),
           const SizedBox(height: 16),
           Text('السجل', style: Theme.of(context).textTheme.titleMedium),
           for (final v in _items)

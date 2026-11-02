@@ -7,6 +7,7 @@ import 'package:share_plus/share_plus.dart';
 
 import '../../api/api_client.dart';
 import 'handover_screen.dart';
+import '../../core/theme.dart';
 
 class ContractDetailScreen extends StatefulWidget {
   const ContractDetailScreen({super.key, required this.contractId});
@@ -162,11 +163,11 @@ class _ContractDetailScreenState extends State<ContractDetailScreen> {
                       Container(
                         width: double.infinity,
                         padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(color: const Color(0xFFECFDF5), borderRadius: BorderRadius.circular(10)),
+                        decoration: BoxDecoration(color: AppColors.successBg, borderRadius: BorderRadius.circular(10)),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('✓ العقد مؤكد نهائياً وغير قابل للتعديل', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 13)),
+                            const Text('✓ العقد مؤكد نهائياً وغير قابل للتعديل', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 13)),
                             if (c['terms_hash'] != null)
                               Text('SHA-256: ${c['terms_hash']}', style: const TextStyle(fontSize: 10, color: Colors.black54)),
                           ],
@@ -192,7 +193,7 @@ class _ContractDetailScreenState extends State<ContractDetailScreen> {
                     if ('${terms['utilities_responsibility'] ?? ''}'.isNotEmpty) Text('المرافق: ${terms['utilities_responsibility']}'),
                     if ('${terms['termination_terms'] ?? ''}'.isNotEmpty) Text('الإنهاء: ${terms['termination_terms']}'),
                     const SizedBox(height: 8),
-                    const Text('⚖️ مسودة — تحتاج مراجعة محامي قبل الاستخدام الإنتاجي.', style: TextStyle(fontSize: 11, color: Color(0xFFB45309))),
+                    const Text('⚖️ مسودة — تحتاج مراجعة محامي قبل الاستخدام الإنتاجي.', style: TextStyle(fontSize: 11, color: AppColors.warn)),
                   ],
                 ),
               ),

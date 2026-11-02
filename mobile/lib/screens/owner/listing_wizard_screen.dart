@@ -11,6 +11,7 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 
 import '../api/api_client.dart';
 import 'dashboard_screen.dart';
+import '../../core/theme.dart';
 
 class ListingWizardScreen extends StatefulWidget {
   const ListingWizardScreen({super.key, this.editId});
@@ -423,7 +424,7 @@ class _ListingWizardScreenState extends State<ListingWizardScreen> {
                         width: 72,
                         height: 72,
                         child: Image.network(m['thumb_url'] ?? m['url'], fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFFF5F5F4))),
+                            errorBuilder: (_, __, ___) => const ColoredBox(color: AppColors.track)),
                       ),
                     ),
                     Positioned(
@@ -438,7 +439,7 @@ class _ListingWizardScreenState extends State<ListingWizardScreen> {
                             _toast('$e');
                           }
                         },
-                        child: const CircleAvatar(radius: 10, backgroundColor: Colors.red, child: Icon(Icons.close, size: 12, color: Colors.white)),
+                        child: const CircleAvatar(radius: 10, backgroundColor: AppColors.danger, child: Icon(Icons.close, size: 12, color: Colors.white)),
                       ),
                     ),
                   ],

@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
+import '../core/theme.dart';
+import '../core/theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -105,7 +107,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ],
                     if (_error != null) ...[
                       const SizedBox(height: 10),
-                      Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 13)),
+                      Text(_error!, style: const TextStyle(color: AppColors.danger, fontSize: 13)),
                     ],
                     const SizedBox(height: 14),
                     FilledButton(

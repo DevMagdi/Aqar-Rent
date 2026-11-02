@@ -7,6 +7,7 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 
 import '../models/models.dart';
 import 'listing_detail_screen.dart';
+import '../core/theme.dart';
 
 const _tiles = String.fromEnvironment(
   'MAP_TILES_URL',
@@ -81,7 +82,7 @@ class _MapScreenState extends State<MapScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFA93408),
+                        color: AppColors.gold,
                         borderRadius: BorderRadius.circular(999),
                         border: Border.all(color: Colors.white),
                       ),

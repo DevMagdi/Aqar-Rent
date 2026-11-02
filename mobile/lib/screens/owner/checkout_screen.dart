@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../api/api_client.dart';
 import '../models/models.dart';
 import 'orders_screen.dart';
+import '../../core/theme.dart';
 
 class CheckoutScreen extends StatefulWidget {
   const CheckoutScreen({super.key, required this.listingId, required this.title, this.editMode = false});
@@ -144,7 +145,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           if (_promoMsg != null)
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: Text(_promoMsg!, style: TextStyle(color: _promoMsg!.contains('✓') ? Colors.green : Colors.red, fontSize: 12)),
+              child: Text(_promoMsg!, style: TextStyle(color: _promoMsg!.contains('✓') ? AppColors.success : AppColors.danger, fontSize: 12)),
             ),
           const SizedBox(height: 16),
           Text('طريقة الدفع', style: Theme.of(context).textTheme.labelLarge),
@@ -288,9 +289,9 @@ class _OrderPayScreenState extends State<OrderPayScreen> {
           const SizedBox(height: 12),
           if (o.status == 'paid')
             Card(
-              color: const Color(0xFFECFDF5),
+              color: AppColors.successBg,
               child: ListTile(
-                leading: const Icon(Icons.check_circle, color: Colors.green),
+                leading: const Icon(Icons.check_circle, color: AppColors.success),
                 title: const Text('تم الدفع ✓'),
                 subtitle: const Text('إعلانك قيد النشر'),
                 trailing: TextButton(onPressed: () => Navigator.pop(context), child: const Text('تم')),

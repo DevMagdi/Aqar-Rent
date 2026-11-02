@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../api/api_client.dart';
 import '../models/models.dart';
 import 'listing_wizard_screen.dart';
+import '../../core/theme.dart';
 
 class OwnerDashboardScreen extends StatefulWidget {
   const OwnerDashboardScreen({super.key});
@@ -101,7 +102,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                                     if (l.rejectReason != null)
                                       Padding(
                                         padding: const EdgeInsets.only(top: 4),
-                                        child: Text('سبب الرفض: ${l.rejectReason}', style: const TextStyle(color: Colors.red, fontSize: 12)),
+                                        child: Text('سبب الرفض: ${l.rejectReason}', style: const TextStyle(color: AppColors.danger, fontSize: 12)),
                                       ),
                                     const SizedBox(height: 6),
                                     Text(

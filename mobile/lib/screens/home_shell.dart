@@ -1,6 +1,8 @@
 // Bottom-nav shell: Search · Favorites · Notifications · Profile.
 import 'package:flutter/material.dart';
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 import '../api/api_client.dart';
 import 'favorites_screen.dart';
 import 'notifications_screen.dart';
@@ -9,6 +11,7 @@ import 'owner/orders_screen.dart';
 import 'owner/verification_screen.dart';
 import 'search_screen.dart';
 import 'contracts/contracts_home_screen.dart';
+import '../core/theme.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -23,7 +26,26 @@ class _HomeShellState extends State<HomeShell> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(_titles[_index])),
+      appBar: AppBar(
+        title: Text(_titles[_index]),
+        actions: [
+          ValueListenableBuilder<ThemeMode>(
+            valueListenable: appThemeMode,
+            builder: (context, mode, _) => IconButton(
+              tooltip: mode == ThemeMode.dark ? "الوضع النهاري" : "الوضع الليلي",
+              icon: Icon(mode == ThemeMode.dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
+              onPressed: () async {
+                final next = mode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+                appThemeMode.value = next;
+                await const FlutterSecureStorage().write(
+                  key: "aqar.theme",
+                  value: next == ThemeMode.dark ? "dark" : "light",
+                );
+              },
+            ),
+          ),
+        ],
+      ),
       body: IndexedStack(
         index: _index,
         children: const [
@@ -148,8 +170,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ContractsHomeScreen())),
               ),
               ListTile(
-                leading: const Icon(Icons.logout, color: Colors.red),
-                title: const Text('تسجيل الخروج', style: TextStyle(color: Colors.red)),
+                leading: const Icon(Icons.logout, color: AppColors.danger),
+                title: const Text('تسجيل الخروج', style: TextStyle(color: AppColors.danger)),
                 onTap: _logout,
               ),
             ],
