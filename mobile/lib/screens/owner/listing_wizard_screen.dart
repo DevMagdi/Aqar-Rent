@@ -3,13 +3,14 @@
 // content rules,3–15 photos ≤1.5MB server-side re-encode).
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-import '../api/api_client.dart';
+import '../../api/api_client.dart';
 import 'dashboard_screen.dart';
 
 class ListingWizardScreen extends StatefulWidget {
@@ -422,8 +423,8 @@ class _ListingWizardScreenState extends State<ListingWizardScreen> {
                       child: SizedBox(
                         width: 72,
                         height: 72,
-                        child: Image.network(m['thumb_url'] ?? m['url'], fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFFF5F5F4))),
+                        child: CachedNetworkImage(imageUrl: m['thumb_url'] ?? m['url'], fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) => const ColoredBox(color: Color(0xFFF5F5F4))),
                       ),
                     ),
                     Positioned(

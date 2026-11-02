@@ -35,7 +35,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ ref: st
       <body style={{ fontFamily: "Segoe UI, Tahoma, sans-serif", background: "#fafaf9", margin: 0 }}>
         <main style={{ maxWidth: 560, margin: "48px auto", padding: "0 16px" }}>
           <div style={{ background: "#fff", borderRadius: 20, border: "1px solid #e7e5e4", padding: 28 }}>
-            <p style={{ color: "#a93408", fontWeight: 700, margin: 0 }}>عقار ربنا · Aqar Rent</p>
+            <p style={{ color: "#a93408", fontWeight: 700, margin: 0 }}>عقار رينت · Aqar Rent</p>
             <h1 style={{ fontSize: 22, margin: "8px 0 4px" }}>التحقق من العقد / Contract verification</h1>
             <p style={{ color: "#78716c", fontSize: 13, margin: 0 }} dir="ltr">
               /verify/{ref}
@@ -74,7 +74,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ ref: st
             )}
 
             <p style={{ marginTop: 24, fontSize: 12, color: "#a8a29e", borderTop: "1px solid #f5f5f4", paddingTop: 12 }}>
-              هذا اتفاق خاص ولا يحل محل التسجيل الرسمي أو التوثيق. / This is a private agreement template and does not replace official registration or notarization.
+              هذا «اتفاق خاص» بين الطرفين؛ ليس عقداً موثّقاً ولا مسجّلاً رسمياً، وليس سنداً تنفيذياً، ولا يُغني عن التسجيل أو التوثيق الرسمي. التحقق يفيد بسلامة السجل فقط. / This is a PRIVATE AGREEMENT: not notarized, not officially registered, not an executive instrument, and no substitute for official registration or notarization. Verification only proves record integrity.
             </p>
           </div>
         </main>

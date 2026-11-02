@@ -9,6 +9,16 @@ from app.models.commerce import (  # noqa: F401
     PromoCode,
     Refund,
 )
+from app.models.growth import (  # noqa: F401  (Phase 5 tables, imported first for FKs)
+    AdPackage,
+    Lead,
+    LeadEvent,
+    OfficeMember,
+    OfficeProfile,
+    PaymentEvent,
+    Subscription,
+    SubscriptionPlan,
+)
 from app.models.identity import (  # noqa: F401
     AuditLog,
     Device,

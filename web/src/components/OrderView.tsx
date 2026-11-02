@@ -10,7 +10,12 @@ import { useAuth, useI18n, useToast } from "./Providers";
 import { formatDateTime, formatMoney } from "@/lib/utils";
 import type { BankReceipt, Locale, Order } from "@/lib/types";
 
-const MOCK_PAY = process.env.NEXT_PUBLIC_MOCK_PAY === "true";
+const APP_ENV = process.env.NEXT_PUBLIC_ENVIRONMENT || process.env.APP_ENV || "dev";
+const MOCK_PAY =
+  process.env.NEXT_PUBLIC_MOCK_PAY === "true" &&
+  APP_ENV !== "production" &&
+  APP_ENV !== "prod" &&
+  APP_ENV !== "staging";
 
 export function OrderView({ locale, orderId }: { locale: Locale; orderId: string }) {
   const { t } = useI18n();

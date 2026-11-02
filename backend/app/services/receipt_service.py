@@ -69,7 +69,7 @@ def build_receipt_pdf(
         pdfmetrics.registerFont(TTFont("Amiri", str(FONT_PATH)))
 
     owner = db.get(User, order.owner_id)
-    listing = db.get(Listing, order.listing_id)
+    listing = db.get(Listing, order.listing_id) if order.listing_id is not None else None
     period = (
         db.execute(
             select(AdPeriod)
@@ -100,7 +100,16 @@ def build_receipt_pdf(
     rows = [
         (_ar("رقم الإيصال"), receipt_number(order)),
         (_ar("المالك"), (owner.full_name if owner and owner.full_name else "-")),
-        (_ar("الإعلان"), (listing.title if listing else "-")),
+        (
+            _ar("البند / Item"),
+            listing.title
+            if listing
+            else (
+                "اشتراك شهري / Monthly subscription"
+                if getattr(order, "kind", "") == "subscription"
+                else "-"
+            ),
+        ),
         (_ar("عدد الأسابيع"), str(order.weeks)),
         (
             _ar("فترة الإعلان"),
@@ -133,7 +142,7 @@ def build_receipt_pdf(
     c.drawCentredString(
         width / 2,
         8 * mm,
-        _ar("إيصال رسوم إعلان — لا يشمل أي عمولة أو إيجار"),
+        _ar("إيصال رسوم منصة فقط — لا يشمل الإيجار أو التأمين أو أي عمولة عليه"),
     )
     c.save()
     return buffer.getvalue()

@@ -13,6 +13,9 @@ interface Row {
   status: string;
   file_url: string | null;
   reject_reason: string | null;
+  reject_reason_code?: string | null;
+  appeal_status?: string;
+  appeal_note?: string | null;
   created_at: string | null;
 }
 
@@ -22,6 +25,8 @@ export function Verifications() {
   const [rows, setRows] = useState<Row[] | null>(null);
   const [viewer, setViewer] = useState<Row | null>(null);
   const [reason, setReason] = useState("");
+  const [reasonCode, setReasonCode] = useState("");
+  const [reasons, setReasons] = useState<Record<string, { en: string; ar: string }>>({});
   const [busy, setBusy] = useState(false);
 
   const load = useCallback(() => {
@@ -31,10 +36,15 @@ export function Verifications() {
       .catch((e) => toast(e.message, "err"));
   }, [status, toast]);
   useEffect(load, [load]);
+  useEffect(() => {
+    api<{ reasons: Record<string, { en: string; ar: string }> }>("/trust/reject-reasons")
+      .then((r) => setReasons(r.reasons))
+      .catch(() => {});
+  }, []);
 
   async function decide(decision: "approve" | "reject") {
     if (!viewer) return;
-    if (decision === "reject" && !reason.trim()) {
+    if (decision === "reject" && !reason.trim() && !reasonCode) {
       toast("Rejection reason required", "err");
       return;
     }
@@ -42,11 +52,12 @@ export function Verifications() {
     try {
       await api(`/admin/verifications/${viewer.id}/decision`, {
         method: "POST",
-        body: { decision, reason: reason.trim() || null },
+        body: { decision, reason: reason.trim() || null, reason_code: reasonCode || null },
       });
       toast(decision === "approve" ? "Verification approved ✓" : "Verification rejected");
       setViewer(null);
       setReason("");
+      setReasonCode("");
       load();
     } catch (e) {
       toast((e as Error).message, "err");
@@ -89,6 +100,9 @@ export function Verifications() {
                     {r.doc_type.replace(/_/g, " ")} · {r.created_at?.slice(0, 16).replace("T", " ")}
                   </p>
                   {r.reject_reason && <p className="text-xs text-red-600">{r.reject_reason}</p>}
+                  {r.appeal_status && r.appeal_status !== "none" && (
+                    <p className="text-xs text-amber-700">Appeal: {r.appeal_status} — {r.appeal_note || ""}</p>
+                  )}
                 </div>
                 <Badge status={r.status}>{r.status}</Badge>
                 <button
@@ -111,6 +125,7 @@ export function Verifications() {
           onClose={() => {
             setViewer(null);
             setReason("");
+            setReasonCode("");
           }}
           footer={
             <>
@@ -149,6 +164,18 @@ export function Verifications() {
           <label className="mt-3 block text-sm font-semibold text-stone-700" htmlFor="vreason">
             Reject reason (required for reject)
           </label>
+          <select
+            id="vreasoncode"
+            aria-label="Structured rejection reason"
+            className={`${inputCls} mb-2`}
+            value={reasonCode}
+            onChange={(e) => setReasonCode(e.target.value)}
+          >
+            <option value="">Structured reason (optional)</option>
+            {Object.entries(reasons).map(([code, labels]) => (
+              <option key={code} value={code}>{code} — {labels.en}</option>
+            ))}
+          </select>
           <input id="vreason" data-testid="input-reject-reason" className={inputCls} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={1000} />
           <p className="mt-2 text-xs text-stone-400">Document opens via short-lived signed URL — never stored client-side.</p>
         </Modal>

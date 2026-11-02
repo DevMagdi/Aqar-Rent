@@ -28,6 +28,7 @@ from app.models.enums import (
     StaffStatus,
     UserVerificationStatus,
 )
+from app.models.growth import AdPackage, SubscriptionPlan
 from app.models.identity import StaffUser, User, VerificationDocument
 from app.services.listing_service import activate_listing
 from app.services.media import process_photo
@@ -198,6 +199,110 @@ def seed_plan(db: Session) -> Plan:
         plan.active = True
     db.flush()
     return plan
+
+
+PACKAGES = [
+    ("2w", "باقة أسبوعين", "Two-week package", 2, 5, 0, False),
+    ("4w", "باقة شهر", "Monthly package", 4, 10, 1, False),
+    ("8w", "باقة شهرين مميزة", "Featured two-month package", 8, 15, 3, True),
+]
+
+SUBSCRIPTION_PLANS = [
+    {
+        "code": "owner_plus",
+        "audience": "individual",
+        "name_ar": "مالك بلس",
+        "name_en": "Owner Plus",
+        "monthly_price_egp": 299,
+        "listing_limit": 15,
+        "seats": 1,
+        "priority_weight": 1,
+        "features": {"analytics": True, "bulk_tools": True, "priority_support": True},
+    },
+    {
+        "code": "office_starter",
+        "audience": "office",
+        "name_ar": "مكتب · البداية",
+        "name_en": "Office Starter",
+        "monthly_price_egp": 499,
+        "listing_limit": 30,
+        "seats": 3,
+        "priority_weight": 1,
+        "features": {"team": True, "leads": True, "branded_page": True, "analytics": True},
+    },
+    {
+        "code": "office_growth",
+        "audience": "office",
+        "name_ar": "مكتب · النمو",
+        "name_en": "Office Growth",
+        "monthly_price_egp": 999,
+        "listing_limit": 100,
+        "seats": 10,
+        "priority_weight": 2,
+        "features": {
+            "team": True,
+            "leads": True,
+            "branded_page": True,
+            "analytics": True,
+            "bulk_tools": True,
+            "commission_tracking": True,
+            "priority_support": True,
+        },
+    },
+    {
+        "code": "office_pro",
+        "audience": "office",
+        "name_ar": "مكتب · احترافي",
+        "name_en": "Office Pro",
+        "monthly_price_egp": 1999,
+        "listing_limit": 500,
+        "seats": 50,
+        "priority_weight": 3,
+        "features": {
+            "team": True,
+            "leads": True,
+            "branded_page": True,
+            "analytics": True,
+            "bulk_tools": True,
+            "commission_tracking": True,
+            "priority_support": True,
+        },
+    },
+]
+
+
+def seed_growth(db: Session) -> int:
+    """Idempotent Phase-5 catalogue: packages + owner/office subscription tiers.
+
+    Prices are DATA (BR-1 spirit) — admins change them in the staff console,
+    never by editing code. Re-running the seed does not overwrite admin prices.
+    """
+    created = 0
+    for code, name_ar, name_en, weeks, discount, weight, featured in PACKAGES:
+        if db.execute(select(AdPackage).where(AdPackage.code == code)).scalar_one_or_none() is None:
+            db.add(
+                AdPackage(
+                    code=code,
+                    name_ar=name_ar,
+                    name_en=name_en,
+                    weeks=weeks,
+                    discount_pct=discount,
+                    priority_weight=weight,
+                    is_featured=featured,
+                    active=True,
+                )
+            )
+            created += 1
+    for item in SUBSCRIPTION_PLANS:
+        if (
+            db.execute(select(SubscriptionPlan).where(SubscriptionPlan.code == item["code"]))
+            .scalar_one_or_none()
+            is None
+        ):
+            db.add(SubscriptionPlan(**item, active=True))
+            created += 1
+    db.flush()
+    return created
 
 
 def seed_super_admin(db: Session, settings: Settings) -> StaffUser:
@@ -429,6 +534,7 @@ def _demo_jpeg(color=(70, 130, 180), seed=0) -> bytes:
 def run_seed(db: Session, settings: Settings, demo: bool = False) -> dict[str, int]:
     seed_locations(db)
     seed_plan(db)
+    seed_growth(db)
     seed_super_admin(db, settings)
     if demo:
         seed_demo(db, settings)
@@ -438,6 +544,8 @@ def run_seed(db: Session, settings: Settings, demo: bool = False) -> dict[str, i
         "cities": len(METRO_CITIES) + len(MAIN_CITIES),
         "districts": len(DISTRICTS),
         "plans": 1,
+        "packages": len(PACKAGES),
+        "subscription_plans": len(SUBSCRIPTION_PLANS),
         "staff_super_admin": 1,
         "demo": 1 if demo else 0,
     }

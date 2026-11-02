@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ContactBox } from "@/components/ContactBox";
@@ -154,6 +155,19 @@ export default async function ListingPage({ params }: { params: Promise<Params> 
                   ✓ {t("verified_owner")}
                 </span>
               )}
+              {d.is_featured && (
+                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800">
+                  ★ {l === "ar" ? "إعلان مميز" : "Featured"}
+                </span>
+              )}
+              {d.office && (
+                <Link
+                  href={`/${l}/offices/${d.office.slug}`}
+                  className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand-700 hover:underline"
+                >
+                  🏢 {l === "ar" ? d.office.name_ar : d.office.name_en}
+                </Link>
+              )}
             </div>
 
             <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
@@ -161,6 +175,32 @@ export default async function ListingPage({ params }: { params: Promise<Params> 
               <ShareButton title={d.title} />
             </div>
           </div>
+
+          {d.trust && (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5" data-testid="trust-panel">
+              <h2 className="text-sm font-bold text-emerald-900">
+                {l === "ar" ? "مستوى توثيق المالك" : "Owner trust level"}
+              </h2>
+              <p className="mt-1 text-lg font-extrabold text-emerald-800" dir={l === "ar" ? "rtl" : "ltr"}>
+                {l === "ar" ? d.trust.label_ar : d.trust.label_en}
+              </p>
+              <ul className="mt-2 flex flex-wrap gap-1.5">
+                {d.trust.badges.map((b) => (
+                  <li key={b.code} className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-emerald-800">
+                    ✓ {l === "ar" ? b.label_ar : b.label_en}
+                  </li>
+                ))}
+              </ul>
+              <p className="mt-2 text-[11px] leading-relaxed text-emerald-800">
+                {l === "ar" ? d.trust.note_ar : d.trust.note_en}
+              </p>
+              {d.agent && (
+                <p className="mt-2 text-xs text-emerald-900">
+                  {l === "ar" ? "الوسيط المسؤول" : "Responsible agent"}: {d.agent.full_name}
+                </p>
+              )}
+            </div>
+          )}
 
           <div className="rounded-2xl border border-stone-200 bg-white p-5">
             <h2 className="text-lg font-bold text-stone-900">{t("details")}</h2>

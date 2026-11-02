@@ -21,7 +21,7 @@ from app.core.config import Settings
 from app.core.errors import AppError
 from app.core.phone import looks_like_phone
 from app.models.catalog import Listing, ListingMedia, Location, Plan
-from app.models.commerce import AdPeriod
+from app.models.commerce import AdPeriod, Order
 from app.models.enums import (
     LISTING_CAP_STATUSES,
     ListingStatus,
@@ -45,7 +45,10 @@ DUP_PHASH_DISTANCE = 6  # hamming distance considered the same photo
 
 
 def check_listing_cap(db: Session, owner: User) -> None:
-    cap = owner.listing_cap if owner.listing_cap is not None else DEFAULT_LISTING_CAP
+    # Phase 5: an active owner/office subscription raises the cap (BR-7).
+    from app.services.entitlements import effective_listing_cap
+
+    cap = effective_listing_cap(db, owner)
     current = db.execute(
         select(func.count())
         .select_from(Listing)
@@ -332,13 +335,17 @@ def refresh_ad_rank(db: Session, listing_id: uuid.UUID, now=None) -> None:
     """
     from app.models.catalog import Plan
     from app.models.commerce import AdPeriod
+    from app.models.growth import AdPackage
 
     row = db.execute(
         select(
             func.max(AdPeriod.starts_at),
             func.max(Plan.priority_weight),
+            func.max(AdPackage.priority_weight),
         )
         .join(Plan, Plan.id == AdPeriod.plan_id)
+        .outerjoin(Order, Order.id == AdPeriod.order_id)
+        .outerjoin(AdPackage, AdPackage.id == Order.ad_package_id)
         .where(
             AdPeriod.listing_id == listing_id,
             AdPeriod.status == "active",
@@ -348,7 +355,8 @@ def refresh_ad_rank(db: Session, listing_id: uuid.UUID, now=None) -> None:
     if listing is None:  # pragma: no cover - FK guarantees
         return
     listing.ad_starts_at = row[0]
-    listing.ad_priority = float(row[1] or 0.0)
+    # Phase 5: featured/priority packages raise the denormalized rank too.
+    listing.ad_priority = float(max(row[1] or 0, row[2] or 0))
     db.flush()
 
 

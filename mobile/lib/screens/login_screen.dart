@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
+import '../config.dart';
+import '../core/i18n.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -19,6 +21,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _busy = false;
   int _resendIn = 0;
   String? _error;
+  String? devCode;
 
   Future<void> _send() async {
     setState(() { _busy = true; _error = null; });
@@ -29,9 +32,11 @@ class _LoginScreenState extends State<LoginScreen> {
       setState(() {
         _codeStep = true;
         _busy = false;
-        _resendIn = ((res['expires_in'] as num?)?.toInt() ?? 60).clamp(0, 60);
+        _resendIn = ((res['expires_in'] as num?)?.toInt() ?? 60).clamp(0, 60).toInt();
+        // Dev-only helper: NEVER shown or auto-filled in production builds.
+        devCode = AppConfig.isProduction ? null : dev;
       });
-      if (dev != null) _code.text = dev; // dev builds expose the code
+      if (devCode != null) _code.text = devCode!;
       _tick();
     } catch (e) {
       if (mounted) setState(() { _error = '$e'; _busy = false; });
@@ -50,11 +55,17 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _verify() async {
     setState(() { _busy = true; _error = null; });
     try {
-      await api.post('/auth/otp/verify', data: {
+      final res = await api.post('/auth/otp/verify', data: {
         'phone': _phone.text.trim(),
         'code': _code.text.trim(),
         'platform': Platform.isIOS ? 'ios' : 'android',
-      });
+      }) as Map<String, dynamic>;
+      final tokens = res['tokens'] as Map<String, dynamic>?;
+      if (tokens == null) throw StateError('Invalid login response');
+      await ApiClient.saveTokens(
+        tokens['access_token'] as String,
+        tokens['refresh_token'] as String,
+      );
       if (!mounted) return;
       Navigator.of(context).pushReplacementNamed('/home');
     } catch (e) {
@@ -65,7 +76,7 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('عقار ربنا')),
+      appBar: AppBar(title: const Text('عقار رينت')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
@@ -102,6 +113,12 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: _resendIn > 0 || _busy ? null : _send,
                         child: Text(_resendIn > 0 ? 'إعادة الإرسال بعد $_resendIn ث' : 'إعادة إرسال الرمز'),
                       ),
+                    ],
+                    if (devCode != null && !AppConfig.isProduction) ...[
+                      const SizedBox(height: 8),
+                      Text('${s('login_dev_code')} $devCode',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(fontSize: 12, color: Color(0xFF0F766E))),
                     ],
                     if (_error != null) ...[
                       const SizedBox(height: 10),

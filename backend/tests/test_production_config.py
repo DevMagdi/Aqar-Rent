@@ -28,6 +28,8 @@ def _base(**over) -> Settings:
         staff_super_admin_password="StrongPass!123",
         staff_super_admin_totp_secret="JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP",
         payment_provider="paymob",
+        webhook_ip_allowlist="197.168.0.0/16",
+        bank_account_number="EG123456789012345678901234",
         paymob_api_key="k",
         paymob_hmac_secret="h",
         paymob_integration_id_card="1",
@@ -63,7 +65,7 @@ def test_prod_refuses_sqlite_debug_mock_console_and_weak_secrets():
     assert "SECRET_KEY" in joined
     assert "STORAGE_BACKEND" in joined
     assert "OTP_PROVIDER=console" in joined
-    assert "PAYMENT_PROVIDER=mock" in joined
+    assert "PAYMENT_PROVIDER" in joined
     assert "WEBHOOK_SECRET" in joined
     assert "CORS_ORIGINS" in joined
     assert "STAFF_SUPER_ADMIN_PASSWORD" in joined

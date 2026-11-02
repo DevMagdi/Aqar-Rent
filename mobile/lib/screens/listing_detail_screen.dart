@@ -1,11 +1,13 @@
 // Listing detail: gallery, specs, amenities, verified badge, favorite/share,
 // login-gated Call/WhatsApp (contact event logged server-side).
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../api/api_client.dart';
 import '../models/models.dart';
+import '../core/widgets.dart';
 
 class ListingDetailScreen extends StatefulWidget {
   const ListingDetailScreen({super.key, required this.listingId});
@@ -84,7 +86,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
     final phone = _phone;
     if (phone == null) return;
     final uri = channel == 'whatsapp'
-        ? Uri.parse('https://wa.me/${phone.replaceFirst(RegExp(r'^0'), '20')}?text=${Uri.encodeComponent('مرحباً، بخصوص إعلانك على عقار ربنا')}')
+        ? Uri.parse('https://wa.me/${phone.replaceFirst(RegExp(r'^0'), '20')}?text=${Uri.encodeComponent('مرحباً، بخصوص إعلانك على عقار رينت')}')
         : Uri(scheme: 'tel', path: phone);
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
@@ -118,7 +120,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                       context: context,
                       builder: (_) => Dialog(
                         child: InteractiveViewer(
-                          child: Image.network(photos[_galleryIndex].url, fit: BoxFit.contain),
+                          child: CachedNetworkImage(imageUrl: photos[_galleryIndex].url, fit: BoxFit.contain),
                         ),
                       ),
                     ),
@@ -131,8 +133,13 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                     : Stack(
                         fit: StackFit.expand,
                         children: [
-                          Image.network(photos[_galleryIndex].thumbUrl ?? photos[_galleryIndex].url, fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFFF5F5F4))),
+                          CachedNetworkImage(
+                            imageUrl: photos[_galleryIndex].thumbUrl ?? photos[_galleryIndex].url,
+                            fit: BoxFit.cover,
+                            memCacheWidth: 900,
+                            placeholder: (_, __) => const ColoredBox(color: Color(0xFFF5F5F4)),
+                            errorWidget: (_, __, ___) => const ColoredBox(color: Color(0xFFF5F5F4)),
+                          ),
                           if (photos.length > 1)
                             Positioned(
                               bottom: 8,
@@ -159,6 +166,21 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
             ),
           ),
           const SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(children: [
+                  TrustBadge(level: d.trustLevel),
+                  if (d.isFeatured) const Padding(padding: EdgeInsets.only(left: 8), child: Text('★ إعلان مميز', style: TextStyle(color: Color(0xFFD97706), fontSize: 12, fontWeight: FontWeight.w800))),
+                ]),
+                if (d.trustLabelAr != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(d.trustLabelAr!, style: const TextStyle(fontSize: 12, color: Color(0xFF0F766E)))),
+                if (d.trustNoteAr != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(d.trustNoteAr!, style: const TextStyle(fontSize: 10.5, color: Colors.black54))),
+                if (d.officeNameAr != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text('🏢 ${d.officeNameAr}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700))),
+              ],
+            ),
+          ),
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

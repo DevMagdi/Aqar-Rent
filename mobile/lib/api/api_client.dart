@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../config.dart';
+import '../core/cache.dart';
+import '../core/connectivity.dart';
 
 class ApiException implements Exception {
   ApiException(this.status, this.message, this.code);
@@ -78,6 +80,30 @@ class ApiClient {
       return res.data;
     } on DioException catch (e) {
       throw _wrap(e);
+    }
+  }
+
+  /// GET with transparent offline fallback: fresh data is cached; on network
+  /// failure the last cached JSON is returned. Callers can show the offline
+  /// banner via `ConnectivityService.instance.changes`.
+  Future<dynamic> cachedGet(
+    String path, {
+    Map<String, dynamic>? query,
+    bool forceRefresh = false,
+  }) async {
+    final key = '$path${query == null ? '' : query.toString()}';
+    if (!forceRefresh && !ConnectivityService.instance.online) {
+      final cached = await CacheStore.instance.read(key);
+      if (cached != null) return cached.value;
+    }
+    try {
+      final fresh = await get(path, query: query);
+      await CacheStore.instance.put(key, fresh);
+      return fresh;
+    } catch (e) {
+      final cached = await CacheStore.instance.read(key);
+      if (cached != null) return cached.value;
+      rethrow;
     }
   }
 

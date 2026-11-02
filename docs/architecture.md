@@ -71,3 +71,28 @@ read-your-writes races) → `MetricsMiddleware` (Prometheus) →
   `sort=newest` (maintained by `refresh_ad_rank()` on activate/cancel/expire)
 - `contracts.terms_hash`, `confirmations_log`, `fee_order_id`
 - `handovers.source_handover_id`, `hash`; `handover_media.media_type/added_by`
+
+---
+
+## Phase 5 addendum (growth, trust, offices, legal, mobile)
+
+- **New tables** (`backend/app/models/growth.py`): `office_profiles`,
+  `office_members`, `leads`, `lead_events`, `subscription_plans`,
+  `subscriptions`, `ad_packages`, `payment_events`. Additive columns on
+  `users`, `verification_documents`, `listings`, `orders`, `contracts`; one
+  migration `0007` (head) with downgrade.
+- **New services**: `entitlements` (cap/seats/features/priority),
+  `trust_service` (derived ladder), `office_service` (teams/CRM/dashboard),
+  `subscription_service` (DB catalogue + Order reuse), `payment_audit`
+  (append-only SHA-256 trail + reconciliation), `integrations/registry`
+  (honest `unavailable` seam).
+- **Pricing reads** `/pricing` (single source for web/mobile); all admin edits
+  go through `/admin/growth/*` and are audit-logged.
+- **Search** computes `ad_priority` from active `Plan.priority_weight` +
+  `AdPackage.priority_weight`; trust badges use one batched user query.
+- **Mobile** uses `core/` cross-cutting layer + `features/` for new surfaces,
+  `go_router` deep links, `app_links`, `local_auth`, `connectivity_plus`,
+  `cached_network_image`, offline JSON cache, FCM foreground/tap routing, and
+  real native Android/iOS shells. Release config fails fast.
+- **Contracts** are private agreements only; no official registry, no
+  executive instrument. See `docs/legal-notes.md`.

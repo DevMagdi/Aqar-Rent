@@ -151,7 +151,23 @@ def decide_verification(
     decision: str,
     reason: str | None = None,
     ip: str | None = None,
+    reason_code: str | None = None,
 ) -> VerificationDocument:
+    if decision == "reopen":
+        # Phase 5 appeal re-review: put the document back in the queue.
+        if doc.appeal_status != "pending":
+            raise AppError("INVALID_STATE", "No pending appeal to reopen", status_code=409)
+        before = _snapshot(doc, ["status", "appeal_status"])
+        doc.status = DocStatus.pending.value
+        doc.appeal_status = "approved"
+        doc.appeal_reviewed_at = utcnow()
+        doc.reviewed_at = None
+        log_audit(
+            db, staff_id, "verification.appeal_reopen", "verification_document",
+            doc.id, before, _snapshot(doc, ["status", "appeal_status"]), ip,
+        )
+        db.flush()
+        return doc
     if doc.status != DocStatus.pending.value:
         raise AppError(
             "INVALID_STATE",
@@ -166,10 +182,19 @@ def decide_verification(
         doc.status = DocStatus.approved.value
         doc.reject_reason = None
     elif decision == "reject":
-        if not reason:
+        from app.models.enums import VERIFICATION_REJECT_REASONS
+
+        if reason_code and reason_code not in VERIFICATION_REJECT_REASONS:
+            raise AppError("INVALID_REASON_CODE", "Unknown rejection reason code", status_code=422)
+        preset = VERIFICATION_REJECT_REASONS.get(reason_code or "", {})
+        text = " / ".join(x for x in (preset.get("en"), preset.get("ar")) if x)
+        detail = " | ".join(x for x in (text, reason) if x)
+        if not detail:
             raise AppError("REASON_REQUIRED", "A reason is required to reject", status_code=422)
         doc.status = DocStatus.rejected.value
-        doc.reject_reason = reason
+        doc.reject_reason = detail
+        doc.reject_reason_code = reason_code
+        doc.appeal_status = "none"
     else:
         raise AppError("INVALID_DECISION", "decision must be approve or reject", status_code=422)
 
@@ -193,6 +218,10 @@ def decide_verification(
                 else UserVerificationStatus.pending.value
             )
         )
+        # Phase 5: derive the transparent trust level from evidence on file.
+        from app.services.trust_service import recompute_level
+
+        recompute_level(db, user)
     db.flush()
     log_audit(
         db,

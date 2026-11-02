@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Aqar Rent API — Phase 4",
-    "description": "إيجار مباشر — full collection (auth OTP, listings lifecycle, moderation, search, favorites, reports, plans/orders, admin). Import into Postman, or into Bruno via Import → Postman Collection.",
+    "name": "Aqar Rent API — عقار رينت (full surface)",
+    "description": "Generated from docs/openapi.json. Auth: POST /auth/otp/request → /auth/otp/verify → copy access_token into the `token` variable. Production requires real Paymob + Twilio; mock providers are disabled when ENVIRONMENT=production.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -10,237 +10,40 @@
       "value": "http://localhost:8000/api/v1"
     },
     {
+      "key": "token",
+      "value": ""
+    },
+    {
       "key": "phone",
-      "value": "01012345678"
-    },
-    {
-      "key": "otp_code",
-      "value": ""
-    },
-    {
-      "key": "access_token",
-      "value": ""
-    },
-    {
-      "key": "refresh_token",
-      "value": ""
-    },
-    {
-      "key": "admin_token",
-      "value": ""
+      "value": "01000000001"
     },
     {
       "key": "listing_id",
       "value": ""
     },
     {
-      "key": "governorate_id",
-      "value": ""
-    },
-    {
-      "key": "city_id",
-      "value": ""
-    },
-    {
-      "key": "doc_id",
-      "value": ""
-    },
-    {
       "key": "order_id",
       "value": ""
-    },
-    {
-      "key": "promo_id",
-      "value": ""
-    },
-    {
-      "key": "webhook_sig",
-      "value": "REPLACE_WITH_HMAC"
-    },
-    {
-      "key": "transfer_id",
-      "value": "BANK_TRANSFER_UUID"
     }
   ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
   "item": [
     {
-      "name": "Auth",
+      "name": "admin-auth",
       "item": [
         {
-          "name": "POST /auth/otp/request",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const b = pm.response.json();",
-                  "pm.collectionVariables.set('otp_code', b.dev_code || '');",
-                  "pm.test('OTP sent', () => pm.response.to.have.status(200));"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/auth/otp/request",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "otp",
-                "request"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"phone\": \"{{phone}}\"\n}"
-            }
-          }
-        },
-        {
-          "name": "POST /auth/otp/verify",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const b = pm.response.json();",
-                  "pm.collectionVariables.set('access_token', b.tokens.access_token);",
-                  "pm.collectionVariables.set('refresh_token', b.tokens.refresh_token);",
-                  "pm.test('tokens issued', () => pm.response.to.have.status(200));"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/auth/otp/verify",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "otp",
-                "verify"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"phone\": \"{{phone}}\",\n  \"code\": \"{{otp_code}}\",\n  \"platform\": \"web\"\n}"
-            }
-          }
-        },
-        {
-          "name": "POST /auth/refresh",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/auth/refresh",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "refresh"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
-            }
-          }
-        },
-        {
-          "name": "POST /auth/logout",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/auth/logout",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "logout"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"refresh_token\": \"{{refresh_token}}\"\n}"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Me",
-      "item": [
-        {
-          "name": "GET /me",
+          "name": "GET · Current staff identity",
           "request": {
             "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/me",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "me"
-              ]
-            }
-          }
-        },
-        {
-          "name": "PATCH /me",
-          "request": {
-            "method": "PATCH",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
             "header": [
               {
                 "key": "Content-Type",
@@ -248,1055 +51,24 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/me",
+              "raw": "{{baseUrl}}/api/v1/admin/auth/me",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
+                "v1",
+                "admin",
+                "auth",
                 "me"
               ]
             },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"full_name\": \"أحمد محمد\",\n  \"language\": \"ar\"\n}"
-            }
-          }
-        },
-        {
-          "name": "POST /me/devices",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/me/devices",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "me",
-                "devices"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"platform\": \"android\",\n  \"push_token\": \"example-token\"\n}"
-            }
-          }
-        },
-        {
-          "name": "POST /me/verification (multipart)",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "formdata": [
-              {
-                "key": "doc_type",
-                "value": "electricity_bill",
-                "type": "text"
-              },
-              {
-                "key": "file",
-                "type": "file",
-                "src": "/path/to/electricity-bill.jpg"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/me/verification",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "me",
-                "verification"
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /me/verification",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/me/verification",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "me",
-                "verification"
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /me/listings",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/me/listings",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "me",
-                "listings"
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /me/orders",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/me/orders",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "me",
-                "orders"
-              ]
-            }
-          }
-        },
-        {
-          "name": "DELETE /me",
-          "request": {
-            "method": "DELETE",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/me",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "me"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Locations & Plans (public)",
-      "item": [
-        {
-          "name": "GET /locations (governorates)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const gov = pm.response.json();",
-                  "pm.collectionVariables.set('governorate_id', gov[0].id);",
-                  "pm.test('27 governorates', () => pm.expect(gov.length).to.eql(27));"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/locations",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "locations"
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /locations?parent_id (cities)",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/locations?parent_id={{governorate_id}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "locations"
-              ],
-              "query": [
-                {
-                  "key": "parent_id",
-                  "value": "{{governorate_id}}"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /plans",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/plans",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "plans"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Listings",
-      "item": [
-        {
-          "name": "POST /listings (create draft)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const b = pm.response.json();",
-                  "pm.collectionVariables.set('listing_id', b.id);",
-                  "pm.test('created draft', () => { pm.response.to.have.status(201); pm.expect(b.status).to.eql('draft'); });"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/listings",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "listings"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"title\": \"شقة مفروشة تطل على النيل\",\n  \"property_type\": \"apartment\",\n  \"rental_type\": \"residential\",\n  \"furnished\": \"furnished\",\n  \"rent_monthly\": 9500,\n  \"deposit_months\": 2,\n  \"area_m2\": 110.5,\n  \"bedrooms\": 2,\n  \"bathrooms\": 2,\n  \"floor\": 4,\n  \"has_elevator\": true,\n  \"finishing\": \"finished\",\n  \"building_age\": 5,\n  \"amenities\": { \"parking\": true, \"security\": true },\n  \"description\": \"وحدة جميلة قريبة من كل الخدمات.\",\n  \"governorate_id\": \"{{governorate_id}}\",\n  \"city_id\": \"{{city_id}}\",\n  \"address_text\": \"شارع9، المعادي، القاهرة\",\n  \"latitude\": 29.9602,\n  \"longitude\": 31.2570,\n  \"min_term_months\": 6\n}"
-            }
-          }
-        },
-        {
-          "name": "PATCH /listings/{id}",
-          "request": {
-            "method": "PATCH",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/listings/{{listing_id}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "listings",
-                "{{listing_id}}"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"rent_monthly\": 10000\n}"
-            }
-          }
-        },
-        {
-          "name": "POST /listings/{id}/media (multipart photo)",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "formdata": [
-              {
-                "key": "file",
-                "type": "file",
-                "src": "/path/to/photo-1.jpg"
-              },
-              {
-                "key": "media_type",
-                "value": "photo",
-                "type": "text"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/listings/{{listing_id}}/media",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "listings",
-                "{{listing_id}}",
-                "media"
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /listings/{id}/submit",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/listings/{{listing_id}}/submit",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "listings",
-                "{{listing_id}}",
-                "submit"
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /listings/{id}/mark-rented",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/listings/{{listing_id}}/mark-rented",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "listings",
-                "{{listing_id}}",
-                "mark-rented"
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /listings (search)",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/listings?sort=newest&limit=20&property_type=apartment",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "listings"
-              ],
-              "query": [
-                {
-                  "key": "q",
-                  "value": ""
-                },
-                {
-                  "key": "governorate_id",
-                  "value": ""
-                },
-                {
-                  "key": "min_price",
-                  "value": ""
-                },
-                {
-                  "key": "max_price",
-                  "value": ""
-                },
-                {
-                  "key": "property_type",
-                  "value": "apartment"
-                },
-                {
-                  "key": "amenities",
-                  "value": "parking"
-                },
-                {
-                  "key": "bbox",
-                  "value": "31.20,29.90,31.30,30.00"
-                },
-                {
-                  "key": "sort",
-                  "value": "newest"
-                },
-                {
-                  "key": "limit",
-                  "value": "20"
-                },
-                {
-                  "key": "cursor",
-                  "value": ""
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /listings/{id} (detail)",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{baseUrl}}/listings/{{listing_id}}?exact=true",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "listings",
-                "{{listing_id}}"
-              ],
-              "query": [
-                {
-                  "key": "exact",
-                  "value": "true"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /listings/{id}/contact (logged-in only)",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/listings/{{listing_id}}/contact",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "listings",
-                "{{listing_id}}",
-                "contact"
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /listings/{id}/report",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/listings/{{listing_id}}/report",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "listings",
-                "{{listing_id}}",
-                "report"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"reason\": \"broker\",\n  \"note\": \"يبدو وسيط\"\n}"
-            }
-          }
-        },
-        {
-          "name": "PUT /favorites/{listing_id}",
-          "request": {
-            "method": "PUT",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/favorites/{{listing_id}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "favorites",
-                "{{listing_id}}"
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /favorites",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/favorites",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "favorites"
-              ]
-            }
-          }
-        },
-        {
-          "name": "DELETE /favorites/{listing_id}",
-          "request": {
-            "method": "DELETE",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/favorites/{{listing_id}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "favorites",
-                "{{listing_id}}"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Orders & Promo",
-      "item": [
-        {
-          "name": "POST /orders (after approval — BR-5)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const b = pm.response.json();",
-                  "pm.collectionVariables.set('order_id', b.id);",
-                  "pm.test('order created', () => pm.response.to.have.status(201));"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/orders",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "orders"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"listing_id\": \"{{listing_id}}\",\n  \"weeks\": 1,\n  \"method\": \"bank_transfer\",\n  \"promo_code\": null\n}"
-            }
-          }
-        },
-        {
-          "name": "GET /orders/{id}",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/orders/{{order_id}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "orders",
-                "{{order_id}}"
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /promo/validate",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/promo/validate",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "promo",
-                "validate"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"code\": \"FIRSTAD\",\n  \"weeks\": 1\n}"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Payments (Phase 2)",
-      "item": [
-        {
-          "name": "POST /orders (card → returns checkout_url)",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/orders",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "orders"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"listing_id\": \"{{listing_id}}\",\n  \"weeks\": 1,\n  \"method\": \"card\"\n}"
-            }
+            "description": "Current staff identity"
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const b = pm.response.json();",
-                  "pm.collectionVariables.set('order_id', b.id);",
-                  "pm.test('order + checkout', () => pm.response.to.have.status(201) && !!b.checkout_url);"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "POST /orders/{id}/checkout (re-mint payment key)",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/orders/{{order_id}}/checkout",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "orders",
-                "{{order_id}}",
-                "checkout"
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /payments/webhook (mock — HMAC via ?sig=)",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/payments/webhook?sig={{webhook_sig}}",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "payments",
-                "webhook"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"provider\": \"mock\",\n  \"event\": \"success\",\n  \"txn_id\": \"TXN-DEMO-1\",\n  \"order_ref\": \"MOCK-…\",\n  \"amount_cents\": 50000\n}"
-            },
-            "description": "Public endpoint. Generate sig = HMAC-SHA256(raw_body, WEBHOOK_SECRET). Duplicate/replayed deliveries must return {\"status\":\"duplicate\"} and never open a second ad period. Bad signature → 401."
-          }
-        },
-        {
-          "name": "POST /orders/{id}/bank-receipt (multipart)",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/orders/{{order_id}}/bank-receipt",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "orders",
-                "{{order_id}}",
-                "bank-receipt"
-              ]
-            },
-            "body": {
-              "mode": "formdata",
-              "formdata": [
-                {
-                  "key": "file",
-                  "type": "file",
-                  "src": "",
-                  "description": "JPEG/PNG/WebP ≤ 5 MB"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /orders/{id}/bank-receipt (status)",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/orders/{{order_id}}/bank-receipt",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "orders",
-                "{{order_id}}",
-                "bank-receipt"
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /orders/{id}/receipt (PDF)",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/orders/{{order_id}}/receipt",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "orders",
-                "{{order_id}}",
-                "receipt"
-              ]
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Notifications",
-      "item": [
-        {
-          "name": "GET /notifications",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/notifications",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "notifications"
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /notifications/read",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{access_token}}"
-                }
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/notifications/read",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "notifications",
-                "read"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"ids\": []\n}"
-            }
-          }
-        }
-      ]
-    },
-    {
-      "name": "Admin",
-      "item": [
-        {
-          "name": "POST /admin/auth/login (password + TOTP)",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const b = pm.response.json();",
-                  "pm.collectionVariables.set('admin_token', b.access_token);",
-                  "pm.test('staff logged in', () => pm.response.to.have.status(200));"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
+          "name": "POST · Staff login (password + TOTP 2FA)",
           "request": {
             "method": "POST",
             "header": [
@@ -1306,118 +78,914 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/admin/auth/login",
+              "raw": "{{baseUrl}}/api/v1/admin/auth/login",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "admin",
                 "auth",
                 "login"
               ]
             },
+            "description": "Staff login (password + TOTP 2FA)",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"admin@aqar-rent.dev\",\n  \"password\": \"ChangeMeAdmin!2026\",\n  \"totp_code\": \"123456\"\n}"
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
-          }
-        },
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "admin-bank-transfers",
+      "item": [
         {
-          "name": "GET /admin/dashboard",
+          "name": "GET · Bank transfer queue",
           "request": {
             "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
-                }
-              ]
-            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/admin/dashboard",
+              "raw": "{{baseUrl}}/api/v1/admin/bank-transfers",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
+                "v1",
+                "admin",
+                "bank-transfers"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Bank transfer queue"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Approve transfer → ad goes live",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/bank-transfers/{{transfer_id}}/approve",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "bank-transfers",
+                "{{transfer_id}}",
+                "approve"
+              ],
+              "variable": [
+                {
+                  "key": "transfer_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Approve transfer → ad goes live"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Reject transfer → owner may re-upload the receipt",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/bank-transfers/{{transfer_id}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "bank-transfers",
+                "{{transfer_id}}",
+                "reject"
+              ],
+              "variable": [
+                {
+                  "key": "transfer_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Reject transfer → owner may re-upload the receipt",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "admin-dashboard",
+      "item": [
+        {
+          "name": "GET · Acquisition funnel (super admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/analytics/funnel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "analytics",
+                "funnel"
+              ]
+            },
+            "description": "Real funnel from existing events: users → submitted → approved → paid → contact."
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Audit trail (super admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/audit-logs",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "audit-logs"
+              ],
+              "query": [
+                {
+                  "key": "entity",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "action",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Audit trail (super admin)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Dashboard KPIs",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
                 "admin",
                 "dashboard"
               ]
-            }
-          }
-        },
-        {
-          "name": "GET /admin/listings (moderation queue)",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
-                }
-              ]
             },
+            "description": "Dashboard KPIs"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "admin-growth",
+      "item": [
+        {
+          "name": "DELETE · Deactivate a package",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/admin/listings?status=submitted",
+              "raw": "{{baseUrl}}/api/v1/admin/growth/ad-packages/{{package_id}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "ad-packages",
+                "{{package_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "package_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Deactivate a package"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE · Deactivate a tier",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/growth/subscription-plans/{{plan_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "subscription-plans",
+                "{{plan_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "plan_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Deactivate a tier"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · All multi-week packages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/growth/ad-packages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "ad-packages"
+              ]
+            },
+            "description": "All multi-week packages"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · All subscription tiers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/growth/subscription-plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "subscription-plans"
+              ]
+            },
+            "description": "All subscription tiers"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Append-only payment audit trail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/growth/payment-events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "payment-events"
+              ],
+              "query": [
+                {
+                  "key": "event",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Append-only payment audit trail"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Daily money reconciliation report",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/growth/reconciliation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "reconciliation"
+              ]
+            },
+            "description": "Daily money reconciliation report"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Office verification queue (moderator)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/growth/offices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "offices"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Office verification queue (moderator)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Pending verification appeals (moderator)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/growth/appeals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "appeals"
+              ]
+            },
+            "description": "Pending verification appeals (moderator)"
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH · Update a package",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/growth/ad-packages/{{package_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "ad-packages",
+                "{{package_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "package_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Update a package",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH · Update a subscription tier (price, limits, seats, features)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/growth/subscription-plans/{{plan_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "subscription-plans",
+                "{{plan_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "plan_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Update a subscription tier (price, limits, seats, features)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Accept (reopen) or reject an appeal",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/growth/appeals/{{doc_id}}/decision",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "appeals",
+                "{{doc_id}}",
+                "decision"
+              ],
+              "variable": [
+                {
+                  "key": "doc_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Accept (reopen) or reject an appeal",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Create a package",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/growth/ad-packages",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "ad-packages"
+              ]
+            },
+            "description": "Create a package",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Create a subscription tier",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/growth/subscription-plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "subscription-plans"
+              ]
+            },
+            "description": "Create a subscription tier",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Grant premium verification (paid, staff-reviewed)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/growth/users/{{user_id}}/trust",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "users",
+                "{{user_id}}",
+                "trust"
+              ],
+              "variable": [
+                {
+                  "key": "user_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Grant premium verification (paid, staff-reviewed)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Verify / reject an office",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/growth/offices/{{office_id}}/decision",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "growth",
+                "offices",
+                "{{office_id}}",
+                "decision"
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Verify / reject an office",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "admin-moderation",
+      "item": [
+        {
+          "name": "GET · Listing detail (admin)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/listings/{{listing_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "listings",
+                "{{listing_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "listing_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Listing detail (admin)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Moderation queue (submitted listings)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/listings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
                 "admin",
                 "listings"
               ],
               "query": [
                 {
                   "key": "status",
-                  "value": "submitted"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /admin/listings/{id}/approve",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
+                  "value": "",
+                  "description": "",
+                  "disabled": true
                 }
               ]
             },
+            "description": "Moderation queue (submitted listings)"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Approve (BR-6 enforced)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/admin/listings/{{listing_id}}/approve",
+              "raw": "{{baseUrl}}/api/v1/admin/listings/{{listing_id}}/approve",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "admin",
                 "listings",
                 "{{listing_id}}",
                 "approve"
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /admin/listings/{id}/reject",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
+              ],
+              "variable": [
                 {
-                  "key": "token",
-                  "value": "{{admin_token}}"
+                  "key": "listing_id",
+                  "value": ""
                 }
               ]
             },
+            "description": "Approve (BR-6 enforced)"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Reject with preset reason",
+          "request": {
+            "method": "POST",
             "header": [
               {
                 "key": "Content-Type",
@@ -1425,67 +993,47 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/admin/listings/{{listing_id}}/reject",
+              "raw": "{{baseUrl}}/api/v1/admin/listings/{{listing_id}}/reject",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "admin",
                 "listings",
                 "{{listing_id}}",
                 "reject"
+              ],
+              "variable": [
+                {
+                  "key": "listing_id",
+                  "value": ""
+                }
               ]
             },
+            "description": "Reject with preset reason",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"reason_code\": \"fake_photos\",\n  \"note\": \"الصور غير حقيقية\"\n}"
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             }
-          }
-        },
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "admin-payments",
+      "item": [
         {
-          "name": "GET /admin/verifications",
+          "name": "GET · CSV export of payments",
           "request": {
             "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/admin/verifications?status=pending",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admin",
-                "verifications"
-              ],
-              "query": [
-                {
-                  "key": "status",
-                  "value": "pending"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /admin/verifications/{id}/decision",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
-                }
-              ]
-            },
             "header": [
               {
                 "key": "Content-Type",
@@ -1493,377 +1041,621 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/admin/verifications/{{doc_id}}/decision",
+              "raw": "{{baseUrl}}/api/v1/admin/payments/export",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "admin",
-                "verifications",
-                "{{doc_id}}",
-                "decision"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"decision\": \"approve\"\n}"
-            }
-          }
-        },
-        {
-          "name": "GET /admin/reports",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
+                "payments",
+                "export"
+              ],
+              "query": [
                 {
-                  "key": "token",
-                  "value": "{{admin_token}}"
+                  "key": "status",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "method",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "owner",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "date_from",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "date_to",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
                 }
               ]
             },
+            "description": "CSV export of payments"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Payments list (finance)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/admin/reports?status=open",
+              "raw": "{{baseUrl}}/api/v1/admin/payments",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
+                "v1",
+                "admin",
+                "payments"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "method",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "owner",
+                  "value": "",
+                  "description": "owner phone (contains) or user id",
+                  "disabled": true
+                },
+                {
+                  "key": "date_from",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "date_to",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Payments list (finance)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Revenue (paid − refunded)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/payments/revenue",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "payments",
+                "revenue"
+              ],
+              "query": [
+                {
+                  "key": "date_from",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "date_to",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Revenue (paid − refunded)"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Full/partial refund — calls the gateway, adjusts the ad period (BR-8)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/payments/{{payment_id}}/refund",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "payments",
+                "{{payment_id}}",
+                "refund"
+              ],
+              "variable": [
+                {
+                  "key": "payment_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Full/partial refund — calls the gateway, adjusts the ad period (BR-8)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "admin-plans",
+      "item": [
+        {
+          "name": "DELETE · Deactivate a plan",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/plans/{{plan_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "plans",
+                "{{plan_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "plan_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Deactivate a plan"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · All plans (incl. inactive)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "plans"
+              ]
+            },
+            "description": "All plans (incl. inactive)"
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH · Update a plan",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/plans/{{plan_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "plans",
+                "{{plan_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "plan_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Update a plan",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Create a plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "plans"
+              ]
+            },
+            "description": "Create a plan",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "admin-promos",
+      "item": [
+        {
+          "name": "DELETE · Deactivate a promo code",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/promo-codes/{{promo_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "promo-codes",
+                "{{promo_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "promo_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Deactivate a promo code"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · All promo codes",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/promo-codes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "promo-codes"
+              ]
+            },
+            "description": "All promo codes"
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH · Update a promo code",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/promo-codes/{{promo_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "promo-codes",
+                "{{promo_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "promo_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Update a promo code",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Create a promo code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/promo-codes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "promo-codes"
+              ]
+            },
+            "description": "Create a promo code",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "admin-reports",
+      "item": [
+        {
+          "name": "GET · Reports queue",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/reports",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
                 "admin",
                 "reports"
               ],
               "query": [
                 {
                   "key": "status",
-                  "value": "open"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /admin/users",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
+                  "value": "",
+                  "description": "",
+                  "disabled": true
                 }
               ]
             },
+            "description": "Reports queue"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Act on a report",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "{{baseUrl}}/admin/users?status=active",
+              "raw": "{{baseUrl}}/api/v1/admin/reports/{{report_id}}/action",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
+                "v1",
+                "admin",
+                "reports",
+                "{{report_id}}",
+                "action"
+              ],
+              "variable": [
+                {
+                  "key": "report_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Act on a report",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "admin-users",
+      "item": [
+        {
+          "name": "GET · List users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/users",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
                 "admin",
                 "users"
               ],
               "query": [
                 {
-                  "key": "status",
-                  "value": "active"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "PATCH /admin/users/{id} (ban / listing cap)",
-          "request": {
-            "method": "PATCH",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
-                }
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/admin/users/USER_ID",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admin",
-                "users",
-                "USER_ID"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"status\": \"banned\",\n  \"listing_cap\": 10\n}"
-            }
-          }
-        },
-        {
-          "name": "GET /admin/payments",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/admin/payments?status=paid",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admin",
-                "payments"
-              ],
-              "query": [
+                  "key": "q",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
                 {
                   "key": "status",
-                  "value": "paid"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /admin/payments/revenue",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/admin/payments/revenue",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admin",
-                "payments",
-                "revenue"
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /admin/payments/export (CSV)",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/admin/payments/export",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admin",
-                "payments",
-                "export"
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /admin/plans",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/admin/plans",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admin",
-                "plans"
-              ]
-            }
-          }
-        },
-        {
-          "name": "POST /admin/promo-codes",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
-                }
-              ]
-            },
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/admin/promo-codes",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admin",
-                "promo-codes"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"code\": \"EARLY50\",\n  \"type\": \"percent\",\n  \"value\": 50,\n  \"max_uses\": 100\n}"
-            }
-          }
-        },
-        {
-          "name": "GET /admin/audit-logs",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
-                }
-              ]
-            },
-            "url": {
-              "raw": "{{baseUrl}}/admin/audit-logs?limit=50",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admin",
-                "audit-logs"
-              ],
-              "query": [
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
                 {
                   "key": "limit",
-                  "value": "50"
-                }
-              ]
-            }
-          }
-        },
-        {
-          "name": "GET /admin/bank-transfers?status=pending",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
+                  "value": "",
+                  "description": "",
+                  "disabled": true
                 }
               ]
             },
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/admin/bank-transfers?status=pending",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admin",
-                "bank-transfers"
-              ]
-            },
-            "description": "finance/super_admin only. Captures transfer_id for approve/reject."
+            "description": "List users"
           },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "const b = pm.response.json();",
-                  "if (Array.isArray(b) && b.length) pm.collectionVariables.set('transfer_id', b[0].id);",
-                  "pm.test('queue', () => pm.response.to.have.status(200));"
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ]
+          "response": []
         },
         {
-          "name": "POST /admin/bank-transfers/{id}/approve",
+          "name": "GET · User detail",
           "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
-                }
-              ]
-            },
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/admin/bank-transfers/{{transfer_id}}/approve",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admin",
-                "bank-transfers",
-                "{{transfer_id}}",
-                "approve"
-              ]
-            },
-            "description": "Approves the transfer → payment recorded, ad goes live, owner notified."
-          }
-        },
-        {
-          "name": "POST /admin/bank-transfers/{id}/reject",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
-                }
-              ]
-            },
+            "method": "GET",
             "header": [
               {
                 "key": "Content-Type",
@@ -1871,37 +1663,32 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/admin/bank-transfers/{{transfer_id}}/reject",
+              "raw": "{{baseUrl}}/api/v1/admin/users/{{user_id}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "admin",
-                "bank-transfers",
-                "{{transfer_id}}",
-                "reject"
-              ]
-            },
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"reason\": \"receipt unreadable\"\n}"
-            },
-            "description": "Rejects with a reason → owner may re-upload the receipt."
-          }
-        },
-        {
-          "name": "POST /admin/payments/{id}/refund (BR-8)",
-          "request": {
-            "method": "POST",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
+                "users",
+                "{{user_id}}"
+              ],
+              "variable": [
                 {
-                  "key": "token",
-                  "value": "{{admin_token}}"
+                  "key": "user_id",
+                  "value": ""
                 }
               ]
             },
+            "description": "User detail"
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH · Ban/unban, raise listing cap",
+          "request": {
+            "method": "PATCH",
             "header": [
               {
                 "key": "Content-Type",
@@ -1909,91 +1696,454 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/admin/payments/PAYMENT_ID/refund",
+              "raw": "{{baseUrl}}/api/v1/admin/users/{{user_id}}",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
+                "api",
+                "v1",
                 "admin",
-                "payments",
-                "PAYMENT_ID",
-                "refund"
+                "users",
+                "{{user_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "user_id",
+                  "value": ""
+                }
               ]
             },
+            "description": "Ban/unban, raise listing cap",
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"amount\": null,\n  \"reason\": \"platform fault\"\n}"
-            },
-            "description": "amount=null → full refund: gateway refund call + ad period cancelled + listing hidden."
-          }
-        },
-        {
-          "name": "GET /admin/payments (filters: status/method/owner/date)",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
                 }
-              ]
-            },
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/admin/payments?method=card&date_from=2026-01-01T00:00:00Z",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admin",
-                "payments"
-              ]
+              }
             }
-          }
-        },
-        {
-          "name": "GET /admin/payments/revenue (daily/monthly/by method)",
-          "request": {
-            "method": "GET",
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{admin_token}}"
-                }
-              ]
-            },
-            "header": [],
-            "url": {
-              "raw": "{{baseUrl}}/admin/payments/revenue",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "admin",
-                "payments",
-                "revenue"
-              ]
-            }
-          }
+          },
+          "response": []
         }
       ]
     },
     {
-      "name": "Contracts & Handovers (Phase 4)",
-      "description": "Contracts (draft → dual OTP confirm → immutable SHA-256 → Arabic PDF + QR), handovers (check-in/out), public /verify.",
+      "name": "admin-verifications",
       "item": [
         {
-          "name": "GET /api/v1/contracts",
+          "name": "GET · Verification queue",
           "request": {
             "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/api/v1/contracts",
+              "raw": "{{baseUrl}}/api/v1/admin/verifications",
               "host": [
-                "{{base_url}}"
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "verifications"
+              ],
+              "query": [
+                {
+                  "key": "status",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "appeal_pending",
+                  "value": "",
+                  "description": "Only documents with a pending appeal",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Verification queue"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Approve/reject an ownership proof",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/admin/verifications/{{doc_id}}/decision",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "admin",
+                "verifications",
+                "{{doc_id}}",
+                "decision"
+              ],
+              "variable": [
+                {
+                  "key": "doc_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Approve/reject an ownership proof",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "auth",
+      "item": [
+        {
+          "name": "POST · Request an OTP code (Public)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/otp/request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "otp",
+                "request"
+              ]
+            },
+            "description": "Request an OTP code (Public)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Revoke a refresh token (idempotent)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/logout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "logout"
+              ]
+            },
+            "description": "Revoke a refresh token (idempotent)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Rotate refresh token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/refresh",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "refresh"
+              ]
+            },
+            "description": "Rotate refresh token",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Verify OTP → access token (15 min) + refresh token (30 days)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/otp/verify",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "otp",
+                "verify"
+              ]
+            },
+            "description": "Verify OTP → access token (15 min) + refresh token (30 days)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "contracts & handovers",
+      "item": [
+        {
+          "name": "GET · Arabic PDF (party only, after both confirm)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contracts/{{contract_id}}/pdf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "{{contract_id}}",
+                "pdf"
+              ],
+              "variable": [
+                {
+                  "key": "contract_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Arabic PDF (party only, after both confirm)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Arabic handover PDF (party only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/handovers/{{handover_id}}/pdf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "handovers",
+                "{{handover_id}}",
+                "pdf"
+              ],
+              "variable": [
+                {
+                  "key": "handover_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Arabic handover PDF (party only)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Contract detail (party only)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contracts/{{contract_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "{{contract_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "contract_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Contract detail (party only)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Handover detail",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/handovers/{{handover_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "handovers",
+                "{{handover_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "handover_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Handover detail"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Handovers of a contract (+ check-out pairing)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contracts/{{contract_id}}/handovers",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "{{contract_id}}",
+                "handovers"
+              ],
+              "variable": [
+                {
+                  "key": "contract_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Handovers of a contract (+ check-out pairing)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · My contracts (owner or tenant)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contracts",
+              "host": [
+                "{{baseUrl}}"
               ],
               "path": [
                 "api",
@@ -2002,16 +2152,288 @@
               ]
             },
             "description": "My contracts (owner or tenant)"
-          }
+          },
+          "response": []
         },
         {
-          "name": "POST /api/v1/contracts",
+          "name": "GET · Official registry status (honest: unavailable in Egypt today)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contracts/{{contract_id}}/registry-status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "{{contract_id}}",
+                "registry-status"
+              ],
+              "variable": [
+                {
+                  "key": "contract_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Architecture seam for a future official Egyptian digital rental registry.\n\nToday it ALWAYS reports `unavailable` with a clear bilingual explanation.\nThe private agreement is never presented as registered/notarized."
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Public contract verification (no auth)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/verify/{{reference_no}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "verify",
+                "{{reference_no}}"
+              ],
+              "variable": [
+                {
+                  "key": "reference_no",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Public contract verification (no auth)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Side-by-side check-in / check-out comparison (items, meters, evidence)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contracts/{{contract_id}}/handovers/comparison",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "{{contract_id}}",
+                "handovers",
+                "comparison"
+              ],
+              "variable": [
+                {
+                  "key": "contract_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Side-by-side check-in / check-out comparison (items, meters, evidence)"
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH · Edit a draft handover",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/handovers/{{handover_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "handovers",
+                "{{handover_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "handover_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Edit a draft handover",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH · Edit draft terms (owner)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contracts/{{contract_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "{{contract_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "contract_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Edit draft terms (owner)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Confirm a handover with a fresh OTP",
           "request": {
             "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/api/v1/contracts",
+              "raw": "{{baseUrl}}/api/v1/handovers/{{handover_id}}/confirm",
               "host": [
-                "{{base_url}}"
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "handovers",
+                "{{handover_id}}",
+                "confirm"
+              ],
+              "variable": [
+                {
+                  "key": "handover_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Confirm a handover with a fresh OTP",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Confirm with a fresh OTP",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contracts/{{contract_id}}/confirm",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "{{contract_id}}",
+                "confirm"
+              ],
+              "variable": [
+                {
+                  "key": "contract_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Confirm with a fresh OTP",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Create a contract draft (owner)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contracts",
+              "host": [
+                "{{baseUrl}}"
               ],
               "path": [
                 "api",
@@ -2020,12 +2442,6 @@
               ]
             },
             "description": "Create a contract draft (owner)",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
             "body": {
               "mode": "raw",
               "raw": "{}",
@@ -2035,155 +2451,39 @@
                 }
               }
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "GET /api/v1/contracts/{contract_id}",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/v1/contracts/{contract_id}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "contracts",
-                "contract_id"
-              ]
-            },
-            "description": "Contract detail (party only)"
-          }
-        },
-        {
-          "name": "PATCH /api/v1/contracts/{contract_id}",
-          "request": {
-            "method": "PATCH",
-            "url": {
-              "raw": "{{base_url}}/api/v1/contracts/{contract_id}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "contracts",
-                "contract_id"
-              ]
-            },
-            "description": "Edit draft terms (owner)",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "POST /api/v1/contracts/{contract_id}/confirm",
+          "name": "POST · Create check-in / check-out (from check-in)",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{base_url}}/api/v1/contracts/{contract_id}/confirm",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "contracts",
-                "contract_id",
-                "confirm"
-              ]
-            },
-            "description": "Confirm with a fresh OTP",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "POST /api/v1/contracts/{contract_id}/fee-order",
-          "request": {
-            "method": "POST",
             "url": {
-              "raw": "{{base_url}}/api/v1/contracts/{contract_id}/fee-order",
+              "raw": "{{baseUrl}}/api/v1/contracts/{{contract_id}}/handovers",
               "host": [
-                "{{base_url}}"
+                "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
                 "contracts",
-                "contract_id",
-                "fee-order"
-              ]
-            },
-            "description": "Optional contract fee order (kind=contract_fee)",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "POST /api/v1/contracts/{contract_id}/handovers",
-          "request": {
-            "method": "POST",
-            "url": {
-              "raw": "{{base_url}}/api/v1/contracts/{contract_id}/handovers",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "contracts",
-                "contract_id",
+                "{{contract_id}}",
                 "handovers"
+              ],
+              "variable": [
+                {
+                  "key": "contract_id",
+                  "value": ""
+                }
               ]
             },
             "description": "Create check-in / check-out (from check-in)",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
             "body": {
               "mode": "raw",
               "raw": "{}",
@@ -2193,195 +2493,606 @@
                 }
               }
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "GET /api/v1/contracts/{contract_id}/handovers",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/v1/contracts/{contract_id}/handovers",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "contracts",
-                "contract_id",
-                "handovers"
-              ]
-            },
-            "description": "Handovers of a contract (+ check-out pairing)"
-          }
-        },
-        {
-          "name": "GET /api/v1/contracts/{contract_id}/pdf",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/v1/contracts/{contract_id}/pdf",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "contracts",
-                "contract_id",
-                "pdf"
-              ]
-            },
-            "description": "Arabic PDF (party only, after both confirm)"
-          }
-        },
-        {
-          "name": "POST /api/v1/contracts/{contract_id}/request-confirmation",
+          "name": "POST · Optional contract fee order (kind=contract_fee)",
           "request": {
             "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/api/v1/contracts/{contract_id}/request-confirmation",
+              "raw": "{{baseUrl}}/api/v1/contracts/{{contract_id}}/fee-order",
               "host": [
-                "{{base_url}}"
+                "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
                 "contracts",
-                "contract_id",
+                "{{contract_id}}",
+                "fee-order"
+              ],
+              "variable": [
+                {
+                  "key": "contract_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Optional contract fee order (kind=contract_fee)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Send the final text to the other party",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/contracts/{{contract_id}}/request-confirmation",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "{{contract_id}}",
                 "request-confirmation"
-              ]
-            },
-            "description": "Send the final text to the other party",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "GET /api/v1/handovers/{handover_id}",
-          "request": {
-            "method": "GET",
-            "url": {
-              "raw": "{{base_url}}/api/v1/handovers/{handover_id}",
-              "host": [
-                "{{base_url}}"
               ],
-              "path": [
-                "api",
-                "v1",
-                "handovers",
-                "handover_id"
-              ]
-            },
-            "description": "Handover detail"
-          }
-        },
-        {
-          "name": "PATCH /api/v1/handovers/{handover_id}",
-          "request": {
-            "method": "PATCH",
-            "url": {
-              "raw": "{{base_url}}/api/v1/handovers/{handover_id}",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "handovers",
-                "handover_id"
-              ]
-            },
-            "description": "Edit a draft handover",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
+              "variable": [
+                {
+                  "key": "contract_id",
+                  "value": ""
                 }
-              }
-            }
-          }
+              ]
+            },
+            "description": "Send the final text to the other party"
+          },
+          "response": []
         },
         {
-          "name": "POST /api/v1/handovers/{handover_id}/confirm",
+          "name": "POST · Upload photo/video for a handover room",
           "request": {
             "method": "POST",
-            "url": {
-              "raw": "{{base_url}}/api/v1/handovers/{handover_id}/confirm",
-              "host": [
-                "{{base_url}}"
-              ],
-              "path": [
-                "api",
-                "v1",
-                "handovers",
-                "handover_id",
-                "confirm"
-              ]
-            },
-            "description": "Confirm a handover with a fresh OTP",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
-            "body": {
-              "mode": "raw",
-              "raw": "{}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          }
-        },
-        {
-          "name": "POST /api/v1/handovers/{handover_id}/media",
-          "request": {
-            "method": "POST",
             "url": {
-              "raw": "{{base_url}}/api/v1/handovers/{handover_id}/media",
+              "raw": "{{baseUrl}}/api/v1/handovers/{{handover_id}}/media",
               "host": [
-                "{{base_url}}"
+                "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
                 "handovers",
-                "handover_id",
+                "{{handover_id}}",
                 "media"
+              ],
+              "variable": [
+                {
+                  "key": "handover_id",
+                  "value": ""
+                }
               ]
             },
             "description": "Upload photo/video for a handover room",
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "favorites",
+      "item": [
+        {
+          "name": "DELETE · Remove from favorites",
+          "request": {
+            "method": "DELETE",
             "header": [
               {
                 "key": "Content-Type",
                 "value": "application/json"
               }
             ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/favorites/{{listing_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "favorites",
+                "{{listing_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "listing_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Remove from favorites"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · List favorites",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/favorites",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "favorites"
+              ],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "List favorites"
+          },
+          "response": []
+        },
+        {
+          "name": "PUT · Add to favorites",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/favorites/{{listing_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "favorites",
+                "{{listing_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "listing_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Add to favorites"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "files",
+      "item": [
+        {
+          "name": "GET · Private file via short-lived signed URL",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/files",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "files"
+              ],
+              "query": [
+                {
+                  "key": "key",
+                  "value": "",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "expires",
+                  "value": "",
+                  "description": "",
+                  "disabled": false
+                },
+                {
+                  "key": "token",
+                  "value": "",
+                  "description": "",
+                  "disabled": false
+                }
+              ]
+            },
+            "description": "Private file via short-lived signed URL"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Public media file (local storage dev mode)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/files/public/{{path}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "files",
+                "public",
+                "{{path}}"
+              ],
+              "variable": [
+                {
+                  "key": "path",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Public media file (local storage dev mode)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "listings",
+      "item": [
+        {
+          "name": "DELETE · Remove Media",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/listings/{{listing_id}}/media/{{media_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "listings",
+                "{{listing_id}}",
+                "media",
+                "{{media_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "listing_id",
+                  "value": ""
+                },
+                {
+                  "key": "media_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Remove Media"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Listing detail (Public)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/listings/{{listing_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "listings",
+                "{{listing_id}}"
+              ],
+              "query": [
+                {
+                  "key": "exact",
+                  "value": "",
+                  "description": "Return the exact map pin — requires login (tenants tap 'show exact location')",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "listing_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Listing detail (Public)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Reveal owner phone (logged-in users only, logged as contact event)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/listings/{{listing_id}}/contact",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "listings",
+                "{{listing_id}}",
+                "contact"
+              ],
+              "query": [
+                {
+                  "key": "channel",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "listing_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Reveal owner phone (logged-in users only, logged as contact event)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Search listings (Public)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/listings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "listings"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "governorate_id",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "city_id",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "district_id",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "min_price",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "max_price",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "property_type",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "rental_type",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "furnished",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "bedrooms",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "bathrooms",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "min_area",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "max_area",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "floor",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "amenities",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "available_from",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "bbox",
+                  "value": "",
+                  "description": "minLon,minLat,maxLon,maxLat",
+                  "disabled": true
+                },
+                {
+                  "key": "sort",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "cursor",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "Search listings (Public)"
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH · Update a listing",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/listings/{{listing_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "listings",
+                "{{listing_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "listing_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Update a listing",
             "body": {
               "mode": "raw",
               "raw": "{}",
@@ -2391,46 +3102,2008 @@
                 }
               }
             }
-          }
+          },
+          "response": []
         },
         {
-          "name": "GET /api/v1/handovers/{handover_id}/pdf",
+          "name": "POST · Create a listing draft (owner)",
           "request": {
-            "method": "GET",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/api/v1/handovers/{handover_id}/pdf",
+              "raw": "{{baseUrl}}/api/v1/listings",
               "host": [
-                "{{base_url}}"
+                "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "handovers",
-                "handover_id",
-                "pdf"
+                "listings"
               ]
             },
-            "description": "Arabic handover PDF (party only)"
-          }
+            "description": "Create a listing draft (owner)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
         },
         {
-          "name": "GET /api/v1/verify/{reference_no}",
+          "name": "POST · Mark as rented",
           "request": {
-            "method": "GET",
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": {
-              "raw": "{{base_url}}/api/v1/verify/{reference_no}",
+              "raw": "{{baseUrl}}/api/v1/listings/{{listing_id}}/mark-rented",
               "host": [
-                "{{base_url}}"
+                "{{baseUrl}}"
               ],
               "path": [
                 "api",
                 "v1",
-                "verify",
-                "reference_no"
+                "listings",
+                "{{listing_id}}",
+                "mark-rented"
+              ],
+              "variable": [
+                {
+                  "key": "listing_id",
+                  "value": ""
+                }
               ]
             },
-            "description": "Public contract verification (no auth)"
-          }
+            "description": "Mark as rented"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Report a listing",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/listings/{{listing_id}}/report",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "listings",
+                "{{listing_id}}",
+                "report"
+              ],
+              "variable": [
+                {
+                  "key": "listing_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Report a listing",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Submit for moderation",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/listings/{{listing_id}}/submit",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "listings",
+                "{{listing_id}}",
+                "submit"
+              ],
+              "variable": [
+                {
+                  "key": "listing_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Submit for moderation"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Upload photo/video (max 15)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/listings/{{listing_id}}/media",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "listings",
+                "{{listing_id}}",
+                "media"
+              ],
+              "variable": [
+                {
+                  "key": "listing_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Upload photo/video (max 15)",
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "locations",
+      "item": [
+        {
+          "name": "GET · List locations (Public)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/locations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "locations"
+              ],
+              "query": [
+                {
+                  "key": "parent_id",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "level",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "No parent_id → governorates; parent_id → children of that node.\n\nRead-mostly reference data → cached (Redis when reachable, in-process\nTTL otherwise; disabled in tests)."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "me",
+      "item": [
+        {
+          "name": "DELETE · Delete account (anonymize, keep financial records)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me"
+              ]
+            },
+            "description": "Delete account (anonymize, keep financial records)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Current user profile",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me"
+              ]
+            },
+            "description": "Current user profile"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Export all my data as JSON (privacy)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/export",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "export"
+              ]
+            },
+            "description": "Data portability (privacy): profile, listings, favorites, orders,\nnotifications, contact events, reports, verification docs and the\ncontracts/handovers I take part in."
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Get Verification",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/verification",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "verification"
+              ]
+            },
+            "description": "Get Verification"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · My listings + stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/listings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "listings"
+              ]
+            },
+            "description": "My listings + stats"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · My orders",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "orders"
+              ]
+            },
+            "description": "My orders"
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH · Update profile",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me"
+              ]
+            },
+            "description": "Update profile",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Register Device",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/devices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "devices"
+              ]
+            },
+            "description": "Register Device",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Upload ownership proof (private)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/verification",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "verification"
+              ]
+            },
+            "description": "Upload ownership proof (private)",
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "notifications",
+      "item": [
+        {
+          "name": "GET · My notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications"
+              ],
+              "query": [
+                {
+                  "key": "unread_only",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                }
+              ]
+            },
+            "description": "My notifications"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Mark notifications read (ids or all)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/notifications/read",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "notifications",
+                "read"
+              ]
+            },
+            "description": "Mark notifications read (ids or all)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "offices",
+      "item": [
+        {
+          "name": "DELETE · Remove a member (suspend, keep attribution)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/{{office_id}}/members/{{member_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "{{office_id}}",
+                "members",
+                "{{member_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                },
+                {
+                  "key": "member_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Remove a member (suspend, keep attribution)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Lead timeline",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/{{office_id}}/leads/{{lead_id}}/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "{{office_id}}",
+                "leads",
+                "{{lead_id}}",
+                "events"
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                },
+                {
+                  "key": "lead_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Lead timeline"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Leads (filter by stage/agent)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/{{office_id}}/leads",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "{{office_id}}",
+                "leads"
+              ],
+              "query": [
+                {
+                  "key": "stage",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "agent_id",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                },
+                {
+                  "key": "limit",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Leads (filter by stage/agent)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Managed units (office view)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/{{office_id}}/listings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "{{office_id}}",
+                "listings"
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Managed units (office view)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · My office (owner or active agent)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "me"
+              ]
+            },
+            "description": "My office (owner or active agent)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Office's public listings (ids + titles)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/slug/{{slug}}/listings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "slug",
+                "{{slug}}",
+                "listings"
+              ],
+              "variable": [
+                {
+                  "key": "slug",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Office's public listings (ids + titles)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Performance dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/{{office_id}}/dashboard",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "{{office_id}}",
+                "dashboard"
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Performance dashboard"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Public branded office page",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/slug/{{slug}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "slug",
+                "{{slug}}"
+              ],
+              "variable": [
+                {
+                  "key": "slug",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Public branded office page"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Team & invites",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/{{office_id}}/members",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "{{office_id}}",
+                "members"
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Team & invites"
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH · Change a member's role / suspend or reactivate",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/{{office_id}}/members/{{member_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "{{office_id}}",
+                "members",
+                "{{member_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                },
+                {
+                  "key": "member_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Change a member's role / suspend or reactivate",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH · Move stage / assign agent / set follow-up (timeline recorded)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/{{office_id}}/leads/{{lead_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "{{office_id}}",
+                "leads",
+                "{{lead_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                },
+                {
+                  "key": "lead_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Move stage / assign agent / set follow-up (timeline recorded)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "PATCH · Update office profile (owner/manager)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/{{office_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "{{office_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Update office profile (owner/manager)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Append a call/viewing/note to the lead timeline",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/{{office_id}}/leads/{{lead_id}}/events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "{{office_id}}",
+                "leads",
+                "{{lead_id}}",
+                "events"
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                },
+                {
+                  "key": "lead_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Append a call/viewing/note to the lead timeline",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Attach a listing to this office + responsible agent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/{{office_id}}/listings/{{listing_id}}/assign",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "{{office_id}}",
+                "listings",
+                "{{listing_id}}",
+                "assign"
+              ],
+              "query": [
+                {
+                  "key": "agent_id",
+                  "value": "",
+                  "description": "",
+                  "disabled": true
+                }
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                },
+                {
+                  "key": "listing_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Attach a listing to this office + responsible agent"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Create a rental lead (pipeline entry)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/{{office_id}}/leads",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "{{office_id}}",
+                "leads"
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Create a rental lead (pipeline entry)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Create an office/agency profile (first-class account)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices"
+              ]
+            },
+            "description": "Create an office/agency profile (first-class account)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Invite an agent/manager by phone (seat-limited by plan)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/{{office_id}}/members",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "{{office_id}}",
+                "members"
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Invite an agent/manager by phone (seat-limited by plan)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Submit office licence/commercial-register data for staff review",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/offices/{{office_id}}/verification-request",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "offices",
+                "{{office_id}}",
+                "verification-request"
+              ],
+              "variable": [
+                {
+                  "key": "office_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Submit office licence/commercial-register data for staff review"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "payments",
+      "item": [
+        {
+          "name": "GET · Current bank-transfer receipt status (owner)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{order_id}}/bank-receipt",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders",
+                "{{order_id}}",
+                "bank-receipt"
+              ],
+              "variable": [
+                {
+                  "key": "order_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Current bank-transfer receipt status (owner)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · PDF receipt of a paid order (owner or staff)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{order_id}}/receipt",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders",
+                "{{order_id}}",
+                "receipt"
+              ],
+              "variable": [
+                {
+                  "key": "order_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "PDF receipt of a paid order (owner or staff)"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Payment webhook (public, HMAC-verified, idempotent)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/payments/webhook",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "payments",
+                "webhook"
+              ]
+            },
+            "description": "Gateway callbacks (Paymob / Mock). Verifies the signature, dedupes on\ngateway_txn_id under a row lock, stores the raw payload and settles the\norder. Authentic-but-ignorable events return 200 so gateways do not\nretry-storm; bad signature → 401, bad payload → 400."
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Re-mint checkout details for a pending order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{order_id}}/checkout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders",
+                "{{order_id}}",
+                "checkout"
+              ],
+              "variable": [
+                {
+                  "key": "order_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Re-mint checkout details for a pending order"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Upload a bank-transfer receipt (owner)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{order_id}}/bank-receipt",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders",
+                "{{order_id}}",
+                "bank-receipt"
+              ],
+              "variable": [
+                {
+                  "key": "order_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Upload a bank-transfer receipt (owner)",
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "plans & orders",
+      "item": [
+        {
+          "name": "GET · Active ad plans (Public)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/plans",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "plans"
+              ]
+            },
+            "description": "BR-1: prices live in the plans table — never hard-coded in the client.\n\nCached (Redis/in-process TTL) — plan prices change rarely."
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Order detail (owner)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders/{{order_id}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders",
+                "{{order_id}}"
+              ],
+              "variable": [
+                {
+                  "key": "order_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Order detail (owner)"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Create an order (only after moderator approval — BR-5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "orders"
+              ]
+            },
+            "description": "Create an order (only after moderator approval — BR-5)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Validate a promo code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/promo/validate",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "promo",
+                "validate"
+              ]
+            },
+            "description": "Validate a promo code",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "pricing",
+      "item": [
+        {
+          "name": "GET · All prices, packages & plans (Public)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/pricing",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "pricing"
+              ]
+            },
+            "description": "BR-1: prices live in DB tables, never hard-coded in web/mobile clients.\n\nReturns the weekly ad entry point, multi-week/featured packages, owner and\noffice subscription tiers, and the platform's money principles."
+          },
+          "response": []
+        },
+        {
+          "name": "GET · My live limits & features",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/entitlements",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "entitlements"
+              ]
+            },
+            "description": "What this account can do right now: listing cap, seats, features, trust."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "subscriptions",
+      "item": [
+        {
+          "name": "GET · Current active plan",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/subscriptions/active",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions",
+                "active"
+              ]
+            },
+            "description": "Current active plan"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · My subscription invoices",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/subscriptions/orders",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions",
+                "orders"
+              ]
+            },
+            "description": "My subscription invoices"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · My subscriptions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/subscriptions/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions",
+                "me"
+              ]
+            },
+            "description": "My subscriptions"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Subscription status + activation hint (honest copy)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/subscriptions/status",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions",
+                "status"
+              ]
+            },
+            "description": "Subscription status + activation hint (honest copy)"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Buy/renew a monthly plan (Paymob card/wallet/Fawry or bank transfer)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/subscriptions/checkout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions",
+                "checkout"
+              ]
+            },
+            "description": "Buy/renew a monthly plan (Paymob card/wallet/Fawry or bank transfer)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Cancel auto-renewal (benefits stay until the paid end date)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/subscriptions/{{subscription_id}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "subscriptions",
+                "{{subscription_id}}",
+                "cancel"
+              ],
+              "variable": [
+                {
+                  "key": "subscription_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Cancel auto-renewal (benefits stay until the paid end date)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "system",
+      "item": [
+        {
+          "name": "GET · Liveness probe",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "health"
+              ]
+            },
+            "description": "Liveness probe"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Prometheus metrics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/metrics",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "metrics"
+              ]
+            },
+            "description": "Prometheus metrics"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · Readiness probe (DB reachable)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/ready",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ready"
+              ]
+            },
+            "description": "Readiness probe (DB reachable)"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "trust",
+      "item": [
+        {
+          "name": "GET · Localizable verification rejection reasons (Public)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/trust/reject-reasons",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "trust",
+                "reject-reasons"
+              ]
+            },
+            "description": "Localizable verification rejection reasons (Public)"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · My appeals",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/verification/appeals",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "verification",
+                "appeals"
+              ]
+            },
+            "description": "My appeals"
+          },
+          "response": []
+        },
+        {
+          "name": "GET · My verification level + badges",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/trust",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "trust"
+              ]
+            },
+            "description": "My verification level + badges"
+          },
+          "response": []
+        },
+        {
+          "name": "POST · Appeal a rejected document once (re-review by a moderator)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/me/verification/{{doc_id}}/appeal",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "me",
+                "verification",
+                "{{doc_id}}",
+                "appeal"
+              ],
+              "variable": [
+                {
+                  "key": "doc_id",
+                  "value": ""
+                }
+              ]
+            },
+            "description": "Appeal a rejected document once (re-review by a moderator)",
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
         }
       ]
     }

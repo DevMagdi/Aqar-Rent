@@ -5,13 +5,12 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
+import '../config.dart';
 import '../models/models.dart';
 import 'listing_detail_screen.dart';
 
-const _tiles = String.fromEnvironment(
-  'MAP_TILES_URL',
-  defaultValue: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-);
+// Production tile host is injected at build time (--dart-define=MAP_TILES_URL).
+String get _tiles => AppConfig.mapTilesUrl;
 
 class MapScreen extends StatefulWidget {
   const MapScreen({super.key, required this.items});

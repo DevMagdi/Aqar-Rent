@@ -64,3 +64,25 @@ the signed-URL rules stay enforced. Put a CDN/edge cache **only** in front of
 that public path (Cache-Control is immutable per key — media content never
 changes under a key). Private documents (verification, receipts, contract
 PDFs, handover media) stay on short-lived signed URLs — **never** CDN-cached.
+
+---
+
+## Phase 5 deployment notes
+
+- `ENVIRONMENT=production` is accepted as an alias for `APP_ENV=prod` (also
+  `staging`, `development`, `test`). Keep `APP_ENV` if existing tooling uses it.
+- `Settings.validate_runtime()` additionally requires
+  `PAYMENT_PROVIDER=paymob`, `OTP_PROVIDER=twilio`, a non-empty
+  `WEBHOOK_IP_ALLOWLIST`, `BANK_ACCOUNT_NUMBER` and `REGISTRY_ADAPTER=none` in
+  production; staging requires Twilio. Weak secrets/SQLite/DEBUG/wildcard CORS
+  remain refused.
+- `alembic upgrade head` now applies `0007`. Rehearse it on a PostgreSQL staging
+  clone before production (SQLite path is covered by `test_migration.py`).
+- `python -m app.services.seed_service` additionally seeds 3 ad packages and 4
+  subscription plans idempotently; admin price changes are NOT overwritten.
+- New limits: `VERIFICATION_UPLOAD_RATE_LIMIT_PER_HOUR`,
+  `LEAD_RATE_LIMIT_PER_HOUR`, `OFFICE_INVITE_RATE_LIMIT_PER_HOUR`,
+  `SUBSCRIPTION_RATE_LIMIT_PER_HOUR`.
+- Mobile release: `scripts/mobile-build.sh` + `.github/workflows/mobile.yml`;
+  `scripts/generate-app-links.sh` writes verified association files with real
+  signing data. Never commit Firebase plist/json, keystores or `key.properties`.

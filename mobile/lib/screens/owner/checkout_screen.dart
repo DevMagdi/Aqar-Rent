@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
-import '../api/api_client.dart';
-import '../models/models.dart';
+import '../../api/api_client.dart';
+import '../../models/models.dart';
 import 'orders_screen.dart';
 
 class CheckoutScreen extends StatefulWidget {

@@ -79,12 +79,32 @@ def _validate_data(data: dict[str, Any]) -> dict[str, Any]:
             if cond is not None and cond not in CONDITIONS:
                 raise AppError("INVALID_HANDOVER", f"Bad condition {cond}", status_code=422)
     meters = data.get("meters") or {}
-    for key in meters:
+    for key, entry in meters.items():
         if key not in METER_KEYS:
             raise AppError("INVALID_HANDOVER", f"Unknown meter {key}", status_code=422)
+        raw = entry.get("value") if isinstance(entry, dict) else entry
+        if raw in (None, ""):
+            continue
+        try:
+            value = float(raw)
+        except (TypeError, ValueError) as exc:
+            raise AppError(
+                "INVALID_HANDOVER", f"Meter {key} reading must be a number", status_code=422
+            ) from exc
+        if value < 0 or value > 1_000_000_000:
+            raise AppError(
+                "INVALID_HANDOVER", f"Meter {key} reading is out of range", status_code=422
+            )
+        if isinstance(entry, dict):
+            entry["value"] = value
     keys = data.get("keys_count")
-    if keys is not None and not (0 <= int(keys) <= 100):
-        raise AppError("INVALID_HANDOVER", "keys_count out of range", status_code=422)
+    if keys is not None:
+        try:
+            keys_int = int(keys)
+        except (TypeError, ValueError) as exc:
+            raise AppError("INVALID_HANDOVER", "keys_count must be an integer", status_code=422) from exc
+        if not (0 <= keys_int <= 100):
+            raise AppError("INVALID_HANDOVER", "keys_count out of range", status_code=422)
     return data
 
 
@@ -322,12 +342,109 @@ def _media_rows(db: Session, handover_id: UUID) -> list[HandoverMedia]:
 
 
 def comparison_for(db: Session, contract: Contract, user: User) -> dict[str, Any]:
-    """Side-by-side payload: confirmed check-in + its check-out (if any)."""
+    """Rich side-by-side comparison for the check-in / check-out pair.
+
+    Returns room/item condition deltas, meter consumption differences, key
+    counts and media-evidence counts so the two parties can settle the deposit
+    on evidence — the platform never decides or holds the money.
+    """
     rows = list(db.execute(select(Handover).where(Handover.contract_id == contract.id)).scalars())
     check_ins = [h for h in rows if h.kind == "check_in" and h.status == "confirmed"]
     check_outs = [h for h in rows if h.kind == "check_out"]
-    pairs = []
+    pairs: list[dict[str, Any]] = []
     for cin in check_ins:
         cout = next((c for c in check_outs if c.source_handover_id == cin.id), None)
-        pairs.append({"check_in": cin.id, "check_out": cout.id if cout else None})
-    return {"pairs": pairs, "handovers": [h.id for h in rows]}
+        in_data = cin.data or {}
+        out_data = (cout.data or {}) if cout else {}
+
+        def _room_map(data: dict[str, Any]) -> dict[str, dict[str, str]]:
+            out: dict[str, dict[str, str]] = {}
+            for room in data.get("rooms") or []:
+                name = str(room.get("name", "")).strip()
+                for item in room.get("items") or []:
+                    label = str(item.get("label", "")).strip()
+                    if name and label:
+                        out[f"{name}/{label}"] = {
+                            "condition": str(item.get("condition") or "good"),
+                            "note": str(item.get("note") or ""),
+                        }
+            return out
+
+        in_items, out_items = _room_map(in_data), _room_map(out_data)
+        items = []
+        for key in sorted(set(in_items) | set(out_items)):
+            before, after = in_items.get(key, {}), out_items.get(key, {})
+            items.append(
+                {
+                    "key": key,
+                    "check_in_condition": before.get("condition"),
+                    "check_out_condition": after.get("condition"),
+                    "changed": before.get("condition") != after.get("condition"),
+                    "check_in_note": before.get("note", ""),
+                    "check_out_note": after.get("note", ""),
+                }
+            )
+
+        meters = []
+        in_meters = in_data.get("meters") or {}
+        out_meters = out_data.get("meters") or {}
+        for key in sorted(set(in_meters) | set(out_meters)):
+            def _val(source: dict[str, Any], meter_key: str = key):
+                entry = source.get(meter_key)
+                raw = entry.get("value") if isinstance(entry, dict) else entry
+                if raw is None:
+                    return None
+                try:
+                    return float(raw)
+                except (TypeError, ValueError):
+                    return None
+
+            before, after = _val(in_meters), _val(out_meters)
+            meters.append(
+                {
+                    "key": key,
+                    "check_in": before,
+                    "check_out": after,
+                    "consumption": (
+                        round(after - before, 2)
+                        if before is not None and after is not None
+                        else None
+                    ),
+                    "suspicious": before is not None and after is not None and after < before,
+                }
+            )
+        media_in = len(_media_rows(db, cin.id))
+        media_out = len(_media_rows(db, cout.id)) if cout else 0
+        pairs.append(
+            {
+                "check_in": {
+                    "id": str(cin.id),
+                    "occurred_at": in_data.get("occurred_at"),
+                    "status": cin.status,
+                    "media_count": media_in,
+                    "keys_count": in_data.get("keys_count"),
+                },
+                "check_out": (
+                    {
+                        "id": str(cout.id),
+                        "occurred_at": out_data.get("occurred_at"),
+                        "status": cout.status,
+                        "media_count": media_out,
+                        "keys_count": out_data.get("keys_count"),
+                    }
+                    if cout
+                    else None
+                ),
+                "items": items,
+                "items_changed": sum(1 for i in items if i["changed"]),
+                "meters": meters,
+                "evidence_note_ar": (
+                    "المقارنة دليل بين الطرفين فقط؛ المنصة لا تُقدّر ولا تحصّل خصماً من التأمين."
+                ),
+                "evidence_note_en": (
+                    "Evidence for the parties only; the platform never assesses or "
+                    "collects deposit deductions."
+                ),
+            }
+        )
+    return {"contract_id": str(contract.id), "pairs": pairs, "handovers": [str(h.id) for h in rows]}

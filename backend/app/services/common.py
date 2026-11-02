@@ -49,6 +49,9 @@ def user_dict(user: User) -> dict[str, Any]:
         "language": user.language,
         "status": user.status,
         "verification_status": user.verification_status,
+        "account_type": user.account_type,
+        "verification_level": user.verification_level,
+        "premium_verified_until": user.premium_verified_until,
         "created_at": user.created_at,
     }
 

@@ -1,8 +1,8 @@
 // Owner dashboard: my listings with stats + renew / mark-rented / edit / add.
 import 'package:flutter/material.dart';
 
-import '../api/api_client.dart';
-import '../models/models.dart';
+import '../../api/api_client.dart';
+import '../../models/models.dart';
 import 'listing_wizard_screen.dart';
 
 class OwnerDashboardScreen extends StatefulWidget {

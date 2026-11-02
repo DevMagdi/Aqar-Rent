@@ -256,10 +256,11 @@ Every decision the spec left open, made here so review is easy. Business rules
 
 66. **Contract templates** live as editable Arabic `.txt` files under
     `backend/app/contract_templates/` (override with `CONTRACT_TEMPLATE_DIR`)
-    — never hard-coded. Each carries the mandated header
-    “مسودة — تحتاج مراجعة محامي قبل الاستخدام الإنتاجي” and the UI/PDF state
-    *“This is a private agreement template and does not replace official
-    registration or notarization.”* No legal claims are made anywhere.
+    — never hard-coded. **Phase 5 supersedes this:** the three templates are
+    now complete Arabic private agreements with an explicit legal notice (not
+    notarised, not officially registered, not an executive instrument, no
+    Egyptian Ejar equivalent). No draft banner remains; the only outstanding
+    legal item is external Egyptian lawyer sign-off (`docs/legal-notes.md`).
 67. **Confirmation = fresh OTP per party** on top of OTP login: `POST
     /auth/otp/request` then `POST /contracts/{id}/confirm {otp_code}`
     (`consume_otp` is shared with login so codes are single-use). Both
@@ -331,3 +332,34 @@ Every decision the spec left open, made here so review is easy. Business rules
     import failure at conftest collection — fixed by item80; steps are split
     (migrate vs test) and failure tails are emitted as annotations.
 
+
+---
+
+## Phase 5 assumptions & deviations (78–90)
+
+78. `APP_ENV` stays canonical; `ENVIRONMENT=production` is a pure alias mapping
+    to `prod` (staging/development/test likewise) for deployment tooling.
+79. Prices remain data: 3 packages + 4 subscription plans are seeded
+    idempotently and are admin-editable; clients never hard-code prices.
+80. `weeks` stays 1..4 for a plain ad (BR-2); 5..52 requires an active package.
+81. Subscription orders reuse the existing Order/Payment pipeline and have
+    `listing_id = NULL`; no auto-charge or stored card — renewal is explicit and
+    the UI says so.
+82. No rent, deposit or office commission money is ever held or settled.
+83. Verification levels are derived; legacy `verification_status`/`verified_badge`
+    kept for backward compatibility.
+84. Offices get 3 free seats so the free tier is usable; subscriptions raise
+    caps/seats; commission is a private optional record.
+85. Contracts are private agreements, never notarised/registered/executive;
+    Egypt has no Ejar-equivalent official registry; `REGISTRY_ADAPTER=none` is
+    enforced in prod.
+86. Lawyer sign-off is an external gate on wording, not a missing feature;
+    templates are complete and no longer marked "draft".
+87. Flutter SDK/build verification is delegated to CI because the sandbox cannot
+    download it; native shells, tests and build scripts are committed.
+88. Store screenshots/video are capture procedures on a device with the SDK,
+    documented in `mobile/docs/demo-script.md`.
+89. OpenAPI/Postman artifacts are generated, never hand-edited.
+90. Production config additionally requires Paymob, Twilio, webhook IP
+    allowlist, bank account and `none` registry adapter; all mock/console
+    providers are disabled.

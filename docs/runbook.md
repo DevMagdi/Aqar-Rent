@@ -72,3 +72,23 @@ Alert on (see `GET /metrics`):
 - Backups: `scripts/backup.sh` (see docs/backup-restore.md) — daily cron.
 - Check `/ready` and `/health` from the load balancer (readiness = DB up).
 - Logs are PII-redacted (`[PHONE]`, `[NID]`, `[TOKEN]`, `[SECRET]`).
+
+---
+
+## Phase 5 runbook additions
+
+- **Payment reconciliation**: finance reviews `/admin/growth/reconciliation`
+  daily; `consistent: false` or non-empty `mismatches` → freeze payouts and
+  inspect `/admin/growth/payment-events`. `aqar_webhook_failures_total` and
+  `aqar_payment_failures_total` are the alerting counters.
+- **Appeals**: moderator queue `/admin/growth/appeals`; "Reopen review" puts the
+  document back in the pending verification queue; "Uphold rejection" records
+  the decision in the audit log. Only one appeal per document.
+- **Offices**: `/admin/growth/offices` verifies commercial-register data;
+  "Request info" returns the office to `pending` with a note. Offices get 3 free
+  seats; paid plans raise caps/seats/features.
+- **Premium verification**: only grant after ownership documents are approved;
+  the grant is time-limited and audit-logged.
+- **Subscription incidents**: duplicate webhooks must NOT create a second
+  subscription; expiry is handled by the hourly job; cancellation stops auto
+  renewal but keeps benefits until the paid end date.

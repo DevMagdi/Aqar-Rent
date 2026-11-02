@@ -1,9 +1,11 @@
 // Search: query bar, filter sheet (spec parity with web), results list,
 // and a map tab sharing the same filter state.
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
 import '../models/models.dart';
+import '../core/widgets.dart';
 import 'listing_detail_screen.dart';
 import 'map_screen.dart';
 
@@ -177,10 +179,13 @@ class ListingCard extends StatelessWidget {
               height: 90,
               child: url == null
                   ? const ColoredBox(color: Color(0xFFF5F5F4), child: Icon(Icons.home, size: 32, color: Colors.grey))
-                  : Image.network(
-                      item.thumbUrl!,
+                  : CachedNetworkImage(
+                      imageUrl: item.thumbUrl!,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFFF5F5F4), child: Icon(Icons.home, size: 32, color: Colors.grey)),
+                      memCacheWidth: 400,
+                      fadeInDuration: const Duration(milliseconds: 180),
+                      placeholder: (_, __) => const ColoredBox(color: Color(0xFFF5F5F4), child: Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)))),
+                      errorWidget: (_, __, ___) => const ColoredBox(color: Color(0xFFF5F5F4), child: Icon(Icons.home, size: 32, color: Colors.grey)),
                     ),
             ),
             Expanded(
@@ -193,6 +198,20 @@ class ListingCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text('${item.addressText ?? ''}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Colors.black54)),
                     const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        TrustBadge(level: item.trustLevel ?? 'phone', compact: true),
+                        if (item.isFeatured) ...[
+                          const SizedBox(width: 6),
+                          const Text('★', style: TextStyle(color: Color(0xFFD97706), fontSize: 13)),
+                        ],
+                        if (item.officeNameAr != null) ...[
+                          const SizedBox(width: 6),
+                          Flexible(child: Text('🏢 ${item.officeNameAr}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: Colors.black54))),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 4),
                     Text(
                       '${item.rentMonthly} جنيه/شهر · ${item.areaM2.toStringAsFixed(0)} م² · ${item.bedrooms} غ',
                       style: const TextStyle(fontSize: 12, color: Colors.black87),

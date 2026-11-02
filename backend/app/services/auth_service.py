@@ -142,6 +142,10 @@ def verify_otp(
         raise AppError("ACCOUNT_BANNED", "This account is banned", status_code=403)
     if user.status == UserStatus.deleted:
         raise AppError("ACCOUNT_DELETED", "This account no longer exists", status_code=403)
+    # Phase 5: an invited agent's first OTP login activates their office seat.
+    from app.services.office_service import accept_invites
+
+    accept_invites(db, user)
     user.last_login_at = now
 
     device = Device(

@@ -15,6 +15,7 @@ import { StaffPage } from "@/pages/Staff";
 import { AuditLog } from "@/pages/AuditLog";
 import { Settings } from "@/pages/Settings";
 import { NAV } from "@/components/Shell";
+import { PlansPackages, OfficesAdmin, AppealsAdmin, Reconciliation } from "@/pages/AdminGrowth";
 
 function Guard({ children }: { children: React.ReactNode }) {
   const loc = useLocation();
@@ -37,6 +38,10 @@ export function App() {
       <Route path="/payments" element={<Guard><Payments /></Guard>} />
       <Route path="/bank-transfers" element={<Guard><BankTransfers /></Guard>} />
       <Route path="/plans" element={<Guard><Plans /></Guard>} />
+      <Route path="/growth-plans" element={<Guard><PlansPackages /></Guard>} />
+      <Route path="/growth-offices" element={<Guard><OfficesAdmin /></Guard>} />
+      <Route path="/growth-appeals" element={<Guard><AppealsAdmin /></Guard>} />
+      <Route path="/growth-reconciliation" element={<Guard><Reconciliation /></Guard>} />
       <Route path="/staff" element={<Guard><StaffPage /></Guard>} />
       <Route path="/audit" element={<Guard><AuditLog /></Guard>} />
       <Route path="/settings" element={<Guard><Settings /></Guard>} />

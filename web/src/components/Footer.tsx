@@ -9,6 +9,7 @@ export function Footer() {
     { href: `/${locale}/how-it-works`, label: t("how_it_works") },
     { href: `/${locale}/terms`, label: t("terms") },
     { href: `/${locale}/privacy`, label: t("privacy") },
+    { href: `/${locale}/pricing`, label: t("pricing") },
     { href: `/${locale}/content-rules`, label: t("content_rules") },
     { href: `/${locale}/support`, label: t("support") },
   ];

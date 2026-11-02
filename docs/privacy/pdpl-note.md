@@ -44,5 +44,25 @@
 1. Lawful-basis wording for OTP login + marketing-free notifications.
 2. Cross-border transfer statement (hosting region of production).
 3. Retention periods above vs. any sector guidance for rental records.
-4. Contract template terms (already flagged “DRAFT — lawyer review”).
+4. Contract template terms — templates are complete private agreements (no draft
+   banner); counsel must still sign off the wording (`docs/legal-notes.md` §3).
 5. Data-processing agreements with Paymob/SMS/map providers.
+
+---
+
+## Phase 5 privacy addendum
+
+- **Offices/leads**: tenant phone, name, budget, notes and optional private
+  commission values are stored in `leads`/`lead_events` and are visible ONLY to
+  active office members. They are part of the user's data export and are deleted
+  with the office account. No tenant lead data is public.
+- **Trust documents**: structured rejection reason codes + one appeal note are
+  retained under the same 90-day purge rule as verification documents.
+- **Payment events**: append-only audit records contain order/payment
+  identifiers, provider, txn reference, amount and a SHA-256 hash of the
+  payload — never card numbers, OTPs, national IDs or raw webhook secrets.
+- **Mobile**: tokens in `flutter_secure_storage`; offline cache holds public
+  GET responses only (never private documents/PDFs); private verification files
+  are opened through short-lived signed URLs and are NOT cached on disk;
+  biometrics gate local UI only (no biometric data leaves the device).
+- **Still requires lawyer sign-off**: see `docs/legal-notes.md` §3.

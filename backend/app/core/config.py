@@ -1,7 +1,9 @@
 """Application settings loaded from environment (.env supported)."""
 
+import os
 from functools import lru_cache
 
+from pydantic import model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -15,6 +17,32 @@ class Settings(BaseSettings):
     secret_key: str = "dev-secret-change-me"
     cors_origins: str = "*"
     log_level: str = "INFO"
+
+    @model_validator(mode="after")
+    def _environment_alias(self) -> "Settings":
+        """Accept the deployment-standard `ENVIRONMENT=production|staging|...`.
+
+        Backward compatibility: `APP_ENV=prod|staging|dev|test` remains the
+        canonical setting. `ENVIRONMENT` is a pure alias; production → prod.
+        """
+        raw = os.environ.get("ENVIRONMENT", "").strip().lower()
+        if not raw:
+            return self
+        aliases = {
+            "production": "prod",
+            "prod": "prod",
+            "staging": "staging",
+            "development": "dev",
+            "dev": "dev",
+            "test": "test",
+            "testing": "test",
+        }
+        if raw not in aliases:
+            raise ValueError(
+                "ENVIRONMENT must be one of production, staging, development, test"
+            )
+        self.app_env = aliases[raw]
+        return self
 
     # Database
     database_url: str = "postgresql+psycopg://aqar:aqar@localhost:5432/aqar"
@@ -69,6 +97,13 @@ class Settings(BaseSettings):
     webhook_ip_allowlist: str = ""  # comma-separated IPs/CIDRs; empty = allow all
     order_rate_limit_per_hour: int = 30  # POST /orders per user
     bank_receipt_max_mb: int = 5  # bank transfer receipt upload cap
+    # Phase 5 — anti-fraud & abuse limits (documented in docs/security/threat-model.md)
+    verification_upload_rate_limit_per_hour: int = 10
+    lead_rate_limit_per_hour: int = 120
+    office_invite_rate_limit_per_hour: int = 30
+    subscription_rate_limit_per_hour: int = 10
+    # Official registry seam: ONLY "none" is shipped (no Ejar equivalent in Egypt).
+    registry_adapter: str = "none"
 
     # Phase 4 — contracts & handovers
     site_url: str = "http://localhost:3000"  # public links (QR verification page)
@@ -139,6 +174,10 @@ class Settings(BaseSettings):
             problems.append("STORAGE_BACKEND must be s3 (MinIO/S3) outside dev")
         if self.otp_provider == "console":
             problems.append("OTP_PROVIDER=console is dev-only — configure twilio for real SMS")
+        if self.otp_provider not in ("twilio",):
+            problems.append(
+                "OTP_PROVIDER must be twilio outside dev/test — mock/console SMS is disabled"
+            )
         if self.otp_provider == "twilio" and not (
             self.twilio_account_sid and self.twilio_auth_token and self.twilio_from_number
         ):
@@ -153,8 +192,14 @@ class Settings(BaseSettings):
         if not self.staff_super_admin_totp_secret:
             problems.append("STAFF_SUPER_ADMIN_TOTP_SECRET must be set")
         if self.app_env == "prod":
-            if self.payment_provider == "mock":
-                problems.append("PAYMENT_PROVIDER=mock is dev/test only — configure paymob")
+            if self.payment_provider != "paymob":
+                problems.append(
+                    "PAYMENT_PROVIDER must be paymob in prod — mock/dev providers are completely disabled"
+                )
+            if not self.webhook_ip_allowlist.strip():
+                problems.append("WEBHOOK_IP_ALLOWLIST is required in prod (Paymob callback CIDRs)")
+            if not self.bank_account_number.strip():
+                problems.append("BANK_ACCOUNT_NUMBER is required in prod (real bank-transfer instructions)")
             if self.payment_provider == "paymob" and not (
                 self.paymob_api_key
                 and self.paymob_hmac_secret
@@ -165,6 +210,10 @@ class Settings(BaseSettings):
                 problems.append("CONTRACT_NID_KEY must be set explicitly in prod (Fernet)")
             if not self.site_url.startswith("https://"):
                 problems.append("SITE_URL must be https in prod")
+            if self.registry_adapter != "none":
+                problems.append(
+                    "REGISTRY_ADAPTER must be 'none' — no official Egyptian digital rental registry exists"
+                )
         return problems
 
 

@@ -4,8 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../api/api_client.dart';
-import '../models/models.dart';
+import '../../api/api_client.dart';
+import '../../models/models.dart';
 
 class VerificationScreen extends StatefulWidget {
   const VerificationScreen({super.key});
@@ -26,6 +26,8 @@ class _VerificationScreenState extends State<VerificationScreen> {
     'water_bill': 'فاتورة مياه',
     'ownership_contract': 'عقد ملكية',
     'id_authorization': 'توكيل بالهوية',
+    'national_id': 'بطاقة هوية',
+    'commercial_register': 'سجل تجاري',
   };
 
   @override
@@ -73,6 +75,33 @@ class _VerificationScreenState extends State<VerificationScreen> {
     }
   }
 
+  Future<void> _appeal(Verification v) async {
+    final ctrl = TextEditingController();
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('الاعتراض على الرفض'),
+        content: TextField(
+          controller: ctrl,
+          maxLines: 3,
+          decoration: const InputDecoration(labelText: 'اشرح سبب طلب إعادة المراجعة', border: OutlineInputBorder()),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('إلغاء')),
+          FilledButton(onPressed: () => Navigator.pop(ctx, true), child: const Text('إرسال')),
+        ],
+      ),
+    );
+    if (ok != true || ctrl.text.trim().isEmpty) return;
+    try {
+      await api.post('/me/verification/${v.id}/appeal', data: {'note': ctrl.text.trim()});
+      await _load();
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إرسال الاعتراض ✓')));
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
+    }
+  }
+
   String _statusAr(String s) => switch (s) {
         'pending' => 'قيد المراجعة',
         'approved' => 'موثّق',
@@ -115,7 +144,23 @@ class _VerificationScreenState extends State<VerificationScreen> {
               child: ListTile(
                 leading: Icon(v.status == 'approved' ? Icons.verified : v.status == 'rejected' ? Icons.cancel : Icons.hourglass_top),
                 title: Text(_docs[v.docType] ?? v.docType),
-                subtitle: Text(v.rejectReason != null ? 'مرفوض: ${v.rejectReason}' : _statusAr(v.status)),
+                subtitle: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(v.rejectReason != null ? 'مرفوض: ${v.rejectReason}' : _statusAr(v.status)),
+                    if (v.appealStatus != 'none')
+                      Text('الاعتراض: ${v.appealStatus}', style: const TextStyle(fontSize: 11, color: Color(0xFFB45309))),
+                    if (v.status == 'rejected' && v.appealStatus == 'none')
+                      Padding(
+                        padding: const EdgeInsets.only(top: 4),
+                        child: TextButton.icon(
+                          onPressed: () => _appeal(v),
+                          icon: const Icon(Icons.gavel, size: 14),
+                          label: const Text('تقديم اعتراض (مرة واحدة)', style: TextStyle(fontSize: 11)),
+                        ),
+                      ),
+                  ],
+                ),
                 trailing: v.fileUrl != null ? const Icon(Icons.visibility_outlined) : null,
                 onTap: v.fileUrl == null
                     ? null

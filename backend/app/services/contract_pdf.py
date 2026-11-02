@@ -18,7 +18,7 @@ from app.models.identity import User
 from app.models.social import Contract
 from app.services.contract_service import (
     DISCLAIMER,
-    DRAFT_BANNER,
+    LEGAL_NOTICE,
     contract_values,
     load_template,
     render_template,
@@ -56,7 +56,11 @@ def _footer(canvas, doc):  # pragma: no cover - page furniture
     canvas.saveState()
     canvas.setFont("Amiri", 8)
     canvas.setFillColor(colors.HexColor("#78716c"))
-    canvas.drawCentredString(A4[0] / 2, 8 * mm(), "Aqar Rent — عقد خاص / private agreement template")
+    canvas.drawCentredString(
+        A4[0] / 2,
+        8 * mm(),
+        f"Aqar Rent — عقد خاص / private agreement · صفحة {doc.page} · ليس سنداً تنفيذياً",
+    )
     canvas.restoreState()
 
 
@@ -99,19 +103,54 @@ def build_contract_pdf(
     )
     st_body = ParagraphStyle("b", fontName="Amiri", fontSize=11.5, leading=20, alignment=TA_RIGHT)
     st_warn = ParagraphStyle(
-        "w", fontName="Amiri", fontSize=10, leading=15, alignment=1, textColor=colors.HexColor("#b91c1c")
+        "w", fontName="Amiri", fontSize=9.5, leading=15, alignment=1, textColor=colors.HexColor("#92400e")
+    )
+    st_legal = ParagraphStyle(
+        "legal",
+        fontName="Amiri",
+        fontSize=9,
+        leading=13,
+        alignment=TA_RIGHT,
+        textColor=colors.HexColor("#57534e"),
+    )
+    st_clause = ParagraphStyle(
+        "clause", fontName="Amiri", fontSize=11, leading=18, alignment=TA_RIGHT
     )
 
-    story: list[Any] = [Paragraph(_ar(f"عقد إيجار — {contract.reference_no}"), st_title)]
+    bordered = Table(
+        [[Paragraph(_ar(f"⚖ {LEGAL_NOTICE}"), st_warn)]], colWidths=[178 * mm]
+    )
+    bordered.setStyle(
+        TableStyle(
+            [
+                ("BOX", (0, 0), (-1, -1), 0.7, colors.HexColor("#d97706")),
+                ("BACKGROUND", (0, 0), (-1, -1), colors.HexColor("#fffbeb")),
+                ("LEFTPADDING", (0, 0), (-1, -1), 8),
+                ("RIGHTPADDING", (0, 0), (-1, -1), 8),
+                ("TOPPADDING", (0, 0), (-1, -1), 6),
+                ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+            ]
+        )
+    )
+    story: list[Any] = [
+        Paragraph(_ar("عقار رينت · AQAR RENT"), st_small),
+        Paragraph(_ar("عقد إيجار — اتفاق خاص بين الطرفين"), st_title),
+        Paragraph(_ar(f"الرقم المرجعي: {contract.reference_no}"), st_small),
+    ]
     if listing_title:
         story.append(Paragraph(_ar(listing_title), st_small))
+    story.append(Spacer(1, 8))
+    story.append(bordered)
     story.append(Spacer(1, 6))
-    story.append(Paragraph(_ar(f"[ {DRAFT_BANNER} ]"), st_warn))
-    story.append(Paragraph(_ar(DISCLAIMER), st_warn))
+    story.append(Paragraph(_ar(DISCLAIMER), st_legal))
     story.append(Spacer(1, 10))
 
     for para in body_text.split("\n"):
-        story.append(Paragraph(_ar(para), st_body))
+        if para.startswith("المادة"):
+            story.append(Spacer(1, 4))
+            story.append(Paragraph(_ar(para), st_clause))
+        else:
+            story.append(Paragraph(_ar(para), st_body))
         story.append(Spacer(1, 3))
 
     story.append(Spacer(1, 12))
@@ -145,7 +184,8 @@ def build_contract_pdf(
     )
     story.append(table)
     story.append(Spacer(1, 8))
-    story.append(Paragraph(_ar(f"بصمة النص النهائي SHA-256: {contract.terms_hash or '-'}"), st_small))
+    story.append(Paragraph(_ar(f"بصمة النص النهائي SHA-256: {contract.terms_hash or '-'}"), st_legal))
+    story.append(Paragraph(_ar("التحقق يفيد بسلامة السجل فقط، ولا يفيد بالتوثيق الرسمي."), st_legal))
     story.append(Spacer(1, 8))
 
     qr_image = Image(io.BytesIO(_qr_png(verify_url)), width=84, height=84)

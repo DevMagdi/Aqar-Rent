@@ -177,7 +177,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
                   color: Color(0xFFFFF7E6),
                   child: Padding(
                     padding: EdgeInsets.all(8),
-                    child: Text('⚖️ مسودة — تحتاج مراجعة محامي قبل الاستخدام الإنتاجي.', style: TextStyle(fontSize: 12)),
+                    child: Text('⚖️ اتفاق خاص بين الطرفين: ليس موثّقاً ولا مسجّلاً رسمياً ولا سنداً تنفيذياً، ولا يُغني عن التوثيق الرسمي.', style: TextStyle(fontSize: 12)),
                   ),
                 ),
               ],

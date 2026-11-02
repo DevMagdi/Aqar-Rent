@@ -7,6 +7,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, File, Form, Query, Request, UploadFile
 from fastapi import status as http_status
+from sqlalchemy import select
 
 from app.api.deps import (
     CurrentUser,
@@ -120,7 +121,27 @@ def parse_bbox_helper(raw: str | None):
     summary="Create a listing draft (owner)",
 )
 def create_listing(payload: ListingCreate, user: CurrentUser, db: DbDep) -> ListingDetailOut:
-    listing = listing_service.create_listing(db, user, payload.model_dump())
+    data = payload.model_dump()
+    # Phase 5: an office may manage units for owners; both links are validated.
+    if data.get("office_id") is not None:
+        from app.models.enums import OfficeMemberStatus
+        from app.models.growth import OfficeMember
+        from app.services.office_service import require_office_access
+
+        office, _ = require_office_access(db, user, data["office_id"])
+        if data.get("agent_user_id") is not None:
+            member = db.execute(
+                select(OfficeMember).where(
+                    OfficeMember.office_id == office.id,
+                    OfficeMember.user_id == data["agent_user_id"],
+                    OfficeMember.status == OfficeMemberStatus.active.value,
+                )
+            ).scalar_one_or_none()
+            if member is None:
+                raise AppError("MEMBER_NOT_FOUND", "Agent is not an active member", status_code=404)
+    elif data.get("agent_user_id") is not None:
+        raise AppError("OFFICE_REQUIRED", "agent_user_id requires office_id", status_code=422)
+    listing = listing_service.create_listing(db, user, data)
     return _detail(db, listing, viewer=user, storage=None)
 
 
@@ -145,6 +166,28 @@ def _detail(
 
     owner = db.get(User, listing.owner_id)
     verified_badge = bool(owner and owner.verification_status == "approved")
+    from app.models.growth import OfficeProfile
+    from app.schemas.growth import TrustOut
+    from app.services.trust_service import trust_snapshot
+
+    trust = TrustOut(**trust_snapshot(db, owner)) if owner else None
+    office_payload = None
+    if listing.office_id is not None:
+        office = db.get(OfficeProfile, listing.office_id)
+        if office is not None:
+            office_payload = {
+                "id": str(office.id),
+                "slug": office.slug,
+                "name_ar": office.name_ar,
+                "name_en": office.name_en,
+                "verification_status": office.verification_status,
+                "public_phone": office.public_phone,
+            }
+    agent_payload = None
+    if listing.agent_user_id is not None:
+        agent = db.get(User, listing.agent_user_id)
+        if agent is not None:
+            agent_payload = {"id": str(agent.id), "full_name": agent.full_name}
 
     return ListingDetailOut(
         id=str(listing.id),
@@ -175,6 +218,10 @@ def _detail(
         reject_reason=listing.reject_reason if is_owner else None,
         view_count=listing.view_count if is_owner else None,
         verified_badge=verified_badge,
+        trust=trust,
+        office=office_payload,
+        agent=agent_payload,
+        is_featured=float(listing.ad_priority or 0) > 0,
         is_owner=is_owner,
         days_left=listing_service.days_left_for(db, listing.id) if is_owner else None,
         owner_name=owner.full_name if (owner and is_owner) else None,

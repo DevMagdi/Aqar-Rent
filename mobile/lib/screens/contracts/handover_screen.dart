@@ -4,6 +4,7 @@
 // confirmed check-in — the server copies the structure).
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
@@ -222,7 +223,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
     setState(() => _data = {..._data, 'rooms': rooms});
   }
 
-  bool get _confirmed = _status == 'confirmed';
+  bool get _confirmed => _status == 'confirmed';
 
   @override
   Widget build(BuildContext context) {
@@ -331,8 +332,8 @@ class _HandoverScreenState extends State<HandoverScreen> {
                           child: SizedBox(
                             width: 64,
                             height: 64,
-                            child: Image.network('${m['url']}', fit: BoxFit.cover,
-                                errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFFF5F5F4))),
+                            child: CachedNetworkImage(imageUrl: '${m['url']}', fit: BoxFit.cover,
+                                errorWidget: (_, __, ___) => const ColoredBox(color: Color(0xFFF5F5F4))),
                           ),
                         ),
                     ],

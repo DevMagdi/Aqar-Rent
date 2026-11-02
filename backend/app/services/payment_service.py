@@ -23,6 +23,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import Settings
 from app.core.errors import AppError
+from app.core.metrics import PAYMENT_FAILURES, WEBHOOK_FAILURES
 from app.models.catalog import Listing, Plan
 from app.models.commerce import AdPeriod, BankTransfer, Order, Payment, Refund
 from app.models.enums import (
@@ -37,6 +38,7 @@ from app.models.identity import User
 from app.services.common import as_utc, utcnow
 from app.services.listing_service import activate_listing
 from app.services.notifications import create_notification, notification_has
+from app.services.payment_audit import record_event
 from app.services.payments import build_provider, provider_for_webhook
 from app.services.payments.base import to_cents
 
@@ -117,6 +119,30 @@ def mark_order_paid(
     if provider:
         order.gateway = provider
 
+    if getattr(order, "kind", "ad_period") == "subscription":
+        # Phase 5: recurring plan purchase — NO listing, NO rent money.
+        from app.services.subscription_service import activate_subscription
+
+        activate_subscription(db, order)
+        create_notification(
+            db,
+            order.owner_id,
+            "subscription_active",
+            "تم تفعيل باقتك الشهرية ✅",
+            f"تم استلام {order.total} جنيه وبدأت مزايا الباقة لمدة 30 يوماً.",
+            {"order_id": str(order.id)},
+        )
+        record_event(
+            db,
+            event="order.settled",
+            order=order,
+            provider=provider,
+            txn_id=txn_id,
+            detail="subscription activated",
+        )
+        db.flush()
+        return True
+
     if getattr(order, "kind", "ad_period") == "contract_fee":
         # Phase 4: contract fees settle like any order but NEVER start an ad
         # period (weeks=0, no plan). Notification goes to the payer.
@@ -131,10 +157,18 @@ def mark_order_paid(
         db.flush()
         return True
 
-    listing = db.get(Listing, order.listing_id)
+    listing = db.get(Listing, order.listing_id) if order.listing_id is not None else None
     if listing is not None:
         plan = _plan_for_order(db, order)
         activate_listing(db, listing, plan, order.weeks, order_id=order.id, now=now)
+        record_event(
+            db,
+            event="order.settled",
+            order=order,
+            provider=provider,
+            txn_id=txn_id,
+            detail="ad activated",
+        )
         create_notification(
             db,
             order.owner_id,
@@ -172,6 +206,8 @@ def mark_order_failed(
     order.status = OrderStatus.failed.value
     if provider:
         order.gateway = provider
+    PAYMENT_FAILURES.labels(order.method).inc()
+    record_event(db, event="order.failed", order=order, provider=provider, txn_id=txn_id, payload=raw)
     db.flush()
     return True
 
@@ -209,6 +245,13 @@ def initiate_checkout(db: Session, settings: Settings, order: Order, owner: User
     order.gateway = provider.name
     if order.gateway_ref != intent.gateway_ref:
         order.gateway_ref = intent.gateway_ref  # unique per order
+    record_event(
+        db,
+        event="checkout.initiated",
+        order=order,
+        provider=provider.name,
+        detail=f"kind={getattr(order, 'kind', 'ad_period')}",
+    )
     db.flush()
     return {"checkout_url": intent.checkout_url, "payment_reference": intent.reference}
 
@@ -224,12 +267,18 @@ def handle_webhook(
 ) -> dict[str, Any]:
     provider = provider_for_webhook(settings, raw_body)
     if provider is None:
+        WEBHOOK_FAILURES.labels("unrecognized_payload").inc()
+        record_event(db, event="webhook.invalid_payload", detail="unrecognized provider")
         raise AppError("INVALID_WEBHOOK", "Unrecognized webhook payload", status_code=400)
     if not provider.verify_webhook(query_params, raw_body):
+        WEBHOOK_FAILURES.labels("invalid_signature").inc()
+        record_event(db, event="webhook.invalid_signature", provider=provider.name)
         raise AppError("INVALID_SIGNATURE", "Webhook signature verification failed", status_code=401)
     try:
         event = provider.parse_event(query_params, raw_body)
     except ValueError as exc:
+        WEBHOOK_FAILURES.labels("invalid_payload").inc()
+        record_event(db, event="webhook.invalid_payload", provider=provider.name, detail=str(exc)[:200])
         raise AppError("INVALID_WEBHOOK", f"Cannot parse webhook: {exc}", status_code=400) from exc
 
     order = (
@@ -239,6 +288,14 @@ def handle_webhook(
     )
     if order is None:
         logger.warning("webhook for unknown order_ref=%s txn=%s", event.order_ref, event.gateway_txn_id)
+        WEBHOOK_FAILURES.labels("unknown_order").inc()
+        record_event(
+            db,
+            event="webhook.unknown_order",
+            provider=event.provider,
+            txn_id=event.gateway_txn_id,
+            payload={"order_ref": event.order_ref},
+        )
         return {"status": "ignored", "reason": "unknown_order"}
 
     if event.event == "pending":
@@ -252,6 +309,15 @@ def handle_webhook(
                 to_cents(order.total),
                 event.amount_cents,
             )
+            WEBHOOK_FAILURES.labels("amount_mismatch").inc()
+            record_event(
+                db,
+                event="webhook.amount_mismatch",
+                order=order,
+                provider=event.provider,
+                txn_id=event.gateway_txn_id,
+                detail=f"expected={to_cents(order.total)} got={event.amount_cents}",
+            )
             return {"status": "ignored", "reason": "amount_mismatch"}
         changed = mark_order_paid(
             db,
@@ -261,11 +327,28 @@ def handle_webhook(
             txn_id=event.gateway_txn_id,
             raw=event.raw,
         )
+        record_event(
+            db,
+            event="webhook.success" if changed else "webhook.duplicate",
+            order=order,
+            provider=event.provider,
+            txn_id=event.gateway_txn_id,
+            payload=event.raw,
+        )
         return {"status": "ok" if changed else "duplicate"}
 
     if event.event == "failure":
         changed = mark_order_failed(
             db, order, provider=event.provider, txn_id=event.gateway_txn_id, raw=event.raw
+        )
+        WEBHOOK_FAILURES.labels("gateway_failure").inc()
+        record_event(
+            db,
+            event="webhook.failure",
+            order=order,
+            provider=event.provider,
+            txn_id=event.gateway_txn_id,
+            payload=event.raw,
         )
         return {"status": "ok" if changed else "duplicate"}
 
@@ -405,13 +488,21 @@ def approve_bank_transfer(
         {"status": BankTransferStatus.approved.value, "order_id": str(order.id)},
         ip,
     )
-    listing = db.get(Listing, order.listing_id)
+    listing = db.get(Listing, order.listing_id) if order.listing_id is not None else None
+    record_event(
+        db,
+        event="bank_transfer.approved",
+        order=order,
+        provider=MANUAL_GATEWAY,
+        detail=f"reviewed_by={staff.id}",
+        actor=str(staff.id),
+    )
     create_notification(
         db,
         order.owner_id,
         "bank_transfer_approved",
         "تم اعتماد حوالة البنك ✅",
-        f"تم اعتماد حوالتك وتفعيل إعلان «{listing.title if listing else order.listing_id}».",
+        f"تم اعتماد حوالتك وتفعيل {'إعلان «' + listing.title + '»' if listing else 'باقتك'}.",
         {"order_id": str(order.id), "bank_transfer_id": str(transfer.id)},
     )
     db.flush()
@@ -441,6 +532,14 @@ def reject_bank_transfer(
     transfer.status = BankTransferStatus.rejected.value
     transfer.reviewed_by = staff.id
     transfer.reject_reason = reason or None
+    record_event(
+        db,
+        event="bank_transfer.rejected",
+        order=order,
+        provider=MANUAL_GATEWAY,
+        detail=reason or "",
+        actor=str(staff.id),
+    )
     log_audit(
         db,
         staff.id,
@@ -497,7 +596,7 @@ def _cancel_ad_periods(db: Session, order: Order, *, full: bool, fraction: Decim
         touched = True
     if not touched:
         return False
-    listing = db.get(Listing, order.listing_id)
+    listing = db.get(Listing, order.listing_id) if order.listing_id is not None else None
     if listing is not None and listing.status == ListingStatus.active.value:
         still_running = db.execute(
             select(func.count())
@@ -522,7 +621,8 @@ def _cancel_ad_periods(db: Session, order: Order, *, full: bool, fraction: Decim
                 )
     from app.services.listing_service import refresh_ad_rank
 
-    refresh_ad_rank(db, order.listing_id)
+    if order.listing_id is not None:
+        refresh_ad_rank(db, order.listing_id)
     return True
 
 
@@ -594,5 +694,14 @@ def refund_payment(
     if order is not None:
         _cancel_ad_periods(db, order, full=fully, fraction=(value / total) if total else None)
         _notify_refund(db, order, value, gateway=gateway_ref is not None)
+    record_event(
+        db,
+        event="refund.issued",
+        order=order,
+        provider=provider.name,
+        txn_id=gateway_ref,
+        detail=reason or "",
+        actor=str(staff.id),
+    )
     db.flush()
     return payment, refund_row, value
