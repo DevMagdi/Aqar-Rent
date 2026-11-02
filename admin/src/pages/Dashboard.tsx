@@ -1,0 +1,97 @@
+// Dashboard: KPIs + charts (listings by status, orders by status, revenue,
+// contacts, top areas derived from active listings queue).
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { api } from "@/lib/api";
+import { BarChart, Card, Empty, Spinner, Stat } from "@/components/ui";
+
+interface Dash {
+  users_total: number;
+  users_banned: number;
+  listings_by_status: Record<string, number>;
+  reports_open: number;
+  verifications_pending: number;
+  orders_by_status: Record<string, number>;
+  revenue_egp: number;
+  contact_events_total: number;
+  active_ad_periods: number;
+}
+
+interface QueueRow {
+  id: string;
+  listing_id: string;
+  title: string | null;
+  status: string;
+  governorate_name: string | null;
+}
+
+export function Dashboard() {
+  const [d, setD] = useState<Dash | null>(null);
+  const [active, setActive] = useState<QueueRow[]>([]);
+  const [err, setErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    Promise.all([
+      api<Dash>("/admin/dashboard"),
+      api<QueueRow[]>("/admin/listings?status=active&limit=200").catch(() => [] as QueueRow[]),
+    ])
+      .then(([dash, rows]) => {
+        setD(dash);
+        setActive(rows);
+      })
+      .catch((e) => setErr(e.message));
+  }, []);
+
+  if (err) return <p className="text-sm text-red-600" role="alert">{err}</p>;
+  if (!d) return <Spinner />;
+
+  const byGov = Object.entries(
+    active.reduce<Record<string, number>>((acc, r) => {
+      const k = r.governorate_name || "—";
+      acc[k] = (acc[k] || 0) + 1;
+      return acc;
+    }, {}),
+  )
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8);
+
+  const listingsTotal = Object.values(d.listings_by_status).reduce((a, b) => a + b, 0);
+
+  return (
+    <div className="space-y-6" data-testid="dashboard">
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <Stat label="Users" value={d.users_total} hint={`${d.users_banned} banned`} />
+        <Stat label="Active ad periods" value={d.active_ad_periods} hint={`${listingsTotal} listings total`} />
+        <Stat label="Revenue (EGP)" value={d.revenue_egp.toLocaleString()} hint="paid − refunded" data-testid="revenue" />
+        <Stat label="Contact events" value={d.contact_events_total} hint="call / whatsapp reveals" />
+        <Stat label="Reports open" value={d.reports_open} />
+        <Stat label="Verifications pending" value={d.verifications_pending} />
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        <Card title="New / active listings by status">
+          <BarChart data={Object.entries(d.listings_by_status)} testId="chart-listings" />
+        </Card>
+        <Card title="Orders by status (ads sold)">
+          <BarChart data={Object.entries(d.orders_by_status)} testId="chart-orders" />
+        </Card>
+        <Card title="Top areas (active listings)">
+          {byGov.length ? <BarChart data={byGov} testId="chart-top-areas" /> : <Empty text="No active listings yet" />}
+        </Card>
+        <Card title="Quick actions">
+          <div className="flex flex-wrap gap-2">
+            <Link to="/moderation" className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-semibold text-white hover:bg-brand-700">
+              Moderation queue
+            </Link>
+            <Link to="/verifications" className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-50">
+              Verifications
+            </Link>
+            <Link to="/bank-transfers" className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-50">
+              Bank transfers
+            </Link>
+          </div>
+        </Card>
+      </div>
+    </div>
+  );
+}
