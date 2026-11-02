@@ -72,14 +72,12 @@ def request_otp(
     }
 
 
-def verify_otp(
-    db: Session,
-    settings: Settings,
-    phone: str,
-    code: str,
-    platform: str = "web",
-    push_token: str | None = None,
-) -> dict[str, Any]:
+def consume_otp(db: Session, settings: Settings, phone: str, code: str) -> None:
+    """Validate + burn the latest login OTP for `phone` (no tokens issued).
+
+    Used by login AND by Phase-4 contract/handover confirmations — a fresh
+    6-digit code is required for every sensitive confirmation.
+    """
     otp = db.execute(
         select(OtpCode)
         .where(OtpCode.phone == phone, OtpCode.purpose == "login")
@@ -120,8 +118,20 @@ def verify_otp(
             },
         )
 
-    # Success: burn ALL codes for this number and issue tokens.
+    # Success: burn ALL codes for this number.
     db.execute(delete(OtpCode).where(OtpCode.phone == phone))
+    db.flush()
+
+
+def verify_otp(
+    db: Session,
+    settings: Settings,
+    phone: str,
+    code: str,
+    platform: str = "web",
+    push_token: str | None = None,
+) -> dict[str, Any]:
+    consume_otp(db, settings, phone, code)
     user = db.execute(select(User).where(User.phone == phone)).scalar_one_or_none()
     now = utcnow()
     if user is None:

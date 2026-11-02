@@ -65,6 +65,14 @@ class Contract(TimestampMixin, Base):
     pdf_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
     owner_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     tenant_confirmed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    # Phase 4: SHA-256 of the final terms once both parties confirmed (immutability).
+    terms_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    # Append-only confirmation log: [{party, user_id, at, ip, user_agent, otp_verified}]
+    confirmations_log: Mapped[list | None] = mapped_column(JSONType, nullable=True)
+    # Optional contract-fee order (orders.kind = contract_fee).
+    fee_order_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("orders.id", ondelete="SET NULL"), nullable=True
+    )
 
 
 class Handover(TimestampMixin, Base):
@@ -78,6 +86,12 @@ class Handover(TimestampMixin, Base):
     status: Mapped[str] = mapped_column(String(20), default="draft")
     confirmations: Mapped[dict] = mapped_column(JSONType, default=dict)
     pdf_key: Mapped[str | None] = mapped_column(String(512), nullable=True)
+    # Phase 4: check-out is created from a confirmed check-in (side-by-side diff).
+    source_handover_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("handovers.id", ondelete="SET NULL"), nullable=True
+    )
+    # SHA-256 of the confirmed payload (immutability, both parties).
+    hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
 
 
 class HandoverMedia(TimestampMixin, Base):
@@ -89,6 +103,10 @@ class HandoverMedia(TimestampMixin, Base):
     room: Mapped[str] = mapped_column(String(60))
     file_key: Mapped[str] = mapped_column(String(512))
     note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    media_type: Mapped[str] = mapped_column(String(10), default="photo")  # photo | video
+    added_by: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
 
 
 class Notification(TimestampMixin, Base):

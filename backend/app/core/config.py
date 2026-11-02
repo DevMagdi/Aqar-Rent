@@ -66,6 +66,19 @@ class Settings(BaseSettings):
     order_rate_limit_per_hour: int = 30  # POST /orders per user
     bank_receipt_max_mb: int = 5  # bank transfer receipt upload cap
 
+    # Phase 4 — contracts & handovers
+    site_url: str = "http://localhost:3000"  # public links (QR verification page)
+    contract_fee_egp: int = 0  # optional contract fee;0 = free, suggested 50
+    contract_nid_key: str = ""  # Fernet key for national IDs (env); derived from SECRET_KEY when empty
+    contract_template_dir: str = ""  # override for editable templates (defaults to app/contract_templates)
+    handover_photo_max_mb: int = 10
+    handover_video_max_mb: int = 50
+    # retention (4C privacy): days to keep final-decision verification docs / contact events
+    verification_retention_days: int = 90
+    contact_event_retention_months: int = 12
+    csp_extra: str = ""  # appended to the production Content-Security-Policy
+    sentry_dsn: str = ""  # optional error tracking (no-op when empty)
+
     paymob_base_url: str = "https://accept.paymob.com"
     paymob_api_key: str = ""
     paymob_integration_id_card: str = ""

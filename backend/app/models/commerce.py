@@ -38,6 +38,8 @@ class Order(TimestampMixin, Base):
         Uuid, ForeignKey("plans.id", ondelete="SET NULL"), nullable=True, index=True
     )
     status: Mapped[str] = mapped_column(String(20), default="pending", index=True)
+    # ad_period (default) = listing ad purchase; contract_fee = Phase-4 contract fee.
+    kind: Mapped[str] = mapped_column(String(20), default="ad_period", index=True)
     method: Mapped[str] = mapped_column(String(30))  # enums.PaymentMethod
     gateway: Mapped[str | None] = mapped_column(String(30), nullable=True)
     gateway_ref: Mapped[str | None] = mapped_column(String(120), nullable=True, unique=True)
