@@ -1,21 +1,125 @@
+/* Aqar Rent — global styles. Palette source of truth: src/styles/tokens.css */
+
+@import "@fontsource/ibm-plex-sans-arabic/400.css";
+@import "@fontsource/ibm-plex-sans-arabic/500.css";
+@import "@fontsource/ibm-plex-sans-arabic/600.css";
+@import "@fontsource/ibm-plex-sans-arabic/700.css";
 @import "tailwindcss";
+@import "../styles/tokens.css";
 
-/* Design tokens — warm stone palette, high contrast for accessibility. */
-@theme {
-  --color-brand-50: #fdf6ee;
-  --color-brand-100: #f9e8d4;
-  --color-brand-500: #c2410c;
-  --color-brand-600: #a93408;
-  --color-brand-700: #8a2a06;
-  --font-sans: "Segoe UI", Tahoma, system-ui, -apple-system, sans-serif;
-}
+/* Every colour utility resolves through the Mantiq tokens (inline = the
+ * utility references the CSS variable directly, tokens.css owns the value). */
+@theme inline {
+  /* canonical palette */
+  --color-brand: var(--color-brand);
+  --color-brand-deep: var(--color-brand-deep);
+  --color-network: var(--color-network);
+  --color-gold: var(--color-gold);
+  --color-gold-light: var(--color-gold-light);
+  --color-gold-dark: var(--color-gold-dark);
+  --color-on-dark: var(--color-on-dark);
 
-/* Bundled Arabic webfont (no Google Fonts fetch — works offline). */
-@font-face {
-  font-family: "Amiri";
-  src: url("/fonts/Amiri-Regular.ttf") format("truetype");
-  font-weight: 400;
-  font-display: swap;
+  /* surfaces */
+  --color-bg: var(--color-bg);
+  --color-surface: var(--color-surface);
+  --color-ink: var(--color-ink);
+  --color-ink-strong: var(--color-ink-strong);
+  --color-muted: var(--color-muted);
+  --color-border: var(--color-border);
+  --color-border-strong: var(--color-border-strong);
+  --color-track: var(--color-track);
+
+  /* dark chrome */
+  --color-sidebar: var(--color-sidebar);
+  --color-sidebar-text: var(--color-sidebar-text);
+  --color-sidebar-active: var(--color-sidebar-active);
+  --color-sidebar-active-bg: var(--color-sidebar-active-bg);
+  --color-sidebar-hover: var(--color-sidebar-hover);
+  --color-sidebar-muted: var(--color-sidebar-muted);
+
+  /* soft tints + status */
+  --color-gold-tint-8: var(--color-gold-tint-8);
+  --color-gold-tint-12: var(--color-gold-tint-12);
+  --color-gold-tint-14: var(--color-gold-tint-14);
+  --color-success: var(--color-success);
+  --color-success-bg: var(--color-success-bg);
+  --color-warn: var(--color-warn);
+  --color-warn-bg: var(--color-warn-bg);
+  --color-danger: var(--color-danger);
+  --color-danger-bg: var(--color-danger-bg);
+  --color-info: var(--color-info);
+  --color-info-bg: var(--color-info-bg);
+  --color-neutral: var(--color-neutral);
+  --color-neutral-bg: var(--color-neutral-bg);
+  --color-whatsapp: var(--color-whatsapp);
+
+  /* ── legacy class names → Mantiq values (existing markup migrates for free) ── */
+  /* brand tints & accents: soft gold ≤14% panels, gold surfaces, gold-dark hover */
+  --color-brand-50: var(--color-gold-tint-8);
+  --color-brand-100: var(--color-gold-tint-12);
+  --color-brand-500: var(--color-gold);
+  --color-brand-600: var(--color-gold);
+  --color-brand-700: var(--color-gold-dark);
+  --color-brand-800: var(--color-ink-strong);
+  --color-brand-900: var(--color-ink-strong);
+
+  /* stone (old greys) → navy-tinted neutrals */
+  --color-stone-50: var(--color-bg);
+  --color-stone-100: var(--color-track);
+  --color-stone-200: var(--color-border-strong);
+  --color-stone-300: var(--color-border-strong);
+  --color-stone-400: var(--color-muted);
+  --color-stone-500: var(--color-muted);
+  --color-stone-600: var(--color-muted);
+  --color-stone-700: var(--color-brand);
+  --color-stone-800: var(--color-brand);
+  --color-stone-900: var(--color-brand-deep);
+
+  /* status families → functional status tokens */
+  --color-emerald-50: var(--color-success-bg);
+  --color-emerald-100: var(--color-success-bg);
+  --color-emerald-500: var(--color-success);
+  --color-emerald-600: var(--color-success);
+  --color-emerald-700: var(--color-success);
+  --color-emerald-800: var(--color-success);
+  --color-red-50: var(--color-danger-bg);
+  --color-red-100: var(--color-danger-bg);
+  --color-red-500: var(--color-danger);
+  --color-red-600: var(--color-danger);
+  --color-red-700: var(--color-danger);
+  --color-red-800: var(--color-danger);
+  --color-amber-50: var(--color-warn-bg);
+  --color-amber-100: var(--color-warn-bg);
+  --color-amber-600: var(--color-warn);
+  --color-amber-700: var(--color-warn);
+  --color-amber-800: var(--color-warn);
+  --color-sky-100: var(--color-info-bg);
+  --color-sky-600: var(--color-info);
+  --color-sky-700: var(--color-info);
+  --color-sky-800: var(--color-info);
+  --color-violet-100: var(--color-neutral-bg);
+  --color-violet-700: var(--color-neutral);
+  --color-violet-800: var(--color-neutral);
+
+  /* typography scale (spec:14/22 base,24/32 title,30/36 KPI,13/20 sub) */
+  --font-sans: var(--font-sans);
+  --text-base-size: var(--text-base-size);
+  --text-base: 14px;
+  --text-base--line-height: var(--text-base-line);
+  --text-sm: 13px;
+  --text-sm--line-height: 20px;
+  --text-2xl: 24px;
+  --text-2xl--line-height: 32px;
+  --text-3xl: 30px;
+  --text-3xl--line-height: 36px;
+
+  /* geometry */
+  --radius-2xl: var(--radius-card);
+  --radius-3xl: var(--radius-card);
+  --shadow-sm: var(--shadow-card);
+  --shadow-lg: var(--shadow-pop);
+  --shadow-xl: var(--shadow-pop);
+  --shadow-2xl: var(--shadow-pop);
 }
 
 :root {
@@ -28,11 +132,15 @@ html {
 
 body {
   font-family: var(--font-sans);
+  font-size: var(--text-base-size);
+  line-height: var(--text-base-line);
+  background: var(--color-bg);
+  color: var(--color-ink);
 }
 
-/* RTL-first: logical properties everywhere via Tailwind's ps/pe/ms/me. */
+/* Focus ring: Mantiq Gold Dark (WCAG2.4.7 visible on every surface) */
 :focus-visible {
-  outline: 3px solid #c2410c;
+  outline: 3px solid var(--color-gold-dark);
   outline-offset: 2px;
 }
 
