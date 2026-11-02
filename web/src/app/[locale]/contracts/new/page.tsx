@@ -1,5 +1,6 @@
 import { ContractWizard } from "@/components/contracts/ContractWizard";
 import { RequireAuth } from "@/components/RequireAuth";
+import { OwnerShell } from "@/components/OwnerShell";
 import { makeT } from "@/lib/i18n";
 
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }) {
@@ -12,7 +13,7 @@ export default async function NewContractPage({ params }: { params: Promise<{ lo
   await params;
   return (
     <RequireAuth>
-      <ContractWizard />
+      <OwnerShell><ContractWizard /></OwnerShell>
     </RequireAuth>
   );
 }

@@ -83,7 +83,7 @@ export function LoginView() {
     }
   }
 
-  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-4 py-3 text-base outline-none focus:border-brand-500";
+  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-4 py-3 text-base outline-none focus:border-gold";
 
   return (
     <div className="mx-auto max-w-md">
@@ -115,7 +115,7 @@ export function LoginView() {
               type="submit"
               data-testid="btn-send-code"
               disabled={busy}
-              className="mt-5 w-full rounded-xl bg-brand-600 py-3 font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+              className="mt-5 w-full rounded-xl bg-gold py-3 font-semibold text-brand-deep hover:bg-gold-dark disabled:opacity-60"
             >
               {busy ? t("loading") : t("send_code")}
             </button>
@@ -154,7 +154,7 @@ export function LoginView() {
               type="submit"
               data-testid="btn-verify"
               disabled={busy}
-              className="mt-5 w-full rounded-xl bg-brand-600 py-3 font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+              className="mt-5 w-full rounded-xl bg-gold py-3 font-semibold text-brand-deep hover:bg-gold-dark disabled:opacity-60"
             >
               {busy ? t("loading") : t("verify")}
             </button>
@@ -172,7 +172,7 @@ export function LoginView() {
                 data-testid="btn-resend"
                 disabled={resendIn > 0 || busy}
                 onClick={() => requestCode()}
-                className="font-semibold text-brand-600 disabled:opacity-50"
+                className="font-semibold text-ink disabled:opacity-50"
               >
                 {resendIn > 0 ? `${t("resend_in")} ${resendIn}s` : t("resend")}
               </button>

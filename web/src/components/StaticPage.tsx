@@ -29,7 +29,7 @@ export function StaticPage({
     <article className="mx-auto max-w-3xl">
       <h1 className="text-2xl font-bold text-stone-900 sm:text-3xl">{t(titleKey)}</h1>
       <div className="mt-6 space-y-4 leading-relaxed text-stone-700">{children}</div>
-      <p className="mt-8 rounded-xl bg-brand-50 p-4 text-sm text-brand-700">{t("static_coming")}</p>
+      <p className="mt-8 rounded-xl bg-brand-50 p-4 text-sm text-ink">{t("static_coming")}</p>
     </article>
   );
 }

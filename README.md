@@ -1,6 +1,8 @@
 # Aqar Rent — عقار رينت
 
-A broker-free rental marketplace for Egypt. Owners pay a **flat ad fee
+A broker-free rental marketplace for Egypt. Visual language: **Mantiq design
+system** — Mantiq Navy `#16273B` + Mantiq Gold `#BDA77E`, single source of
+truth in `web/src/styles/tokens.css` / `admin/src/styles/tokens.css`. Owners pay a **flat ad fee
 (500 EGP / 7 days per listing — price lives in the `plans` table)** — the
 platform takes **no commission**, never holds rent or deposits, and never
 mediates money between landlord and tenant. Arabic-first (RTL), English
@@ -24,6 +26,10 @@ secondary.
 >   side-by-side diff, Arabic PDFs) — web + Flutter clients
 > - **Phase 4C** hardening & launch readiness: security/privacy/reliability/
 >   performance/DevOps/launch-kit docs + code (see [/docs](#docs))
+>
+> **Design system**: Mantiq navy + gold tokens (ADR-034) across web + admin —
+> see `src/styles/tokens.css` in each app and ASSUMPTIONS “Design System
+> Migration” (#84–94); compliance is test-enforced (hex-free, no white-on-gold).
 >
 > Hardening (this round): prod boot validation (refuses SQLite/DEBUG/weak
 > secrets/console OTP/mock-payments), Redis rate limiting, real Twilio SMS
@@ -100,9 +106,10 @@ BACKEND_URL=http://localhost:8000 npm run dev                            # :5173
 make test        # backend pytest (SQLite; TEST_DATABASE_URL for PostgreSQL)
 make lint        # ruff
 make typecheck   # mypy (mypy-lite config)
-cd web  && npx tsc --noEmit && npx vitest run   # types +15 unit tests
+cd web  && npx tsc --noEmit && npx vitest run   # types + unit + design-system compliance (21)
 cd admin && npx tsc --noEmit && npm run build
-make e2e         # Playwright: 7 specs on a hermetic stack (fresh SQLite)
+make e2e         # Playwright:10 specs on a hermetic stack (fresh SQLite),
+                 # incl. design-system verification of computed styles/contrast
 ```
 
 ---

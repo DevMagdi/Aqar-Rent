@@ -137,7 +137,7 @@ export default async function ListingPage({ params }: { params: Promise<Params> 
                   📍 {d.address_text} · {locationName(city, l)} {locationName(gov, l) ? `· ${locationName(gov, l)}` : ""}
                 </p>
               </div>
-              <p className="text-2xl font-extrabold text-brand-600" data-testid="listing-price">
+              <p className="text-2xl font-extrabold text-gold-dark" data-testid="listing-price">
                 {formatMoney(d.rent_monthly, l)} <span className="text-sm font-semibold">{t("per_month")}</span>
               </p>
             </div>

@@ -483,7 +483,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
     );
   }
 
-  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-brand-500";
+  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-gold";
   const errCls = "mt-1 text-xs font-semibold text-red-600";
   const labelCls = "block text-sm font-semibold text-stone-700";
 
@@ -506,10 +506,10 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
           <li key={s} className="flex-1">
             <div
               data-testid={`step-dot-${i}`}
-              className={`h-1.5 rounded-full ${i <= step ? "bg-brand-600" : "bg-stone-200"}`}
+              className={`h-1.5 rounded-full ${i <= step ? "bg-gold" : "bg-stone-200"}`}
               title={t(s)}
             />
-            <p className={`mt-1 hidden text-[11px] sm:block ${i === step ? "font-bold text-brand-700" : "text-stone-400"}`}>{t(s)}</p>
+            <p className={`mt-1 hidden text-[11px] sm:block ${i === step ? "font-bold text-ink" : "text-stone-400"}`}>{t(s)}</p>
           </li>
         ))}
       </ol>
@@ -648,7 +648,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
                     data-testid={`amenity-${a}`}
                     aria-pressed={!!form.amenities[a]}
                     onClick={() => update({ amenities: { ...form.amenities, [a]: !form.amenities[a] } })}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-medium ${form.amenities[a] ? "border-brand-600 bg-brand-50 text-brand-700" : "border-stone-300 text-stone-600"}`}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-medium ${form.amenities[a] ? "border-gold bg-brand-50 text-ink" : "border-stone-300 text-stone-600"}`}
                   >
                     {t(AMENITY_LABEL_KEY[a] || a)}
                   </button>
@@ -757,7 +757,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
               type="file"
               accept="image/jpeg,image/png,image/webp"
               multiple
-              className="block w-full text-sm text-stone-600 file:me-3 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-700"
+              className="block w-full text-sm text-stone-600 file:me-3 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink"
               onChange={(e) => {
                 void addFiles(e.target.files);
                 e.currentTarget.value = "";
@@ -807,12 +807,12 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-xs font-semibold text-stone-700">
-                      {i === 0 && p.status === "done" && <span className="me-1 rounded bg-brand-100 px-1.5 py-0.5 text-[10px] text-brand-700">{t("cover")}</span>}
+                      {i === 0 && p.status === "done" && <span className="me-1 rounded bg-brand-100 px-1.5 py-0.5 text-[10px] text-ink">{t("cover")}</span>}
                       {p.local?.name || p.remote?.id?.slice(0, 8)}
                     </p>
                     {p.status === "uploading" && (
                       <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-stone-200">
-                        <div className="h-full bg-brand-600 transition-all" style={{ width: `${p.progress}%` }} />
+                        <div className="h-full bg-gold transition-all" style={{ width: `${p.progress}%` }} />
                       </div>
                     )}
                     {p.status === "error" && <p className="mt-0.5 text-[11px] font-semibold text-red-600">{p.error || t("upload_failed")}</p>}
@@ -845,7 +845,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
             <p className="text-xs text-stone-500" data-testid="photo-count">
               {photos.filter((p) => p.status !== "error").length}/{MAX_PHOTOS}
             </p>
-            {photoBusy && <p className="text-sm font-semibold text-brand-600">{t("loading_upload")}</p>}
+            {photoBusy && <p className="text-sm font-semibold text-ink">{t("loading_upload")}</p>}
           </div>
         )}
 
@@ -908,7 +908,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
               </label>
               {field("min_term_months", <input id="w-minterm" type="number" min={1} max={36} className={inputCls} value={form.min_term_months} onChange={(e) => update({ min_term_months: e.target.value })} />)}
             </div>
-            <p className="rounded-xl bg-brand-50 p-3 text-xs text-brand-700">{t("submit_hint")}</p>
+            <p className="rounded-xl bg-brand-50 p-3 text-xs text-ink">{t("submit_hint")}</p>
             <button
               type="button"
               data-testid="btn-submit-listing"
@@ -940,7 +940,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
               data-testid="btn-next"
               onClick={() => go(1)}
               disabled={photoBusy}
-              className="rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700 disabled:opacity-60"
+              className="rounded-xl bg-gold px-6 py-2.5 text-sm font-semibold text-brand-deep hover:bg-gold-dark disabled:opacity-60"
             >
               {t("next")} ←
             </button>

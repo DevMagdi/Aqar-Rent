@@ -3,6 +3,7 @@
 import * as maplibregl from "maplibre-gl";
 import type { Map as MLMap, GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+import { TOKENS } from "../styles/tokenValues";
 import { useEffect, useRef } from "react";
 import { formatMoney } from "@/lib/utils";
 import type { Locale, SearchItem } from "@/lib/types";
@@ -73,11 +74,11 @@ export default function MapView({
         source: "pts",
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": "#8a2a06",
+          "circle-color": TOKENS.goldDark,
           "circle-radius": ["step", ["get", "point_count"], 16, 5, 20, 12, 26],
           "circle-opacity": 0.85,
           "circle-stroke-width": 2,
-          "circle-stroke-color": "#ffffff",
+          "circle-stroke-color": TOKENS.surface,
         },
       });
       map.on("click", "clusters", async (e: maplibregl.MapLayerMouseEvent) => {
@@ -138,7 +139,7 @@ export default function MapView({
       el.dataset.testid = "price-pin";
       el.dataset.listingId = i.id;
       el.className =
-        "-translate-y-1/2 rounded-full border border-white bg-brand-600 px-2 py-1 text-[11px] font-bold text-white shadow hover:bg-brand-700";
+        "-translate-y-1/2 rounded-full border border-white bg-gold px-2 py-1 text-[11px] font-bold text-brand-deep shadow hover:bg-gold-dark";
       el.textContent = formatMoney(i.rent_monthly, locale);
       el.addEventListener("click", (ev) => {
         ev.stopPropagation();

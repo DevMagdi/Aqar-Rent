@@ -53,7 +53,7 @@ export function OrdersListView({ locale }: { locale: Locale }) {
     <div className="mx-auto max-w-4xl">
       <div className="mb-5 flex items-center justify-between">
         <h1 className="text-xl font-bold text-stone-900">{t("orders_title")}</h1>
-        <Link href={`/${locale}/owner`} className="text-sm font-semibold text-brand-600 hover:underline">
+        <Link href={`/${locale}/owner`} className="text-sm font-semibold text-ink hover:underline">
           ← {t("dashboard_title")}
         </Link>
       </div>
@@ -74,7 +74,7 @@ export function OrdersListView({ locale }: { locale: Locale }) {
             <li key={o.id} data-testid="order-row" data-status={o.status} className="rounded-2xl border border-stone-200 bg-white p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <Link href={`/${locale}/owner/orders/${o.id}`} className="text-sm font-bold text-stone-900 hover:text-brand-600">
+                  <Link href={`/${locale}/owner/orders/${o.id}`} className="text-sm font-bold text-stone-900 hover:text-ink">
                     {t("order_ref")}: <span className="font-mono">{o.id.slice(0, 8)}</span>
                   </Link>
                   <p className="mt-0.5 text-xs text-stone-500">

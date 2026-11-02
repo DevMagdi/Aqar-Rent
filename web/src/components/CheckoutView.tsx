@@ -80,7 +80,7 @@ function CheckoutInner({ locale }: { locale: Locale }) {
 
   if (err) return <ErrorState message={err} onRetry={load} />;
 
-  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-brand-500";
+  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-gold";
 
   return (
     <div className="mx-auto max-w-2xl space-y-5" data-testid="checkout-form">
@@ -111,7 +111,7 @@ function CheckoutInner({ locale }: { locale: Locale }) {
                     setPromoResult(null);
                   }}
                   className={`flex-1 rounded-xl border px-3 py-3 text-sm font-bold ${
-                    weeks === w ? "border-brand-600 bg-brand-50 text-brand-700" : "border-stone-300 text-stone-600"
+                    weeks === w ? "border-gold bg-brand-50 text-ink" : "border-stone-300 text-stone-600"
                   }`}
                 >
                   {w} {t("week")}
@@ -168,7 +168,7 @@ function CheckoutInner({ locale }: { locale: Locale }) {
                   aria-pressed={method === m}
                   onClick={() => setMethod(m)}
                   className={`rounded-xl border px-4 py-3 text-sm font-semibold text-start ${
-                    method === m ? "border-brand-600 bg-brand-50 text-brand-700" : "border-stone-300 text-stone-600"
+                    method === m ? "border-gold bg-brand-50 text-ink" : "border-stone-300 text-stone-600"
                   }`}
                 >
                   {t(`method_${m}`)}
@@ -182,7 +182,7 @@ function CheckoutInner({ locale }: { locale: Locale }) {
             data-testid="btn-create-order"
             disabled={busy}
             onClick={createOrder}
-            className="w-full rounded-xl bg-brand-600 py-3.5 font-bold text-white hover:bg-brand-700 disabled:opacity-60"
+            className="w-full rounded-xl bg-gold py-3.5 font-bold text-brand-deep hover:bg-gold-dark disabled:opacity-60"
           >
             {busy ? t("loading") : `${t("continue_pay")} · ${formatMoney(total, locale)}`}
           </button>

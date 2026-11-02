@@ -196,7 +196,7 @@ export function SearchExperience({
     mapBbox.map((n) => n.toFixed(3)).join(",") !== filters.bbox.split(",").map((n) => Number(n).toFixed(3)).join(",");
   const showAreaBtn = Boolean(bboxChanged);
 
-  const inputCls = "w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-brand-500";
+  const inputCls = "w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-gold";
   const labelCls = "mb-1 block text-xs font-semibold text-stone-600";
 
   return (
@@ -204,7 +204,7 @@ export function SearchExperience({
       {/* ── Filters ─────────────────────────────────────────────── */}
       <details open className="group rounded-2xl border border-stone-200 bg-white p-4" data-testid="filters">
         <summary className="cursor-pointer list-none text-sm font-bold text-stone-800">
-          {t("filters")} <span className="text-brand-600">▾</span>
+          {t("filters")} <span className="text-ink">▾</span>
         </summary>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           <div className="col-span-2 sm:col-span-3 lg:col-span-4">
@@ -365,7 +365,7 @@ export function SearchExperience({
                   type="button"
                   onClick={() => toggleAmenity(a)}
                   className={`rounded-full border px-3 py-1 text-xs font-medium ${
-                    filters.amenities.includes(a) ? "border-brand-600 bg-brand-50 text-brand-700" : "border-stone-300 text-stone-600"
+                    filters.amenities.includes(a) ? "border-gold bg-brand-50 text-ink" : "border-stone-300 text-stone-600"
                   }`}
                 >
                   {t(AMENITY_LABEL_KEY[a] || a)}
@@ -480,7 +480,7 @@ export function SearchExperience({
               type="button"
               data-testid="search-area"
               onClick={() => applyFilters({ ...filters, bbox: (mapBbox as [number, number, number, number]).map((n) => n.toFixed(5)).join(",") })}
-              className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-brand-700 shadow-lg ring-1 ring-stone-200 hover:bg-brand-50"
+              className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink shadow-lg ring-1 ring-stone-200 hover:bg-brand-50"
             >
               ↖ {t("search_this_area")}
             </button>

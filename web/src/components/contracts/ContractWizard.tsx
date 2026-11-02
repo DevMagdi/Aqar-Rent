@@ -136,7 +136,7 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
     }
   }
 
-  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-brand-500";
+  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-gold";
   const labelCls = "block text-sm font-semibold text-stone-700";
   const steps = [t("choose_template"), t("owner_name_f"), t("monthly_rent_f"), t("review_submit")];
 
@@ -145,8 +145,8 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
       <ol className="mb-5 flex gap-1">
         {steps.map((s, i) => (
           <li key={s} className="flex-1">
-            <div data-testid={`cstep-${i}`} className={`h-1.5 rounded-full ${i <= step ? "bg-brand-600" : "bg-stone-200"}`} />
-            <p className={`mt-1 hidden text-[11px] sm:block ${i === step ? "font-bold text-brand-700" : "text-stone-400"}`}>{s}</p>
+            <div data-testid={`cstep-${i}`} className={`h-1.5 rounded-full ${i <= step ? "bg-gold" : "bg-stone-200"}`} />
+            <p className={`mt-1 hidden text-[11px] sm:block ${i === step ? "font-bold text-ink" : "text-stone-400"}`}>{s}</p>
           </li>
         ))}
       </ol>
@@ -418,7 +418,7 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
               setErr(null);
               setStep((s) => s + 1);
             }}
-            className="rounded-xl bg-brand-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-700"
+            className="rounded-xl bg-gold px-6 py-2.5 text-sm font-semibold text-brand-deep hover:bg-gold-dark"
           >
             {t("next")} ←
           </button>
@@ -427,7 +427,7 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
             <button type="button" data-testid="btn-save-draft" disabled={busy} onClick={() => save(false)} className="rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-700 disabled:opacity-60">
               {t("draft_contract")}
             </button>
-            <button type="button" data-testid="btn-save-request" disabled={busy} onClick={() => save(true)} className="rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60">
+            <button type="button" data-testid="btn-save-request" disabled={busy} onClick={() => save(true)} className="rounded-xl bg-gold px-4 py-2.5 text-sm font-bold text-brand-deep hover:bg-gold-dark disabled:opacity-60">
               {t("request_confirmation")}
             </button>
           </div>
