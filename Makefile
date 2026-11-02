@@ -1,4 +1,4 @@
-.PHONY: up down logs build migrate seed seed-demo test lint fmt typecheck dev ci
+.PHONY: up down logs build migrate seed seed-demo test lint fmt typecheck dev ci e2e web admin
 
 # ── Docker ────────────────────────────────────────────────────────────────────
 up:            ## Start the full dev stack (api, worker, postgres+postgis, redis, minio)
@@ -43,3 +43,12 @@ dev:           ## Run API with reload (needs DATABASE_URL)
 
 ci:            ## What CI runs
 	cd backend && ruff check . && python -m pytest -q
+
+e2e:              ## Playwright owner-journey e2e (hermetic stack :8010/:3010/:5180)
+	cd e2e && npx playwright test
+
+web:              ## Next.js dev server (:3000, proxies /api to BACKEND_URL)
+	cd web && BACKEND_URL=http://localhost:8000 NEXT_PUBLIC_MOCK_PAY=true npm run dev
+
+admin:            ## React admin dev server (:5173, proxies /api to BACKEND_URL)
+	cd admin && BACKEND_URL=http://localhost:8000 npm run dev

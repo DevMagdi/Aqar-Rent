@@ -216,3 +216,38 @@ Every decision the spec left open, made here so review is easy. Business rules
 60. Phase 4: contract PDF generator & handover checklists (tables + enums already migrated).
     The contract feature will state it is a **private agreement template** and does not
     replace official registration.
+
+## Stage 3A (web + admin + e2e)
+
+61. **Ad price source of truth**: the Phase-3 spec text mentions “1500 EGP / 1 month” as the
+    listing fee example, but **business rules win**: price always comes from the `plans` table
+    (seeded Weekly plan = **500 EGP / 7 days**, `len(plans)==1` asserted by tests). No second
+    plan was added; checkout multiplies `plan.price_egp × weeks` and the backend re-validates.
+62. **Languages**: the public site (`/web`) is Arabic-first (RTL) with a full English
+    secondary locale (`/{locale}/…`, hreflang, `x-default=/ar`). The `/admin` console is
+    English-only — it is an internal staff tool and the admin API messages/presets are
+    English (no admin translation layer invented).
+63. **Admin gaps (no backend API — nothing invented)**: (a) **staff CRUD** — the API exposes
+    no staff management endpoints, so the Staff page shows the role matrix + per-staff audit
+    activity instead; provisioning stays with `STAFF_SUPER_ADMIN_*` env/seed. (b)
+    **settings writes** — no settings endpoint exists; the Settings page is a read-only view
+    of backend-owned limits and enum presets (`REJECT_REASONS`, report actions). (c) report
+    actions are limited to the API's `dismiss | resolve | remove_listing | to_moderation`.
+    (d) **“request changes”** maps to *reject with a preset reason + note* (the backend has
+    no `changes_requested` status; a rejected listing is editable + resubmittable). (e)
+    dashboard **top areas** are derived client-side from the active-listings queue because
+    `DashboardOut` has no per-area breakdown. (f) per-listing **favorite counts** are not
+    returned by `/me/listings` (only views/contacts/days-left), so the owner dashboard omits
+    that column.
+64. **E2E stack**: Playwright runs on `playwright-core` + `@sparticuz/chromium` (browser
+    CDNs are unreachable in the build sandbox; the binary ships via npm and its Amazon-Linux
+    libs are inflated per run because `/tmp` does not persist). The suite is **hermetic**:
+    backend `:8010` with a wiped SQLite DB, web `:3010` (isolated `.next-e2e`), admin
+    `:5180` — the dev-preview servers (`:8000/:3000/:5173`) are untouched. Seeded super
+    admin: `admin@aqar-rent.dev` / `ChangeMeAdmin!2026` + TOTP secret
+    `JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP` (dev defaults; overridden by env in production).
+65. **Wizard specifics**: the map step accepts click-to-pin *and* manual lat/lng inputs
+    (Egypt bounds enforced client-side + server-side). Photo **reorder applies while photos
+    are staged** (drag + arrow buttons) — the API has no media-reorder endpoint, so the
+    final order is fixed at upload time (cover = first uploaded). Client-side compression
+    targets ≤ 1.5 MB / 1920 px before upload with per-file progress + retry.
