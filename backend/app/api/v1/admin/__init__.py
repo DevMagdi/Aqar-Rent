@@ -7,6 +7,7 @@ from fastapi import APIRouter
 from app.api.v1.admin import (
     auth,
     dashboard,
+    growth,
     moderation,
     payments,
     plans,
@@ -28,3 +29,4 @@ router.include_router(payments.router)
 router.include_router(bank_router)
 router.include_router(plans.router)
 router.include_router(promos.router)
+router.include_router(growth.router)

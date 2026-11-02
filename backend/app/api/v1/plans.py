@@ -96,6 +96,7 @@ def post_order(payload: OrderCreateIn, user: CurrentUser, db: DbDep, settings: S
         weeks=payload.weeks,
         method=payload.method.value,
         promo_code=payload.promo_code,
+        package_id=payload.package_id,
     )
     checkout = payment_service.initiate_checkout(db, settings, order, user)
     return OrderOut(**order_to_dict(order, settings, db=db, checkout=checkout))

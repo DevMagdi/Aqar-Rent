@@ -45,6 +45,10 @@ class SearchItem {
     this.governorateId,
     this.cityId,
     this.addressText,
+    this.trustLevel,
+    this.verifiedOwner = false,
+    this.officeNameAr,
+    this.isFeatured = false,
   });
   final String id;
   final String title;
@@ -59,6 +63,10 @@ class SearchItem {
   final String? governorateId;
   final String? cityId;
   final String? addressText;
+  final String? trustLevel;
+  final bool verifiedOwner;
+  final String? officeNameAr;
+  final bool isFeatured;
 
   factory SearchItem.fromJson(Map<String, dynamic> j) => SearchItem(
         id: j['id'] as String,
@@ -74,6 +82,10 @@ class SearchItem {
         governorateId: j['governorate_id'] as String?,
         cityId: j['city_id'] as String?,
         addressText: j['address_text'] as String?,
+        trustLevel: j['trust_level'] as String?,
+        verifiedOwner: (j['verified_owner'] ?? false) as bool,
+        officeNameAr: j['office_name_ar'] as String?,
+        isFeatured: (j['is_featured'] ?? false) as bool,
       );
 }
 
@@ -113,6 +125,11 @@ class ListingDetail {
         availableFrom = j['available_from'] as String?,
         minTermMonths = (j['min_term_months'] as num?)?.toInt() ?? 1,
         verifiedBadge = (j['verified_badge'] ?? false) as bool,
+        trustLevel = (j['trust']?['level'] ?? j['verification_level'] ?? 'phone') as String,
+        trustLabelAr = j['trust']?['label_ar'] as String?,
+        trustNoteAr = j['trust']?['note_ar'] as String?,
+        officeNameAr = j['office']?['name_ar'] as String?,
+        isFeatured = (j['is_featured'] ?? false) as bool,
         isOwner = (j['is_owner'] ?? false) as bool,
         status = j['status'] as String?,
         viewCount = (j['view_count'] as num?)?.toInt() ?? 0,
@@ -120,9 +137,12 @@ class ListingDetail {
         media = ((j['media'] as List?) ?? []).whereType<Map<String, dynamic>>().map(Media.fromJson).toList();
 
   final String id, title, propertyType, rentalType, furnished;
-  final int rentMonthly, depositMonths, areaM2, bedrooms, bathrooms, minTermMonths, viewCount;
+  final int rentMonthly, depositMonths, bedrooms, bathrooms, minTermMonths, viewCount;
+  final double areaM2;
   final int? floor;
-  final bool hasElevator, verifiedBadge, isOwner;
+  final bool hasElevator, verifiedBadge, isOwner, isFeatured;
+  final String trustLevel;
+  final String? trustLabelAr, trustNoteAr, officeNameAr;
   final String? finishing, availableFrom, status, ownerName;
   final String description, addressText;
   final Map<String, dynamic> amenities;
@@ -182,7 +202,10 @@ class Verification {
         docType = (j['doc_type'] ?? '') as String,
         status = (j['status'] ?? 'pending') as String,
         rejectReason = j['reject_reason'] as String?,
+        rejectReasonCode = j['reject_reason_code'] as String?,
+        appealStatus = (j['appeal_status'] ?? 'none') as String,
+        appealNote = j['appeal_note'] as String?,
         fileUrl = j['file_url'] as String?;
-  final String id, docType, status;
-  final String? rejectReason, fileUrl;
+  final String id, docType, status, appealStatus;
+  final String? rejectReason, rejectReasonCode, appealNote, fileUrl;
 }

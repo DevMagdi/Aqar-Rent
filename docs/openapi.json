@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "Aqar Rent API",
-    "description": "\nAqar Rent (إيجار مباشر) — a broker-free rental marketplace for Egypt.\nOwners pay a flat 500 EGP / 7 days per listing; the platform never takes\ncommission and never handles rent or deposits.\n\n* Arabic-first (RTL), English secondary.\n* Standard error body: `{code, message, details}`; cursor pagination.\n",
+    "description": "\nAqar Rent (عقار رينت) — Egypt's most trusted, transparent, broker-OPTIONAL\nrental platform. Individuals list directly; verified real-estate offices manage\nowners' units, teams and leads. Revenue comes from a flat 500 EGP / 7-day ad,\nmulti-week packages and monthly owner/office subscriptions — NEVER from rent,\ndeposits or commission on rent money (which the platform never holds).\n\n* Arabic-first (RTL), English secondary.\n* Contracts are PRIVATE AGREEMENTS: not notarized, not officially registered,\n  not executive instruments, and no substitute for official registration.\n* Standard error body: `{code, message, details}`; cursor pagination.\n* Production refuses mock payments/OTP, weak secrets and console providers.\n",
     "version": "0.1.0"
   },
   "paths": {
@@ -2515,6 +2515,107 @@
         }
       }
     },
+    "/api/v1/contracts/{contract_id}/registry-status": {
+      "get": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Official registry status (honest: unavailable in Egypt today)",
+        "description": "Architecture seam for a future official Egyptian digital rental registry.\n\nToday it ALWAYS reports `unavailable` with a clear bilingual explanation.\nThe private agreement is never presented as registered/notarized.",
+        "operationId": "registry_status_api_v1_contracts__contract_id__registry_status_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Registry Status Api V1 Contracts  Contract Id  Registry Status Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/contracts/{contract_id}/handovers/comparison": {
+      "get": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Side-by-side check-in / check-out comparison (items, meters, evidence)",
+        "operationId": "handover_comparison_api_v1_contracts__contract_id__handovers_comparison_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Handover Comparison Api V1 Contracts  Contract Id  Handovers Comparison Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/verify/{reference_no}": {
       "get": {
         "tags": [
@@ -2929,6 +3030,1424 @@
             }
           }
         }
+      }
+    },
+    "/api/v1/pricing": {
+      "get": {
+        "tags": [
+          "pricing"
+        ],
+        "summary": "All prices, packages & plans (Public)",
+        "description": "BR-1: prices live in DB tables, never hard-coded in web/mobile clients.\n\nReturns the weekly ad entry point, multi-week/featured packages, owner and\noffice subscription tiers, and the platform's money principles.",
+        "operationId": "pricing_api_v1_pricing_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricingOut"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/entitlements": {
+      "get": {
+        "tags": [
+          "pricing"
+        ],
+        "summary": "My live limits & features",
+        "description": "What this account can do right now: listing cap, seats, features, trust.",
+        "operationId": "my_entitlements_api_v1_me_entitlements_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EntitlementsOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/subscriptions/checkout": {
+      "post": {
+        "tags": [
+          "subscriptions"
+        ],
+        "summary": "Buy/renew a monthly plan (Paymob card/wallet/Fawry or bank transfer)",
+        "operationId": "subscription_checkout_api_v1_subscriptions_checkout_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscriptionOrderIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OrderOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/subscriptions/me": {
+      "get": {
+        "tags": [
+          "subscriptions"
+        ],
+        "summary": "My subscriptions",
+        "operationId": "my_subscriptions_api_v1_subscriptions_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SubscriptionOut"
+                  },
+                  "type": "array",
+                  "title": "Response My Subscriptions Api V1 Subscriptions Me Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/subscriptions/active": {
+      "get": {
+        "tags": [
+          "subscriptions"
+        ],
+        "summary": "Current active plan",
+        "operationId": "active_plan_api_v1_subscriptions_active_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/SubscriptionOut"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Active Plan Api V1 Subscriptions Active Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/subscriptions/{subscription_id}/cancel": {
+      "post": {
+        "tags": [
+          "subscriptions"
+        ],
+        "summary": "Cancel auto-renewal (benefits stay until the paid end date)",
+        "operationId": "cancel_api_v1_subscriptions__subscription_id__cancel_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "subscription_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Subscription Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/subscriptions/orders": {
+      "get": {
+        "tags": [
+          "subscriptions"
+        ],
+        "summary": "My subscription invoices",
+        "operationId": "subscription_orders_api_v1_subscriptions_orders_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/OrderOut"
+                  },
+                  "type": "array",
+                  "title": "Response Subscription Orders Api V1 Subscriptions Orders Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/subscriptions/status": {
+      "get": {
+        "tags": [
+          "subscriptions"
+        ],
+        "summary": "Subscription status + activation hint (honest copy)",
+        "operationId": "subscription_status_api_v1_subscriptions_status_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Subscription Status Api V1 Subscriptions Status Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/offices": {
+      "post": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Create an office/agency profile (first-class account)",
+        "operationId": "create_api_v1_offices_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfficeCreateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfficeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/offices/me": {
+      "get": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "My office (owner or active agent)",
+        "operationId": "my_office_api_v1_offices_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfficeOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/offices/{office_id}": {
+      "patch": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Update office profile (owner/manager)",
+        "operationId": "patch_office_api_v1_offices__office_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfficePatchIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfficeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/offices/{office_id}/verification-request": {
+      "post": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Submit office licence/commercial-register data for staff review",
+        "operationId": "request_verification_api_v1_offices__office_id__verification_request_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/offices/slug/{slug}": {
+      "get": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Public branded office page",
+        "operationId": "public_office_api_v1_offices_slug__slug__get",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfficeOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/offices/slug/{slug}/listings": {
+      "get": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Office's public listings (ids + titles)",
+        "operationId": "public_office_listings_api_v1_offices_slug__slug__listings_get",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Slug"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Public Office Listings Api V1 Offices Slug  Slug  Listings Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/offices/{office_id}/members": {
+      "post": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Invite an agent/manager by phone (seat-limited by plan)",
+        "operationId": "add_member_api_v1_offices__office_id__members_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfficeMemberIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfficeMemberOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Team & invites",
+        "operationId": "list_members_api_v1_offices__office_id__members_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/OfficeMemberOut"
+                  },
+                  "title": "Response List Members Api V1 Offices  Office Id  Members Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/offices/{office_id}/members/{member_id}": {
+      "patch": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Change a member's role / suspend or reactivate",
+        "operationId": "patch_member_api_v1_offices__office_id__members__member_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          },
+          {
+            "name": "member_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Member Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfficeMemberPatchIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfficeMemberOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Remove a member (suspend, keep attribution)",
+        "operationId": "remove_member_api_v1_offices__office_id__members__member_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          },
+          {
+            "name": "member_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Member Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/offices/{office_id}/leads": {
+      "post": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Create a rental lead (pipeline entry)",
+        "operationId": "create_lead_api_v1_offices__office_id__leads_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeadCreateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Leads (filter by stage/agent)",
+        "operationId": "list_leads_api_v1_offices__office_id__leads_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          },
+          {
+            "name": "stage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Stage"
+            }
+          },
+          {
+            "name": "agent_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Agent Id"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LeadOut"
+                  },
+                  "title": "Response List Leads Api V1 Offices  Office Id  Leads Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/offices/{office_id}/leads/{lead_id}": {
+      "patch": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Move stage / assign agent / set follow-up (timeline recorded)",
+        "operationId": "patch_lead_api_v1_offices__office_id__leads__lead_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          },
+          {
+            "name": "lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Lead Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeadPatchIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/offices/{office_id}/leads/{lead_id}/events": {
+      "post": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Append a call/viewing/note to the lead timeline",
+        "operationId": "create_lead_event_api_v1_offices__office_id__leads__lead_id__events_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          },
+          {
+            "name": "lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Lead Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LeadEventIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeadEventOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Lead timeline",
+        "operationId": "lead_events_api_v1_offices__office_id__leads__lead_id__events_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          },
+          {
+            "name": "lead_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Lead Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/LeadEventOut"
+                  },
+                  "title": "Response Lead Events Api V1 Offices  Office Id  Leads  Lead Id  Events Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/offices/{office_id}/dashboard": {
+      "get": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Performance dashboard",
+        "operationId": "office_dashboard_api_v1_offices__office_id__dashboard_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OfficeDashboardOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/offices/{office_id}/listings/{listing_id}/assign": {
+      "post": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Attach a listing to this office + responsible agent",
+        "operationId": "assign_listing_api_v1_offices__office_id__listings__listing_id__assign_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          },
+          {
+            "name": "listing_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Listing Id"
+            }
+          },
+          {
+            "name": "agent_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Agent Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/offices/{office_id}/listings": {
+      "get": {
+        "tags": [
+          "offices"
+        ],
+        "summary": "Managed units (office view)",
+        "operationId": "managed_listings_api_v1_offices__office_id__listings_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Managed Listings Api V1 Offices  Office Id  Listings Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/trust": {
+      "get": {
+        "tags": [
+          "trust"
+        ],
+        "summary": "My verification level + badges",
+        "operationId": "my_trust_api_v1_me_trust_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TrustOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/trust/reject-reasons": {
+      "get": {
+        "tags": [
+          "trust"
+        ],
+        "summary": "Localizable verification rejection reasons (Public)",
+        "operationId": "reject_reasons_api_v1_trust_reject_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Reject Reasons Api V1 Trust Reject Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/verification/{doc_id}/appeal": {
+      "post": {
+        "tags": [
+          "trust"
+        ],
+        "summary": "Appeal a rejected document once (re-review by a moderator)",
+        "operationId": "appeal_document_api_v1_me_verification__doc_id__appeal_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppealIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AppealOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/me/verification/appeals": {
+      "get": {
+        "tags": [
+          "trust"
+        ],
+        "summary": "My appeals",
+        "operationId": "my_appeals_api_v1_me_verification_appeals_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AppealOut"
+                  },
+                  "type": "array",
+                  "title": "Response My Appeals Api V1 Me Verification Appeals Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
     "/api/v1/admin/auth/login": {
@@ -3365,6 +4884,18 @@
               "default": "pending",
               "title": "Status"
             }
+          },
+          {
+            "name": "appeal_pending",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "boolean",
+              "description": "Only documents with a pending appeal",
+              "default": false,
+              "title": "Appeal Pending"
+            },
+            "description": "Only documents with a pending appeal"
           }
         ],
         "responses": {
@@ -4672,6 +6203,708 @@
         }
       }
     },
+    "/api/v1/admin/growth/subscription-plans": {
+      "get": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "All subscription tiers",
+        "operationId": "list_subscription_plans_api_v1_admin_growth_subscription_plans_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SubscriptionPlanOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Subscription Plans Api V1 Admin Growth Subscription Plans Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "Create a subscription tier",
+        "operationId": "create_subscription_plan_api_v1_admin_growth_subscription_plans_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscriptionPlanAdminIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionPlanOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/growth/subscription-plans/{plan_id}": {
+      "patch": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "Update a subscription tier (price, limits, seats, features)",
+        "operationId": "patch_subscription_plan_api_v1_admin_growth_subscription_plans__plan_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscriptionPlanAdminPatchIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscriptionPlanOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "Deactivate a tier",
+        "operationId": "deactivate_subscription_plan_api_v1_admin_growth_subscription_plans__plan_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "plan_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Plan Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/growth/ad-packages": {
+      "get": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "All multi-week packages",
+        "operationId": "list_packages_api_v1_admin_growth_ad_packages_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AdPackageOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Packages Api V1 Admin Growth Ad Packages Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "Create a package",
+        "operationId": "create_package_api_v1_admin_growth_ad_packages_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdPackageAdminIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdPackageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/growth/ad-packages/{package_id}": {
+      "patch": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "Update a package",
+        "operationId": "patch_package_api_v1_admin_growth_ad_packages__package_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdPackageAdminPatchIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdPackageOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "Deactivate a package",
+        "operationId": "deactivate_package_api_v1_admin_growth_ad_packages__package_id__delete",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "package_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Package Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/growth/offices": {
+      "get": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "Office verification queue (moderator)",
+        "operationId": "offices_queue_api_v1_admin_growth_offices_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/growth/offices/{office_id}/decision": {
+      "post": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "Verify / reject an office",
+        "operationId": "office_decision_api_v1_admin_growth_offices__office_id__decision_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "office_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Office Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OfficeVerificationDecisionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/growth/appeals": {
+      "get": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "Pending verification appeals (moderator)",
+        "operationId": "appeals_queue_api_v1_admin_growth_appeals_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/growth/appeals/{doc_id}/decision": {
+      "post": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "Accept (reopen) or reject an appeal",
+        "operationId": "appeal_decision_api_v1_admin_growth_appeals__doc_id__decision_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "doc_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Doc Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AppealDecisionIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/growth/users/{user_id}/trust": {
+      "post": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "Grant premium verification (paid, staff-reviewed)",
+        "operationId": "grant_premium_api_v1_admin_growth_users__user_id__trust_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "User Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrustGrantIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/growth/payment-events": {
+      "get": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "Append-only payment audit trail",
+        "operationId": "payment_events_api_v1_admin_growth_payment_events_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "event",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Event"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 500,
+              "minimum": 1,
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/PaymentEventOut"
+                  },
+                  "title": "Response Payment Events Api V1 Admin Growth Payment Events Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/admin/growth/reconciliation": {
+      "get": {
+        "tags": [
+          "admin-growth"
+        ],
+        "summary": "Daily money reconciliation report",
+        "operationId": "reconciliation_report_api_v1_admin_growth_reconciliation_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReconciliationOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/health": {
       "get": {
         "tags": [
@@ -4769,6 +7002,218 @@
         ],
         "title": "ActionOut",
         "description": "Generic admin action acknowledgment."
+      },
+      "AdPackageAdminIn": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 2,
+            "title": "Code"
+          },
+          "name_ar": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Name Ar"
+          },
+          "name_en": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Name En"
+          },
+          "weeks": {
+            "type": "integer",
+            "maximum": 52.0,
+            "minimum": 2.0,
+            "title": "Weeks"
+          },
+          "discount_pct": {
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": 0.0,
+            "title": "Discount Pct",
+            "default": 0
+          },
+          "priority_weight": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "title": "Priority Weight",
+            "default": 0
+          },
+          "is_featured": {
+            "type": "boolean",
+            "title": "Is Featured",
+            "default": false
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name_ar",
+          "name_en",
+          "weeks"
+        ],
+        "title": "AdPackageAdminIn"
+      },
+      "AdPackageAdminPatchIn": {
+        "properties": {
+          "name_ar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Ar"
+          },
+          "name_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name En"
+          },
+          "weeks": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 52.0,
+                "minimum": 2.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Weeks"
+          },
+          "discount_pct": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 90.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Discount Pct"
+          },
+          "priority_weight": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority Weight"
+          },
+          "is_featured": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Is Featured"
+          },
+          "active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active"
+          }
+        },
+        "type": "object",
+        "title": "AdPackageAdminPatchIn"
+      },
+      "AdPackageOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name_ar": {
+            "type": "string",
+            "title": "Name Ar"
+          },
+          "name_en": {
+            "type": "string",
+            "title": "Name En"
+          },
+          "weeks": {
+            "type": "integer",
+            "title": "Weeks"
+          },
+          "discount_pct": {
+            "type": "number",
+            "title": "Discount Pct"
+          },
+          "subtotal": {
+            "type": "number",
+            "title": "Subtotal"
+          },
+          "discount": {
+            "type": "number",
+            "title": "Discount"
+          },
+          "total": {
+            "type": "number",
+            "title": "Total"
+          },
+          "priority_weight": {
+            "type": "integer",
+            "title": "Priority Weight"
+          },
+          "is_featured": {
+            "type": "boolean",
+            "title": "Is Featured"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "name_ar",
+          "name_en",
+          "weeks",
+          "discount_pct",
+          "subtotal",
+          "discount",
+          "total",
+          "priority_weight",
+          "is_featured"
+        ],
+        "title": "AdPackageOut"
       },
       "AdminLoginIn": {
         "properties": {
@@ -4969,6 +7414,114 @@
         },
         "type": "object",
         "title": "AdminUserPatchIn"
+      },
+      "AppealDecisionIn": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "approve",
+              "reject"
+            ],
+            "title": "Decision"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision"
+        ],
+        "title": "AppealDecisionIn"
+      },
+      "AppealIn": {
+        "properties": {
+          "note": {
+            "type": "string",
+            "maxLength": 2000,
+            "minLength": 10,
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "note"
+        ],
+        "title": "AppealIn"
+      },
+      "AppealOut": {
+        "properties": {
+          "doc_id": {
+            "type": "string",
+            "title": "Doc Id"
+          },
+          "appeal_status": {
+            "type": "string",
+            "title": "Appeal Status"
+          },
+          "appeal_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appeal Note"
+          },
+          "appeal_submitted_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appeal Submitted At"
+          },
+          "appeal_reviewed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appeal Reviewed At"
+          },
+          "decision_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "doc_id",
+          "appeal_status"
+        ],
+        "title": "AppealOut"
       },
       "AuditLogOut": {
         "properties": {
@@ -5944,6 +8497,68 @@
         ],
         "title": "DeviceOut"
       },
+      "EntitlementsOut": {
+        "properties": {
+          "account_type": {
+            "type": "string",
+            "title": "Account Type"
+          },
+          "verification_level": {
+            "type": "string",
+            "title": "Verification Level"
+          },
+          "trust": {
+            "$ref": "#/components/schemas/TrustOut"
+          },
+          "listing_cap": {
+            "type": "integer",
+            "title": "Listing Cap"
+          },
+          "seat_limit": {
+            "type": "integer",
+            "title": "Seat Limit"
+          },
+          "priority_weight": {
+            "type": "integer",
+            "title": "Priority Weight"
+          },
+          "features": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "Features"
+          },
+          "subscription": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subscription"
+          },
+          "is_premium": {
+            "type": "boolean",
+            "title": "Is Premium"
+          }
+        },
+        "type": "object",
+        "required": [
+          "account_type",
+          "verification_level",
+          "trust",
+          "listing_cap",
+          "seat_limit",
+          "priority_weight",
+          "features",
+          "is_premium"
+        ],
+        "title": "EntitlementsOut"
+      },
       "FavoriteItemOut": {
         "properties": {
           "id": {
@@ -6041,6 +8656,49 @@
               }
             ],
             "title": "Thumb Url"
+          },
+          "trust_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trust Level"
+          },
+          "verified_owner": {
+            "type": "boolean",
+            "title": "Verified Owner",
+            "default": false
+          },
+          "trust_label_ar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trust Label Ar"
+          },
+          "office_name_ar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Office Name Ar"
+          },
+          "is_featured": {
+            "type": "boolean",
+            "title": "Is Featured",
+            "default": false
           },
           "created_at": {
             "anyOf": [
@@ -6582,6 +9240,405 @@
         ],
         "title": "HandoverRoomIn"
       },
+      "LeadCreateIn": {
+        "properties": {
+          "tenant_name": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Tenant Name"
+          },
+          "tenant_phone": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 8,
+            "title": "Tenant Phone"
+          },
+          "listing_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Listing Id"
+          },
+          "assigned_agent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned Agent Id"
+          },
+          "budget_egp": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Egp"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 30,
+            "title": "Source",
+            "default": "manual"
+          },
+          "commission_egp": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 10000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commission Egp"
+          },
+          "next_follow_up_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Follow Up At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "tenant_name",
+          "tenant_phone"
+        ],
+        "title": "LeadCreateIn"
+      },
+      "LeadEventIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "note",
+              "call",
+              "whatsapp",
+              "viewing",
+              "stage_change"
+            ],
+            "title": "Kind",
+            "default": "note"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "LeadEventIn"
+      },
+      "LeadEventOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "lead_id": {
+            "type": "string",
+            "title": "Lead Id"
+          },
+          "actor_user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor User Id"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "lead_id",
+          "kind",
+          "note"
+        ],
+        "title": "LeadEventOut"
+      },
+      "LeadOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "office_id": {
+            "type": "string",
+            "title": "Office Id"
+          },
+          "listing_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Listing Id"
+          },
+          "assigned_agent_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned Agent Id"
+          },
+          "tenant_name": {
+            "type": "string",
+            "title": "Tenant Name"
+          },
+          "tenant_phone": {
+            "type": "string",
+            "title": "Tenant Phone"
+          },
+          "budget_egp": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Egp"
+          },
+          "note": {
+            "type": "string",
+            "title": "Note"
+          },
+          "source": {
+            "type": "string",
+            "title": "Source"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "commission_egp": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commission Egp"
+          },
+          "next_follow_up_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Follow Up At"
+          },
+          "won_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Won At"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "office_id",
+          "tenant_name",
+          "tenant_phone",
+          "note",
+          "source",
+          "stage"
+        ],
+        "title": "LeadOut"
+      },
+      "LeadPatchIn": {
+        "properties": {
+          "stage": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "new",
+                  "contacted",
+                  "viewing",
+                  "offer",
+                  "won",
+                  "lost"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Stage"
+          },
+          "assigned_agent_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assigned Agent Id"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "budget_egp": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Budget Egp"
+          },
+          "commission_egp": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 10000000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commission Egp"
+          },
+          "next_follow_up_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Follow Up At"
+          },
+          "listing_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Listing Id"
+          }
+        },
+        "type": "object",
+        "title": "LeadPatchIn"
+      },
       "ListingAdminDetailOut": {
         "properties": {
           "id": {
@@ -6899,6 +9956,30 @@
             "minimum": 1.0,
             "title": "Min Term Months",
             "default": 1
+          },
+          "office_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Office Id"
+          },
+          "agent_user_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent User Id"
           }
         },
         "type": "object",
@@ -7087,6 +10168,45 @@
           "verified_badge": {
             "type": "boolean",
             "title": "Verified Badge",
+            "default": false
+          },
+          "trust": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TrustOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "office": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Office"
+          },
+          "agent": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent"
+          },
+          "is_featured": {
+            "type": "boolean",
+            "title": "Is Featured",
             "default": false
           },
           "is_owner": {
@@ -7454,6 +10574,30 @@
               }
             ],
             "title": "Min Term Months"
+          },
+          "office_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Office Id"
+          },
+          "agent_user_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent User Id"
           }
         },
         "type": "object",
@@ -7899,6 +11043,721 @@
         "type": "object",
         "title": "NotificationsReadIn"
       },
+      "OfficeCreateIn": {
+        "properties": {
+          "name_ar": {
+            "type": "string",
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Name Ar"
+          },
+          "name_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name En"
+          },
+          "description_ar": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description Ar"
+          },
+          "description_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description En"
+          },
+          "license_no": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License No"
+          },
+          "commercial_register": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commercial Register"
+          },
+          "tax_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Id"
+          },
+          "public_phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Phone"
+          },
+          "public_email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Email"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name_ar"
+        ],
+        "title": "OfficeCreateIn"
+      },
+      "OfficeDashboardOut": {
+        "properties": {
+          "office_id": {
+            "type": "string",
+            "title": "Office Id"
+          },
+          "leads_total": {
+            "type": "integer",
+            "title": "Leads Total"
+          },
+          "leads_by_stage": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Leads By Stage"
+          },
+          "won": {
+            "type": "integer",
+            "title": "Won"
+          },
+          "conversion_pct": {
+            "type": "number",
+            "title": "Conversion Pct"
+          },
+          "follow_ups_due": {
+            "type": "integer",
+            "title": "Follow Ups Due"
+          },
+          "listings_total": {
+            "type": "integer",
+            "title": "Listings Total"
+          },
+          "listings_by_status": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Listings By Status"
+          },
+          "views_total": {
+            "type": "integer",
+            "title": "Views Total"
+          },
+          "agents": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Agents"
+          },
+          "generated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Generated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "office_id",
+          "leads_total",
+          "leads_by_stage",
+          "won",
+          "conversion_pct",
+          "follow_ups_due",
+          "listings_total",
+          "listings_by_status",
+          "views_total",
+          "agents",
+          "generated_at"
+        ],
+        "title": "OfficeDashboardOut"
+      },
+      "OfficeMemberIn": {
+        "properties": {
+          "invited_phone": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 8,
+            "title": "Invited Phone"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "manager",
+              "agent"
+            ],
+            "title": "Role",
+            "default": "agent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invited_phone"
+        ],
+        "title": "OfficeMemberIn"
+      },
+      "OfficeMemberOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "office_id": {
+            "type": "string",
+            "title": "Office Id"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          },
+          "invited_phone": {
+            "type": "string",
+            "title": "Invited Phone"
+          },
+          "display_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Display Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "joined_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Joined At"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "office_id",
+          "invited_phone",
+          "role",
+          "status"
+        ],
+        "title": "OfficeMemberOut"
+      },
+      "OfficeMemberPatchIn": {
+        "properties": {
+          "role": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "manager",
+                  "agent"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "active",
+                  "suspended"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "title": "OfficeMemberPatchIn"
+      },
+      "OfficeOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "slug": {
+            "type": "string",
+            "title": "Slug"
+          },
+          "name_ar": {
+            "type": "string",
+            "title": "Name Ar"
+          },
+          "name_en": {
+            "type": "string",
+            "title": "Name En"
+          },
+          "description_ar": {
+            "type": "string",
+            "title": "Description Ar"
+          },
+          "description_en": {
+            "type": "string",
+            "title": "Description En"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "public_phone": {
+            "type": "string",
+            "title": "Public Phone"
+          },
+          "public_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Email"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "verification_status": {
+            "type": "string",
+            "title": "Verification Status"
+          },
+          "verified_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified At"
+          },
+          "owner_user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner User Id"
+          },
+          "license_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License No"
+          },
+          "commercial_register": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commercial Register"
+          },
+          "tax_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Id"
+          },
+          "verification_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verification Note"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active",
+            "default": true
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "trust": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TrustOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "name_ar",
+          "name_en",
+          "description_ar",
+          "description_en",
+          "public_phone",
+          "verification_status"
+        ],
+        "title": "OfficeOut"
+      },
+      "OfficePatchIn": {
+        "properties": {
+          "name_ar": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160,
+                "minLength": 2
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Ar"
+          },
+          "name_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 160
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name En"
+          },
+          "description_ar": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description Ar"
+          },
+          "description_en": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 2000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description En"
+          },
+          "public_phone": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 20
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Phone"
+          },
+          "public_email": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Public Email"
+          },
+          "city": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 120
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "City"
+          },
+          "website": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 255
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Website"
+          },
+          "license_no": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "License No"
+          },
+          "commercial_register": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Commercial Register"
+          },
+          "tax_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 80
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Id"
+          }
+        },
+        "type": "object",
+        "title": "OfficePatchIn"
+      },
+      "OfficeVerificationDecisionIn": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "enum": [
+              "verify",
+              "reject",
+              "request_changes"
+            ],
+            "title": "Decision"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 1000
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision"
+        ],
+        "title": "OfficeVerificationDecisionIn"
+      },
       "OrderCreateIn": {
         "properties": {
           "listing_id": {
@@ -7908,9 +11767,21 @@
           },
           "weeks": {
             "type": "integer",
-            "maximum": 4.0,
+            "maximum": 52.0,
             "minimum": 1.0,
             "title": "Weeks"
+          },
+          "package_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Package Id"
           },
           "promo_code": {
             "anyOf": [
@@ -7943,7 +11814,14 @@
             "title": "Id"
           },
           "listing_id": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Listing Id"
           },
           "weeks": {
@@ -8049,6 +11927,33 @@
             ],
             "title": "Plan Id"
           },
+          "kind": {
+            "type": "string",
+            "title": "Kind",
+            "default": "ad_period"
+          },
+          "package_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Package Id"
+          },
+          "subscription_plan_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Subscription Plan Id"
+          },
           "checkout_url": {
             "anyOf": [
               {
@@ -8080,7 +11985,6 @@
         "type": "object",
         "required": [
           "id",
-          "listing_id",
           "weeks",
           "subtotal",
           "discount",
@@ -8208,6 +12112,107 @@
           "code"
         ],
         "title": "OtpVerifyIn"
+      },
+      "PaymentEventOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "order_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Id"
+          },
+          "event": {
+            "type": "string",
+            "title": "Event"
+          },
+          "provider": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Provider"
+          },
+          "gateway_txn_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Gateway Txn Id"
+          },
+          "amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount"
+          },
+          "payload_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payload Sha256"
+          },
+          "detail": {
+            "type": "string",
+            "title": "Detail"
+          },
+          "actor": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "event",
+          "detail"
+        ],
+        "title": "PaymentEventOut"
       },
       "PaymentMethod": {
         "type": "string",
@@ -8500,6 +12505,56 @@
           "priority_weight"
         ],
         "title": "PlanOut"
+      },
+      "PricingOut": {
+        "properties": {
+          "currency": {
+            "type": "string",
+            "title": "Currency"
+          },
+          "weekly_ad": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Weekly Ad"
+          },
+          "ad_plans": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Ad Plans",
+            "default": []
+          },
+          "packages": {
+            "items": {
+              "$ref": "#/components/schemas/AdPackageOut"
+            },
+            "type": "array",
+            "title": "Packages",
+            "default": []
+          },
+          "subscriptions": {
+            "items": {
+              "$ref": "#/components/schemas/SubscriptionPlanOut"
+            },
+            "type": "array",
+            "title": "Subscriptions",
+            "default": []
+          },
+          "principles": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Principles"
+          }
+        },
+        "type": "object",
+        "required": [
+          "currency",
+          "weekly_ad",
+          "principles"
+        ],
+        "title": "PricingOut"
       },
       "PromoAdminIn": {
         "properties": {
@@ -8939,6 +12994,55 @@
         ],
         "title": "QueueItemOut"
       },
+      "ReconciliationOut": {
+        "properties": {
+          "paid_orders": {
+            "type": "integer",
+            "title": "Paid Orders"
+          },
+          "paid_payments": {
+            "type": "integer",
+            "title": "Paid Payments"
+          },
+          "collected_egp": {
+            "type": "number",
+            "title": "Collected Egp"
+          },
+          "missing_payment_rows": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Missing Payment Rows"
+          },
+          "orphan_paid_payments": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Orphan Paid Payments"
+          },
+          "failure_events": {
+            "type": "integer",
+            "title": "Failure Events"
+          },
+          "consistent": {
+            "type": "boolean",
+            "title": "Consistent"
+          }
+        },
+        "type": "object",
+        "required": [
+          "paid_orders",
+          "paid_payments",
+          "collected_egp",
+          "missing_payment_rows",
+          "orphan_paid_payments",
+          "failure_events",
+          "consistent"
+        ],
+        "title": "ReconciliationOut"
+      },
       "RefreshIn": {
         "properties": {
           "refresh_token": {
@@ -9352,6 +13456,49 @@
             ],
             "title": "Thumb Url"
           },
+          "trust_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trust Level"
+          },
+          "verified_owner": {
+            "type": "boolean",
+            "title": "Verified Owner",
+            "default": false
+          },
+          "trust_label_ar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Trust Label Ar"
+          },
+          "office_name_ar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Office Name Ar"
+          },
+          "is_featured": {
+            "type": "boolean",
+            "title": "Is Featured",
+            "default": false
+          },
           "created_at": {
             "anyOf": [
               {
@@ -9442,6 +13589,355 @@
         "type": "object",
         "title": "StatsOut"
       },
+      "SubscriptionAudience": {
+        "type": "string",
+        "enum": [
+          "individual",
+          "office"
+        ],
+        "title": "SubscriptionAudience"
+      },
+      "SubscriptionOrderIn": {
+        "properties": {
+          "plan_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Plan Id"
+          },
+          "method": {
+            "type": "string",
+            "enum": [
+              "card",
+              "fawry",
+              "vodafone_cash",
+              "bank_transfer"
+            ],
+            "title": "Method"
+          }
+        },
+        "type": "object",
+        "required": [
+          "plan_id",
+          "method"
+        ],
+        "title": "SubscriptionOrderIn"
+      },
+      "SubscriptionOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "plan_id": {
+            "type": "string",
+            "title": "Plan Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "starts_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Starts At"
+          },
+          "ends_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ends At"
+          },
+          "auto_renew": {
+            "type": "boolean",
+            "title": "Auto Renew"
+          },
+          "cancelled_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cancelled At"
+          },
+          "plan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SubscriptionPlanOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "plan_id",
+          "status",
+          "auto_renew"
+        ],
+        "title": "SubscriptionOut"
+      },
+      "SubscriptionPlanAdminIn": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 2,
+            "title": "Code"
+          },
+          "audience": {
+            "$ref": "#/components/schemas/SubscriptionAudience"
+          },
+          "name_ar": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Name Ar"
+          },
+          "name_en": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 2,
+            "title": "Name En"
+          },
+          "monthly_price_egp": {
+            "type": "number",
+            "maximum": 1000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Monthly Price Egp"
+          },
+          "listing_limit": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Listing Limit",
+            "default": 5
+          },
+          "seats": {
+            "type": "integer",
+            "maximum": 500.0,
+            "minimum": 1.0,
+            "title": "Seats",
+            "default": 1
+          },
+          "priority_weight": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 0.0,
+            "title": "Priority Weight",
+            "default": 0
+          },
+          "features": {
+            "additionalProperties": {
+              "type": "boolean"
+            },
+            "type": "object",
+            "title": "Features"
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active",
+            "default": true
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "audience",
+          "name_ar",
+          "name_en",
+          "monthly_price_egp"
+        ],
+        "title": "SubscriptionPlanAdminIn"
+      },
+      "SubscriptionPlanAdminPatchIn": {
+        "properties": {
+          "name_ar": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name Ar"
+          },
+          "name_en": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name En"
+          },
+          "monthly_price_egp": {
+            "anyOf": [
+              {
+                "type": "number",
+                "maximum": 1000000.0,
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Monthly Price Egp"
+          },
+          "listing_limit": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 10000.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Listing Limit"
+          },
+          "seats": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 500.0,
+                "minimum": 1.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seats"
+          },
+          "priority_weight": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 1000.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Priority Weight"
+          },
+          "features": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "boolean"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Features"
+          },
+          "active": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active"
+          }
+        },
+        "type": "object",
+        "title": "SubscriptionPlanAdminPatchIn"
+      },
+      "SubscriptionPlanOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "audience": {
+            "type": "string",
+            "title": "Audience"
+          },
+          "name_ar": {
+            "type": "string",
+            "title": "Name Ar"
+          },
+          "name_en": {
+            "type": "string",
+            "title": "Name En"
+          },
+          "monthly_price_egp": {
+            "type": "number",
+            "title": "Monthly Price Egp"
+          },
+          "listing_limit": {
+            "type": "integer",
+            "title": "Listing Limit"
+          },
+          "seats": {
+            "type": "integer",
+            "title": "Seats"
+          },
+          "priority_weight": {
+            "type": "integer",
+            "title": "Priority Weight"
+          },
+          "features": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Features",
+            "default": {}
+          },
+          "active": {
+            "type": "boolean",
+            "title": "Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "audience",
+          "name_ar",
+          "name_en",
+          "monthly_price_egp",
+          "listing_limit",
+          "seats",
+          "priority_weight",
+          "active"
+        ],
+        "title": "SubscriptionPlanOut"
+      },
       "TokenPairOut": {
         "properties": {
           "access_token": {
@@ -9469,6 +13965,118 @@
           "expires_in"
         ],
         "title": "TokenPairOut"
+      },
+      "TrustBadgeOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "label_ar": {
+            "type": "string",
+            "title": "Label Ar"
+          },
+          "label_en": {
+            "type": "string",
+            "title": "Label En"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "label_ar",
+          "label_en"
+        ],
+        "title": "TrustBadgeOut"
+      },
+      "TrustGrantIn": {
+        "properties": {
+          "level": {
+            "type": "string",
+            "const": "premium",
+            "title": "Level"
+          },
+          "days": {
+            "type": "integer",
+            "maximum": 1095.0,
+            "minimum": 1.0,
+            "title": "Days",
+            "default": 365
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "level"
+        ],
+        "title": "TrustGrantIn"
+      },
+      "TrustOut": {
+        "properties": {
+          "level": {
+            "type": "string",
+            "title": "Level"
+          },
+          "rank": {
+            "type": "integer",
+            "title": "Rank"
+          },
+          "label_ar": {
+            "type": "string",
+            "title": "Label Ar"
+          },
+          "label_en": {
+            "type": "string",
+            "title": "Label En"
+          },
+          "verified_owner": {
+            "type": "boolean",
+            "title": "Verified Owner"
+          },
+          "badges": {
+            "items": {
+              "$ref": "#/components/schemas/TrustBadgeOut"
+            },
+            "type": "array",
+            "title": "Badges",
+            "default": []
+          },
+          "documents_reviewed": {
+            "type": "integer",
+            "title": "Documents Reviewed",
+            "default": 0
+          },
+          "note_ar": {
+            "type": "string",
+            "title": "Note Ar"
+          },
+          "note_en": {
+            "type": "string",
+            "title": "Note En"
+          }
+        },
+        "type": "object",
+        "required": [
+          "level",
+          "rank",
+          "label_ar",
+          "label_en",
+          "verified_owner",
+          "note_ar",
+          "note_en"
+        ],
+        "title": "TrustOut"
       },
       "UserOut": {
         "properties": {
@@ -9525,6 +14133,28 @@
           "verification_status": {
             "type": "string",
             "title": "Verification Status"
+          },
+          "account_type": {
+            "type": "string",
+            "title": "Account Type",
+            "default": "individual"
+          },
+          "verification_level": {
+            "type": "string",
+            "title": "Verification Level",
+            "default": "phone"
+          },
+          "premium_verified_until": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Premium Verified Until"
           },
           "created_at": {
             "anyOf": [
@@ -9594,7 +14224,8 @@
             "type": "string",
             "enum": [
               "approve",
-              "reject"
+              "reject",
+              "reopen"
             ],
             "title": "Decision"
           },
@@ -9609,6 +14240,18 @@
               }
             ],
             "title": "Reason"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 40
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Code"
           }
         },
         "type": "object",
@@ -9761,6 +14404,33 @@
               }
             ],
             "title": "Reject Reason"
+          },
+          "reject_reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reject Reason Code"
+          },
+          "appeal_status": {
+            "type": "string",
+            "title": "Appeal Status",
+            "default": "none"
+          },
+          "appeal_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Appeal Note"
           },
           "created_at": {
             "anyOf": [

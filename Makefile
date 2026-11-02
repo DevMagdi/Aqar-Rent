@@ -1,4 +1,4 @@
-.PHONY: up down logs build migrate seed seed-demo test lint fmt typecheck dev ci e2e web admin
+.PHONY: up down logs build migrate seed seed-demo test lint fmt typecheck dev ci e2e web admin docs mobile-check mobile-analyze mobile-test mobile-build app-links quality
 
 # ── Docker ────────────────────────────────────────────────────────────────────
 up:            ## Start the full dev stack (api, worker, postgres+postgis, redis, minio)
@@ -52,3 +52,28 @@ web:              ## Next.js dev server (:3000, proxies /api to BACKEND_URL)
 
 admin:            ## React admin dev server (:5173, proxies /api to BACKEND_URL)
 	cd admin && BACKEND_URL=http://localhost:8000 npm run dev
+
+# ── Phase 5: generated docs, mobile, full quality battery ───────────────────
+docs:             ## Regenerate OpenAPI + Postman collection from the live app
+	cd backend && python ../scripts/generate-api-docs.py
+
+mobile-check:     ## SDK-free Dart syntax/import/i18n/route/API checks
+	python3 scripts/check_mobile.py
+
+mobile-analyze:   ## Flutter static analysis (requires Flutter SDK)
+	cd mobile && flutter analyze --fatal-infos
+
+mobile-test:      ## Flutter unit + widget tests
+	cd mobile && flutter test
+
+mobile-build:     ## Signed APK/AAB (Linux) or IPA (macOS) from CI secrets
+	./scripts/mobile-build.sh
+
+app-links:        ## Generate verified App Links / Universal Links files
+	./scripts/generate-app-links.sh
+
+quality:          ## All local gates (backend, web, admin, docs)
+	cd backend && python -m pytest -q && ruff check app tests && mypy app
+	cd web && npx tsc --noEmit && npm test && npm run build
+	cd admin && npx tsc --noEmit && npm run build
+	cd backend && python ../scripts/generate-api-docs.py

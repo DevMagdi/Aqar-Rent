@@ -1,0 +1,5 @@
+-keepattributes *Annotation*
+-keepattributes SourceFile,LineNumberTable
+-dontwarn com.google.android.gms.**
+-keep class io.flutter.** { *; }
+-keep class com.aqarrent.app.** { *; }

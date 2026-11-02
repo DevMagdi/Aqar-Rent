@@ -63,3 +63,18 @@ reverse-search at moderation time — flagged for Phase 5.
   contact events and rate-limited (30/h/user).
 - Payment fraud: HMAC-verified idempotent webhooks — a replayed/duplicate
   webhook can never create a second ad period (tested).
+
+---
+
+## Phase 5 threat-model additions
+
+| Threat | Mitigation |
+|---|---|
+| Fake "verified owner" claims | Derived trust levels from actual approved docs; transparent public labels; premium requires ownership evidence; no government-check claim |
+| Office impersonation / fake agencies | Commercial-register field + staff review queue, audit-logged decisions, public verification status |
+| Team privilege escalation | `require_office_access(manager=True)` on every mutating team/office route; owner seat immutable; invites activated only on OTP login |
+| Lead/CRM scraping | Per-user configurable rate limits, office-scoped queries, 403 for non-members |
+| Subscription/plan tampering | Prices from DB, audience validation, plan activation only on paid webhook, idempotent under replay, audit trail |
+| Payment repudiation | Append-only SHA-256 event chain, reconciliation report, failure counters and signed receipts |
+| Registry confusion / legal fraud | `NoOpRegistryAdapter` returns `unavailable`; prod refuses any other adapter; explicit private-agreement copy everywhere |
+| Mobile release misconfiguration | `AppConfig.assertReleaseConfig()` refuses HTTP/loopback API, dev environment, missing Firebase and HTTP tiles before `runApp()` |

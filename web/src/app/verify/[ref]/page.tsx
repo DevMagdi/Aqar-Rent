@@ -36,7 +36,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ ref: st
       <body style={{ fontFamily: '"IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif', background: TOKENS.bg, margin: 0, color: TOKENS.brand }}>
         <main style={{ maxWidth: 560, margin: "48px auto", padding: "0 16px", color: TOKENS.brand }}>
           <div style={{ background: TOKENS.surface, borderRadius: 18, border: `1px solid rgba(22,39,59,0.10)`, padding: 28, boxShadow: "0 1px 2px rgba(14,23,40,0.06)" }}>
-            <p style={{ color: TOKENS.goldDark, fontWeight: 700, margin: 0 }}>عقار ربنا · Aqar Rent</p>
+            <p style={{ color: TOKENS.goldDark, fontWeight: 700, margin: 0 }}>عقار رينت · Aqar Rent</p>
             <h1 style={{ fontSize: 22, margin: "8px 0 4px" }}>التحقق من العقد / Contract verification</h1>
             <p style={{ color: TOKENS.muted, fontSize: 13, margin: 0 }} dir="ltr">
               /verify/{ref}
@@ -75,7 +75,7 @@ export default async function VerifyPage({ params }: { params: Promise<{ ref: st
             )}
 
             <p style={{ marginTop: 24, fontSize: 12, color: TOKENS.muted, borderTop: "1px solid rgba(22,39,59,0.10)", paddingTop: 12 }}>
-              هذا اتفاق خاص ولا يحل محل التسجيل الرسمي أو التوثيق. / This is a private agreement template and does not replace official registration or notarization.
+              هذا «اتفاق خاص» بين الطرفين؛ ليس عقداً موثّقاً ولا مسجّلاً رسمياً، وليس سنداً تنفيذياً، ولا يُغني عن التسجيل أو التوثيق الرسمي. التحقق يفيد بسلامة السجل فقط. / This is a PRIVATE AGREEMENT: not notarized, not officially registered, not an executive instrument, and no substitute for official registration or notarization. Verification only proves record integrity.
             </p>
           </div>
         </main>

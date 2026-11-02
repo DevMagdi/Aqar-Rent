@@ -8,6 +8,7 @@ from uuid import UUID
 from pydantic import BaseModel, Field, field_validator, model_validator
 
 from app.models.enums import Finishing, Furnished, PropertyType, RentalType, ReportReason
+from app.schemas.growth import TrustOut
 
 AMENITY_KEYS_MAX = 40
 
@@ -36,6 +37,9 @@ class ListingBase(BaseModel):
     longitude: float = Field(ge=24.0, le=37.5)
     available_from: date | None = None
     min_term_months: int = Field(default=1, ge=1, le=36)
+    # Phase 5: office-managed listings (optional, individuals unchanged).
+    office_id: UUID | None = None
+    agent_user_id: UUID | None = None
 
     @field_validator("amenities")
     @classmethod
@@ -76,6 +80,8 @@ class ListingPatch(BaseModel):
     longitude: float | None = Field(default=None, ge=24.0, le=37.5)
     available_from: date | None = None
     min_term_months: int | None = Field(default=None, ge=1, le=36)
+    office_id: UUID | None = None
+    agent_user_id: UUID | None = None
 
     @field_validator("amenities")
     @classmethod
@@ -134,6 +140,10 @@ class ListingDetailOut(BaseModel):
     reject_reason: str | None = None
     view_count: int | None = None
     verified_badge: bool = False
+    trust: TrustOut | None = None  # transparent multi-level trust (public)
+    office: dict | None = None
+    agent: dict | None = None
+    is_featured: bool = False
     is_owner: bool = False
     days_left: int | None = None
     owner_name: str | None = None
@@ -160,6 +170,11 @@ class SearchItemOut(BaseModel):
     geo: GeoOut
     available_from: date | None = None
     thumb_url: str | None = None
+    trust_level: str | None = None
+    verified_owner: bool = False
+    trust_label_ar: str | None = None
+    office_name_ar: str | None = None
+    is_featured: bool = False
     created_at: datetime | None = None
 
 

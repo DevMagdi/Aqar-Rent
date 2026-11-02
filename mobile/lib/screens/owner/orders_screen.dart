@@ -6,8 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
-import '../api/api_client.dart';
-import '../models/models.dart';
+import '../../api/api_client.dart';
+import '../../models/models.dart';
 
 class OrdersScreen extends StatefulWidget {
   const OrdersScreen({super.key});
@@ -34,7 +34,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       final items = ((res['items'] as List?) ?? []).whereType<Map<String, dynamic>>().map(Order.fromJson).toList();
       if (mounted) setState(() { _items = items; _loading = false; });
     } catch (e) {
-      if (mounted) setState(() => _error = '$e'; _loading = false);
+      if (mounted) setState(() { _error = '$e'; _loading = false; });
     }
   }
 
@@ -44,7 +44,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
       final dir = await getTemporaryDirectory();
       final file = File('${dir.path}/receipt-$orderId.pdf');
       await file.writeAsBytes(bytes, flush: true);
-      await Share.shareXFiles([XFile(file.path)], text: 'إيصال عقار ربنا');
+      await Share.shareXFiles([XFile(file.path)], text: 'إيصال عقار رينت');
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
     }

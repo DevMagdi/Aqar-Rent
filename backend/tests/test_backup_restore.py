@@ -90,7 +90,7 @@ def test_backup_and_restore_roundtrip(pg_uri, tmp_path):
         ).fetchone()[0]
         plans = conn.execute("SELECT price_egp FROM plans WHERE active").fetchone()[0]
         version = conn.execute("SELECT version_num FROM alembic_version").fetchone()[0]
-        assert locations == 27 and float(plans) == 500.0 and version == "0006"
+        assert locations == 27 and float(plans) == 500.0 and version == "0007"
 
     # 2) backup
     backup_dir = tmp_path / "backups"
@@ -133,7 +133,7 @@ def test_backup_and_restore_roundtrip(pg_uri, tmp_path):
             conn.execute("SELECT COUNT(*) FROM locations WHERE level='governorate'").fetchone()[0] == 27
         )
         assert float(conn.execute("SELECT price_egp FROM plans WHERE active").fetchone()[0]) == 500.0
-        assert conn.execute("SELECT version_num FROM alembic_version").fetchone()[0] == "0006"
+        assert conn.execute("SELECT version_num FROM alembic_version").fetchone()[0] == "0007"
         # schema objects restored (indexes included)
         idx = conn.execute(
             "SELECT indexname FROM pg_indexes "

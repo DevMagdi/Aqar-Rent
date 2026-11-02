@@ -1,129 +1,82 @@
-# PRODUCTION_READINESS.md — Aqar Rent
+# PRODUCTION_READINESS.md — عقار رينت / Aqar Rent
 
-Honest pass/fail evidence for every hard requirement. Generated after the
-full verification battery on **2026-11-02**; re-run the commands to refresh.
+Honest pass/fail evidence after the Phase 5 build, dated **2026-11-02**.
+Re-run the commands below to refresh. Legend: ✅ pass with evidence ·
+⚠️ pass with caveat · ⛔ external blocker (credential / legal / hardware).
 
-**Verdict: READY FOR STAGING / PILOT. NOT yet cleared for public launch** —
-four external blockers (Paymob live keys, Twilio credentials, lawyer review,
-Flutter build verification) must be closed first; they are configuration/legal
-items, not code gaps.
+**Verdict: source-complete and ready for staging/pilot. NOT cleared for public
+launch** until the external items in `docs/external-dependencies.md` are closed.
+The product has no "coming soon" pages, no placeholder copy and no mock-only
+production path; every production flow uses real providers or refuses to boot.
 
-Legend: ✅ pass with evidence · ⚠️ pass with caveat · ❌ blocked (external dependency)
-
----
-
-## A. Documentation & truthfulness
+## A. Code & automated evidence
 
 | # | Item | Status | Evidence |
 |---|---|---|---|
-| A1 | README matches reality | ✅ | README “Status” lists phases1–4 with exact test counts (see G); roadmap marks only genuinely unfinished items |
-| A2 | ASSUMPTIONS in sync | ✅ | items1–77 incl. Phase-4 decisions (templates, OTP confirm, NIDs, fee order kind, search perf, mini-Flutter scope) |
-| A3 | This document | ✅ | you are reading it |
-| A4 | No stale “planned/done” claims | ✅ | README rewritten this round; Phase-3B described as built-for-real below with its verification caveat |
+| A1 | Backend tests | ✅ | `backend/.venv/bin/python -m pytest -q` → **162 passed** with `pgserver` installed (CI path); **161 passed, 1 skipped** in a minimal sandbox. Includes 11 new Phase 5 tests and the updated backup/restore head assertion |
+| A2 | Lint / types | ✅ | `ruff check app tests` clean · `mypy app` clean (97 files) |
+| A3 | Migration | ✅ | `0001→0007` verified on SQLite, on a throwaway PostgreSQL via `test_backup_restore.py`, and on PostgreSQL 16 + PostGIS in the PR CI `test (postgres)` job; production-shaped staging rehearsal is still a go-live step |
+| A4 | Web | ✅ | `npx tsc --noEmit`, `npm test` (**21 vitest**: 15 core + 6 Mantiq design-system compliance), `npm run build` all pass; pricing/office/legal pages added |
+| A5 | Admin | ✅ | `npx tsc --noEmit`, `npm run build` pass; 4 new admin surfaces |
+| A6 | Mobile source | ✅ CI / ⚠️ release | PR CI `quality` ran a real Flutter 3.47.9 SDK: `flutter analyze --fatal-infos` → **No issues found**, `flutter test --coverage` → **5/5 passed**; SDK-free static check also clean. Release APK/AAB/IPA remain `workflow_dispatch` gates needing store secrets and macOS. Flutter SDK is unavailable in the local sandbox only. |
+| A7 | API docs | ✅ | `scripts/generate-api-docs.py` regenerates `docs/openapi.json` (113 paths, 134 schemas) and Postman collection (137 requests) from the live app |
+| A8 | Static copy | ✅ | No "coming soon"/DRAFT banners; all six static pages complete in AR/EN |
+| A9 | Design system | ✅ | `main` Mantiq navy+gold migration merged; token files byte-identical, zero hard-coded hex in TS/TSX, no white-on-gold — enforced by `tokens.test.ts` |
+| A10 | E2E | ✅ CI | PR CI `e2e` job executed **10 Playwright tests in 8 specs** (incl. Mantiq design-system computed styles/WCAG); local sandbox cannot download browsers, but CI provides them |
 
-## B. Backend / infrastructure
-
-| # | Item | Status | Evidence |
-|---|---|---|---|
-| B5 | PostgreSQL+PostGIS enforced outside tests; SQLite refused in staging/prod | ✅ | `Settings.validate_runtime()` raises `SystemExit` listing every problem at boot; tests `test_production_config.py` (11) |
-| B6 | Redis rate limiting | ✅ | sliding-window ZSET in `app/core/rate_limit.py`, shared across workers; in-process fallback for dev/test (unit-tested, incl. quota unlink on reject) |
-| B7 | Real SMS provider; console dev-only | ✅ code / ❌ creds | `TwilioOTPProvider` (E.164, basic-auth REST, errors never leak the code); boot refuses `OTP_PROVIDER=console` in staging/prod. **Blocked on Twilio account credentials** |
-| B8 | Real object storage | ✅ | S3/MinIO driver (`STORAGE_BACKEND=s3`), public media bucket + private documents bucket, signed short-lived URLs for all private files; prod refuses local storage |
-| B9 | Production compose | ✅ | `docker-compose.staging.yml`: `${VAR:?}` required secrets, app-level boot validation, healthchecks (db/redis/minio/api `/ready`/web/admin), `restart: unless-stopped`, json-file log rotation (10m×3), mem/cpu limits |
-| B10 | Worker reliable + monitored | ✅ | arq hourly jobs with per-job try/except + `aqar_job_failures_total` / `aqar_job_last_run_*` metrics; one failure never stops the rest |
-| B11 | Structured logging + metrics | ✅ | redacting formatter (`[PHONE]/[NID]/[TOKEN]`) + `GET /metrics` (Prometheus: latency histogram, webhook/payment/job counters) |
-| B12 | Load-test evidence | ✅ | `docs/load-test/report.md`: Locust20 users/60s on **100k listings** + checkout bench — search p95: newest **23 ms**, sequential worst variant **17 ms** (target<600 ✅), checkout create p95 **232 ms**,0 failures |
-
-## C. Payments (must be live)
+## B. Trust, offices, pricing (Phase 5)
 
 | # | Item | Status | Evidence |
 |---|---|---|---|
-| C13 | Paymob card + Vodafone Cash + Fawry wired & tested | ✅ code / ❌ live keys | `app/services/payments/paymob.py` (auth token, order, iframe/kiosk, HMAC-SHA51230-field verify, refund) + unit tests `test_paymob_provider.py`; boot refuses `PAYMENT_PROVIDER=mock` in prod. **Blocked on Paymob live credentials (go-live)** |
-| C14 | Webhook HMAC + IP allowlist + idempotency | ✅ | `webhook_ip_allowlist` setting, HMAC verify, unique `gateway_txn_id` + row lock; tests: bad-signature, duplicate & replay never double-activate |
-| C15 | Bank receipt → Finance → ad live | ✅ | `POST /orders/{id}/bank-receipt`, admin approve endpoint, e2e `payments.spec.ts` + `test_payments.py` |
-| C16 | Arabic PDF receipts | ✅ | `receipt_service.py` (Amiri+reshaper+bidi), worker pre-warm sweep, e2e download assertions |
-| C17 | Full/partial refunds affect ad periods | ✅ | BR-8 tests: full cancel + hide, partial pro-rate |
-| C18 | Promo concurrency-safe | ✅ | threaded double-redeem test in `test_orders.py` |
-| C19 | No mock paths in production config | ✅ | boot validation rejects `mock` in prod; mock provider only reachable in dev/test |
+| B1 | 4-level trust ladder + public badges | ✅ | `trust_service.py`, `search_service.py::_owner_trust`, `test_trust_ladder_badges_appeal_and_premium_grant` |
+| B2 | Structured rejections + one-round appeal | ✅ | `/trust/reject-reasons`, `/me/verification/{id}/appeal`, admin appeals queue, audit log |
+| B3 | Office accounts, teams, CRM-lite, dashboard | ✅ | `office_service.py`, `/offices/*`, `test_office_team_invites_leads_and_dashboard` |
+| B4 | Weekly ad preserved + packages + subscriptions | ✅ | `seed_growth`, `/pricing`, `test_multiweek_package_order_validates_and_settles`, `test_subscription_checkout_settles_idempotently_and_raises_cap` |
+| B5 | Entitlements applied to creation AND activation | ✅ | `entitlements.effective_listing_cap` called from `listing_service.check_listing_cap` and `order_service._check_running_ad_cap` |
+| B6 | Admin plan/package management | ✅ | `/admin/growth/*`, `AdminGrowth.tsx`, test |
 
-## D. Clients
-
-| # | Item | Status | Evidence |
-|---|---|---|---|
-| D20–24 | Web owner journey, search/map/SEO/OG, checkout all methods, states, a11y/RTL | ✅ | `e2e` specs (owner-journey, tenant-search, public-seo, payments, lifecycle, contract-handover) **8/8**; web tsc +15 vitest + `next build`46 pages; RTL/dir asserted in e2e |
-| D25–28 | Admin queues/KPIs/roles/audit | ✅ | e2e `admin-console` (2FA fail/success, ban enforced by API, audit rows, presets), funnel card, role-filtered menu + API `require_roles` |
-| D29 | **Full Flutter app** (login, search+map+filters, detail+contact, owner create/edit/submit+photos, verification, checkout, orders, favorites, notifications, profile) | ✅ code / ❌ build | `mobile/lib` —21 Dart files, ~4.0k lines, dio+secure-storage+MapLibre+image_picker+url_launcher; contracts/handover screens included |
-| D30 | Same business rules as web | ✅ | same endpoints + same validation paths (OTP gate on contact, BR-6 upload, submit rules, dual-OTP contract freeze) |
-| D31 | Push (FCM) | ✅ code / ❌ project | `push_service.dart` → real FCM token registration via `POST /me/devices`; requires `FIREBASE_*` dart-defines from your Firebase project |
-| D32 | Store-ready config notes | ✅ | `mobile/README.md` (signing, dart-defines, privacy labels, `docs/launch-checklist.md`) |
-
-**⚠️ Mobile build verification (G45) is blocked in this environment**: the
-Flutter SDK cannot be downloaded here (`storage.googleapis.com` unreachable —
-measured `curl →000`; only github/npm/pypi allowed). First action on a dev
-machine: `cd mobile && flutter create . && flutter pub get && flutter analyze
-&& flutter test && flutter build apk --debug`. This is the single largest
-unverified item.
-
-## E. Phase 4 — contracts & handover
+## C. Legal & evidence
 
 | # | Item | Status | Evidence |
 |---|---|---|---|
-| E33 | Contract PDF, private-agreement disclaimer | ✅ | `contract_pdf.py` (Amiri, QR → `/verify`, confirmation log) + e2e downloads |
-| E34 | Handover checklist flow | ✅ | web + Flutter; e2e `contract-handover` (dual OTP, immutability PATCH→409, side-by-side meter diff) |
-| E35 | Sensitive IDs encrypted | ✅ | Fernet (`CONTRACT_NID_KEY`), masked API, redacted logs — asserted in tests |
-| E36 | No claim of replacing official registration | ✅ | disclaimer in UI + PDF + `/verify` page + templates |
+| C1 | Production Arabic private-agreement templates | ✅ | 3 full templates (16 clauses each), no draft banner; `test_contracts.py` |
+| C2 | Professional Arabic PDF + QR + hash + dual OTP | ✅ | `contract_pdf.py`, `contract_service.py`, tests |
+| C3 | Honest registry status / no Ejar claim | ✅ | `integrations/registry.py`, `/contracts/{id}/registry-status`, test |
+| C4 | Rich handover comparison + meter validation | ✅ | `handover_service.comparison_for`, `test_handovers.py` |
+| C5 | Egyptian lawyer final sign-off | ⛔ | `docs/legal-notes.md` §3 lists 7 explicit items; written opinion required before launch |
+| C6 | Store/privacy label legal review | ⛔ | `mobile/ios/Runner/PrivacyInfo.xcprivacy` + `docs/privacy/pdpl-note.md` |
 
-## F. Security, privacy, compliance
-
-| # | Item | Status | Evidence |
-|---|---|---|---|
-| F37 | Secret management + strong prod validation | ✅ | `.env*` gitignored; boot validation (weak SECRET_KEY, missing keys → refuse); rotation notes in `crypto_service.py` |
-| F38 | PDPL basics | ✅ | consent banner, `GET /me/export`, delete-account, retention jobs (90d docs / 12mo contacts), `docs/privacy/pdpl-note.md` **flagged for lawyer review** |
-| F39 | File upload hardening | ✅ | type+size+magic-bytes+re-encode (images), video type/size, malware-scan hook (`MALWARE_SCAN_CMD`), private docs signed URLs |
-| F40 | Rate limits & broker anti-patterns | ✅ | Redis/in-process limits, OTP DB limits, contact/contract/media limits; preset reject reasons incl. `broker_suspected`; auto-moderation at3 reports |
-| F41 | Headers + CORS locked in prod | ✅ | `SecurityHeadersMiddleware` (CSP only in prod) + boot refuses wildcard CORS outside dev; tests assert both |
-
-## G. Quality gates (run locally / CI)
-
-| Gate | Command | Result |
-|---|---|---|
-| Backend tests (SQLite) | `pytest -q --cov=app` | **151 passed** |
-| Backend tests (PostgreSQL) | CI `test (postgres)` job (migrate + pytest) | ✅ green on CI (this round fixed the root cause: undeclared `cryptography`/`prometheus-client`/`qrcode` — clean-venv collect =151) |
-| Lint | `ruff check backend` | **All checks passed** |
-| Types | `mypy app` | **Success:84 files** |
-| Web unit | `npx vitest run` | **15 passed** |
-| Web build | `npx next build` | ✓46 pages |
-| Admin | `tsc --noEmit && vite build` | ✓ |
-| E2E | `npx playwright test` | **8/8 passed** (hermetic stack, fresh SQLite per run) |
-| Dependency audit | `pip-audit` + `npm audit --audit-level=high` | **0 known vulnerabilities** (CI `audit` job) |
-| Mobile build | `flutter build` | ❌ **blocked** — Flutter SDK unavailable in this environment (see D29) |
-| Critical/high security findings | OWASP checklist + threat model | **0 known** — `docs/security/owasp-checklist.md`, `docs/security/threat-model.md` |
-
-## H. Observability & operations
+## D. Payments, SMS, security
 
 | # | Item | Status | Evidence |
 |---|---|---|---|
-| H48 | Runbook (deploy, key rotation, failed webhooks, refunds) | ✅ | `docs/runbook.md` + `docs/deploy.md` (rotation steps in `crypto_service.py`, webhook alerts on `aqar_webhook_failures_total`) |
-| H49 | Monitoring hooks | ✅ | `/health`, `/ready`, `/metrics`; Sentry via `SENTRY_DSN` (optional init, never blocks boot); alert rules in runbook §7 |
-| H50 | Backup/restore for Postgres | ✅ | `scripts/backup.sh` + `restore.sh` — **roundtrip-tested** in `tests/test_backup_restore.py` (migrate → seed → backup → drop schema → restore → assert rows/indexes/version) |
+| D1 | Paymob card/wallet/Fawry + HMAC + IP allowlist + idempotency + refunds | ✅ code / ⛔ live keys | `services/payments/paymob.py`, `test_payments.py` |
+| D2 | Bank transfer approval + receipt handling | ✅ | `test_payments.py`, admin console |
+| D3 | Append-only payment audit + reconciliation + failure alerting | ✅ | `payment_audit.py`, `/admin/growth/reconciliation`, `core/metrics.py` |
+| D4 | Twilio SMS provider | ✅ code / ⛔ account | `integrations/otp/twilio.py` |
+| D5 | Production refuses mock/console/weak secrets | ✅ | `Settings.validate_runtime()`, `test_production_config.py`, `test_phase5_growth.py` |
+| D6 | `ENVIRONMENT=production` alias without breaking `APP_ENV` | ✅ | `config.py::_environment_alias`, test |
+| D7 | OWASP / threat model / redacting logs / Prometheus / Sentry | ✅ | `docs/security/*`, `core/logging.py`, `core/metrics.py` |
 
----
+## E. External blockers (unchanged in nature, now itemised)
 
-## External go-live blockers (cannot be closed in code)
+⛔ Paymob live keys · Twilio/approved Egyptian sender · Egyptian lawyer sign-off ·
+Apple Developer + Google Play accounts · Firebase project & APNs · tax/commercial
+registration data · production map-tile host · domain association files with real
+signing fingerprints · Flutter SDK + macOS build machine · store screenshots/video
+capture. Full owners/actions: `docs/external-dependencies.md`; ordered gates:
+`docs/go-live-checklist.md`.
 
-1. ❌ **Paymob live keys** (api key, integrations, HMAC) + verified capture/refund.
-2. ❌ **Twilio account** (SID/token/sender) — or switch `OTP_PROVIDER` to another real gateway.
-3. ❌ **Lawyer review** of the three contract templates + terms/privacy (PDPL note lists the questions).
-4. ❌ **Flutter SDK build verification** + Firebase project for FCM + store accounts.
-5. ⚠️ Tax/commercial-registration data for checkout bank details; production map-tile host (OSM usage policy).
+## F. What changed vs. the previous verdict
 
-## Reproduce the battery
-
-```bash
-pip install -r backend/requirements-dev.txt && pytest -q --cov=app   #151
-ruff check backend && (cd backend && mypy app)
-cd web && npx tsc --noEmit && npx vitest run && npx next build
-cd admin && npx tsc --noEmit && npm run build
-cd e2e && npx playwright test                                        #8/8
-pip-audit -r backend/requirements.txt && (cd web && npm audit)
-```
+The earlier file said "READY FOR STAGING / PILOT" with 151 backend tests and
+four blockers. This round adds: a complete sustainable revenue model, first-class
+offices, multi-level trust with appeals, production-grade private-agreement
+templates and legal framing, payment audit/reconciliation, strict production
+config (including `ENVIRONMENT=production`), a real Flutter production client with
+native shells/CI, pricing/office/admin/web surfaces, generated API docs, and 11
+new backend tests (162 total with pgserver; 161 + 1 skip without). PR #7 CI is
+fully green: backend SQLite + PostgreSQL/PostGIS, ruff, mypy, pip-audit,
+web/admin builds and audits, Playwright e2e, and Flutter analyze/unit/widget
+tests on a real SDK. The verdict remains **staging/pilot** because credentials,
+legal sign-off and store/hardware items are outside the code.

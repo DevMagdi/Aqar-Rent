@@ -1,9 +1,11 @@
 // Search: query bar, filter sheet (spec parity with web), results list,
 // and a map tab sharing the same filter state.
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
 import '../models/models.dart';
+import '../core/widgets.dart';
 import 'listing_detail_screen.dart';
 import 'map_screen.dart';
 
@@ -43,7 +45,7 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_loading) return;
     setState(() { _loading = true; if (reset) _error = null; });
     try {
-      final res = await api.get('/listings?${_query}') as Map<String, dynamic>;
+      final res = await api.get('/listings?$_query') as Map<String, dynamic>;
       final items = ((res['items'] as List?) ?? []).whereType<Map<String, dynamic>>().map(SearchItem.fromJson).toList();
       if (!mounted) return;
       setState(() {
@@ -177,10 +179,13 @@ class ListingCard extends StatelessWidget {
               height: 90,
               child: url == null
                   ? const ColoredBox(color: Color(0xFFF5F5F4), child: Icon(Icons.home, size: 32, color: Colors.grey))
-                  : Image.network(
-                      item.thumbUrl!,
+                  : CachedNetworkImage(
+                      imageUrl: item.thumbUrl!,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => const ColoredBox(color: Color(0xFFF5F5F4), child: Icon(Icons.home, size: 32, color: Colors.grey)),
+                      memCacheWidth: 400,
+                      fadeInDuration: const Duration(milliseconds: 180),
+                      placeholder: (_, __) => const ColoredBox(color: Color(0xFFF5F5F4), child: Center(child: SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)))),
+                      errorWidget: (_, __, ___) => const ColoredBox(color: Color(0xFFF5F5F4), child: Icon(Icons.home, size: 32, color: Colors.grey)),
                     ),
             ),
             Expanded(
@@ -191,8 +196,22 @@ class ListingCard extends StatelessWidget {
                   children: [
                     Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
-                    Text('${item.addressText ?? ''}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                    Text(item.addressText ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Colors.black54)),
                     const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        TrustBadge(level: item.trustLevel ?? 'phone', compact: true),
+                        if (item.isFeatured) ...[
+                          const SizedBox(width: 6),
+                          const Text('★', style: TextStyle(color: Color(0xFFD97706), fontSize: 13)),
+                        ],
+                        if (item.officeNameAr != null) ...[
+                          const SizedBox(width: 6),
+                          Flexible(child: Text('🏢 ${item.officeNameAr}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 10, color: Colors.black54))),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 4),
                     Text(
                       '${item.rentMonthly} جنيه/شهر · ${item.areaM2.toStringAsFixed(0)} م² · ${item.bedrooms} غ',
                       style: const TextStyle(fontSize: 12, color: Colors.black87),
@@ -251,7 +270,7 @@ class _FilterSheetState extends State<FilterSheet> {
           Row(children: [Expanded(child: _num('min_price', 'الحد الأدنى')), const SizedBox(width: 8), Expanded(child: _num('max_price', 'الحد الأقصى'))]),
           Row(children: [Expanded(child: _num('bedrooms', 'غرف النوم')), const SizedBox(width: 8), Expanded(child: _num('bathrooms', 'دورات المياه'))]),
           DropdownButtonFormField<String>(
-            value: f['property_type'] as String?,
+            initialValue: f['property_type'] as String?,
             decoration: const InputDecoration(labelText: 'نوع العقار', isDense: true, border: OutlineInputBorder()),
             items: const [
               DropdownMenuItem(value: null, child: Text('—')),
@@ -266,7 +285,7 @@ class _FilterSheetState extends State<FilterSheet> {
             onChanged: (v) => f['property_type'] = v,
           ),
           DropdownButtonFormField<String>(
-            value: f['furnished'] as String?,
+            initialValue: f['furnished'] as String?,
             decoration: const InputDecoration(labelText: 'التأثيث', isDense: true, border: OutlineInputBorder()),
             items: const [
               DropdownMenuItem(value: null, child: Text('—')),
@@ -277,7 +296,7 @@ class _FilterSheetState extends State<FilterSheet> {
             onChanged: (v) => f['furnished'] = v,
           ),
           DropdownButtonFormField<String>(
-            value: f['sort'] as String? ?? 'newest',
+            initialValue: f['sort'] as String? ?? 'newest',
             decoration: const InputDecoration(labelText: 'الترتيب', isDense: true, border: OutlineInputBorder()),
             items: const [
               DropdownMenuItem(value: 'newest', child: Text('الأحدث')),

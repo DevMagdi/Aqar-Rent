@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 from app.models.enums import PaymentMethod
 
@@ -29,14 +29,23 @@ class BankInstructions(BaseModel):
 
 class OrderCreateIn(BaseModel):
     listing_id: UUID
-    weeks: int = Field(ge=1, le=4)  # BR-2: 1..4 consecutive weeks
+    # BR-2 legacy simple ad = 1..4 weeks. Multi-week packages (Phase 5) allow
+    # up to 52 weeks but ONLY with a configured, active `package_id`.
+    weeks: int = Field(ge=1, le=52)
+    package_id: UUID | None = None
     promo_code: str | None = Field(default=None, max_length=40)
     method: PaymentMethod
+
+    @model_validator(mode="after")
+    def _weeks_need_package(self) -> OrderCreateIn:
+        if self.weeks > 4 and self.package_id is None:
+            raise ValueError("weeks above 4 require a multi-week package_id (BR-2)")
+        return self
 
 
 class OrderOut(BaseModel):
     id: str
-    listing_id: str
+    listing_id: str | None = None  # None for subscription/boost orders
     weeks: int
     subtotal: float
     discount: float
@@ -50,6 +59,9 @@ class OrderOut(BaseModel):
     created_at: datetime | None = None
     bank_instructions: BankInstructions | None = None
     plan_id: str | None = None
+    kind: str = "ad_period"
+    package_id: str | None = None
+    subscription_plan_id: str | None = None
     checkout_url: str | None = None  # gateway checkout (card iframe / invoice)
     payment_reference: str | None = None  # e.g. Fawry reference code
     receipt_ready: bool = False

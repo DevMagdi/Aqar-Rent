@@ -47,12 +47,29 @@ export function ListingCard({
           <div className="absolute bottom-2 start-2 rounded-lg bg-black/70 px-2 py-1 text-sm font-bold text-white">
             {formatMoney(item.rent_monthly, locale)} {t("per_month")}
           </div>
+          {item.is_featured ? (
+            <span className="absolute top-2 end-2 rounded-full bg-amber-400 px-2 py-1 text-[11px] font-bold text-amber-950 shadow">
+              ★ {t("trust_featured")}
+            </span>
+          ) : null}
+          {item.verified_owner ? (
+            <span
+              data-testid="trust-badge"
+              title={locale === "ar" ? item.trust_label_ar || "" : "Verified owner"}
+              className="absolute top-2 start-2 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-1 text-[11px] font-bold text-white shadow"
+            >
+              ✓ {t("trust_verified")}
+            </span>
+          ) : null}
         </div>
         <div className="space-y-2 p-4">
           <h3 className="line-clamp-2 min-h-11 text-sm font-semibold text-stone-900 group-hover:text-ink sm:text-base">{item.title}</h3>
           <p className="truncate text-xs text-stone-500">
             {[locationName(city, locale), locationName(gov, locale)].filter(Boolean).join("، ") || item.address_text}
           </p>
+          {item.office_name_ar ? (
+            <p className="truncate text-xs font-semibold text-ink">🏢 {item.office_name_ar}</p>
+          ) : null}
           <div className="flex flex-wrap gap-1.5">
             <Pill>{t(`spec.${item.property_type}`)}</Pill>
             <Pill>

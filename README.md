@@ -1,103 +1,123 @@
-# Aqar Rent — عقار رينت
+# عقار رينت · Aqar Rent
 
-A broker-free rental marketplace for Egypt. Visual language: **Mantiq design
-system** — Mantiq Navy `#16273B` + Mantiq Gold `#BDA77E`, single source of
-truth in `web/src/styles/tokens.css` / `admin/src/styles/tokens.css`. Owners pay a **flat ad fee
-(500 EGP / 7 days per listing — price lives in the `plans` table)** — the
-platform takes **no commission**, never holds rent or deposits, and never
-mediates money between landlord and tenant. Arabic-first (RTL), English
-secondary.
+**Egypt's most trusted, transparent, broker-optional rental platform.**
+Individuals list directly; verified real-estate offices manage owners' units,
+teams and leads. The platform **never holds rent money or deposits**, takes
+**no commission on rent**, and its contracts are **private agreements** — not
+notarised, not officially registered, not executive instruments. Arabic-first
+with perfect RTL, full English.
 
-> **Status — everything below is implemented and tested:**
-> - **Phase 1** backend core (OTP auth, locations, listings+media, verification,
->   moderation, search, admin API) — 108 tests
-> - **Phase 2** payments (Paymob card/wallet/Fawry + MockProvider for dev,
->   orders/promos/receipts/refunds/bank transfers) — 112 tests
-> - **Phase 3A** `/web` (Next.js), `/admin` (React+Vite), Playwright e2e (8 specs)
-> - **Phase 3B** Flutter `/mobile` — **full client** (search+map+filters,
->   detail/contact, owner create/edit/submit + photos, verification, checkout,
->   orders, favorites, notifications, profile + contracts/handovers + FCM push
->   registration) — code complete; **build not verified in this sandbox**
->   (Flutter SDK unavailable — see PRODUCTION_READINESS.md D29)
-> - **Phase 4A** standard lease contracts (templates, dual-OTP confirmation,
->   SHA-256 immutability, Arabic PDF + QR, encrypted national IDs, optional
->   contract fee, public `/verify/{ref}`) — web + Flutter clients
-> - **Phase 4B** handovers (check-in/check-out checklists, media, dual-OTP,
->   side-by-side diff, Arabic PDFs) — web + Flutter clients
-> - **Phase 4C** hardening & launch readiness: security/privacy/reliability/
->   performance/DevOps/launch-kit docs + code (see [/docs](#docs))
->
-> **Design system**: Mantiq navy + gold tokens (ADR-034) across web + admin —
-> see `src/styles/tokens.css` in each app and ASSUMPTIONS “Design System
-> Migration” (#84–94); compliance is test-enforced (hex-free, no white-on-gold).
->
-> Hardening (this round): prod boot validation (refuses SQLite/DEBUG/weak
-> secrets/console OTP/mock-payments), Redis rate limiting, real Twilio SMS
-> provider, declared dependencies, production compose (healthchecks/limits/
-> log-rotation/required secrets), full Flutter client.
->
-> Test totals: **backend151** (pytest) · **web15** (vitest) · **e2e8 specs**
-> (Playwright) · ruff + mypy clean · pip-audit + npm audit =0 vulns · CI green.
-> **See [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for the pass/fail
-> evidence and the four external go-live blockers.**
+Revenue: a flat **500 EGP / 7-day ad** (unchanged entry point), multi-week
+packages with discounts/priority, monthly **owner subscriptions** (3+ units,
+analytics, bulk tools) and **office/agency subscriptions** (teams, branded
+pages, CRM-lite, dashboards), plus optional premium verification and contract
+packages. All prices are DB-backed and served from `/api/v1/pricing`.
+
+Visual language: **Mantiq design system** — Mantiq Navy `#16273B` + Mantiq Gold
+`#BDA77E`, single source of truth in `web/src/styles/tokens.css` /
+`admin/src/styles/tokens.css`. Compliance (hex-free TS/TSX, no white-on-gold,
+byte-identical token files) is test-enforced; see ASSUMPTIONS “Design System
+Migration” (#91–101).
+
+> **Status:** source-complete and tested in this sandbox: backend 162 pytest
+> (161 + 1 skipped when bundled PostgreSQL is absent), ruff + mypy clean, web unit + design-compliance
+> tests, web/admin typecheck and production builds, mobile static checks, and
+> generated API artifacts in sync. **Not cleared for public launch:** production
+> go-live still requires external credentials/accounts and an Egyptian lawyer's
+> final sign-off — see [`docs/go-live-checklist.md`](docs/go-live-checklist.md)
+> and [`docs/external-dependencies.md`](docs/external-dependencies.md). **Nothing
+> here is a "coming soon" placeholder.** Flutter release builds, Playwright e2e,
+> PostgreSQL migration rehearsal and live provider captures require SDK/browsers
+> and credentials unavailable in this sandbox; CI and the go-live checklist own
+> those gates.
 
 ---
 
-## Repository layout
+## What's in the repository
 
 ```
-backend/    FastAPI + SQLAlchemy 2 + Alembic (Python 3.12) — API, worker, migrations0001…0006
-web/        Next.js 16 App Router (TS + Tailwind 4) — public site, tenant & owner flows, contracts
-admin/      React 19 + Vite 8 (Tailwind 4) — staff console (moderation/finance/super-admin)
-mobile/     Flutter mini app — contract + handover screens (see mobile/README.md)
-e2e/        Playwright suite (7 specs) on a hermetic stack (:8010/:3010/:5180)
-docs/       OpenAPI + Postman collection + architecture/runbooks/security/privacy/load-test/UAT
-scripts/    backup.sh / restore.sh (tested)
-loadtest/   Locust suite + checkout bench (100k-listing report in docs/load-test/)
-docker-compose.yml          dev stack: api · worker · postgres+postgis · redis · minio
-docker-compose.staging.yml  staging stack (production images)
-Makefile     make up / test / lint / e2e / web / admin …
+backend/    FastAPI + SQLAlchemy 2 + Alembic — 113 API paths, migrations 0001…0007
+web/        Next.js 16 App Router (TS/Tailwind) — AR/EN public + owner + office + pricing
+admin/      React 19 + Vite — staff console (plans, offices, appeals, reconciliation)
+mobile/     Flutter production client (Android + iOS native shells included)
+e2e/        Playwright suite on a hermetic stack
+docs/       OpenAPI + Postman, architecture, legal, pricing, acceptance, go-live
+scripts/    backup/restore, app-links generation, API-doc generation, mobile builds
+loadtest/   Locust suite + checkout bench (100k-listing report)
+docker-compose*.yml / Makefile   dev & staging stacks
 ```
+
+### Feature highlights
+
+**Trust & verification** — four transparent levels (`phone → id → ownership →
+premium`), public badges on cards and detail pages, localizable structured
+rejection reasons, one-round appeals with staff re-review, configurable
+anti-fraud rate limits, and honest "documents reviewed by our team, not a
+government check" copy everywhere.
+
+**Offices & agents** — dedicated office profiles with branded public pages,
+commercial-register review, phone invitations activated on first OTP login,
+seat limits, per-listing agent attribution, a lead pipeline (`new → won`),
+timeline events, follow-ups and a conversion dashboard. Optional office↔owner
+commission is a private record only.
+
+**Pricing & payments** — `/pricing` single source of truth; weekly ads, 2/4/8-week
+packages, owner/office subscriptions via the same Paymob/bank/refund pipeline,
+HMAC webhooks, idempotency, Arabic receipts, **append-only SHA-256 payment audit
+trail**, reconciliation report and Prometheus failure counters. Production
+refuses mock payments, console OTP, weak secrets and missing allowlists;
+`ENVIRONMENT=production` is accepted as an alias for `APP_ENV=prod`.
+
+**Contracts & handovers** — three full Arabic private-agreement templates
+(furnished / unfurnished / commercial), dual OTP confirmation, SHA-256
+immutability, professional Arabic PDF with QR verification, encrypted NIDs,
+handover media/meter readings and a rich side-by-side comparison. A clean
+`OfficialRegistryAdapter` seam returns `unavailable` today because Egypt has no
+Ejar-equivalent official digital registry. Remaining lawyer sign-off is listed
+explicitly in `docs/legal-notes.md`.
+
+**Mobile (priority)** — feature-first Flutter client with native Android/iOS
+shells, adaptive icons/splash, permission justification, privacy manifest,
+go_router deep links, real FCM (foreground + tap routing), biometric re-lock,
+onboarding, bilingual in-code i18n, offline cache, image caching/compression,
+skeletons/empty/error states, and full owner/tenant/office/contract parity.
+Release builds fail fast without real HTTPS API, tile host and Firebase config.
+See [`mobile/README.md`](mobile/README.md).
 
 ---
 
 ## Quick start
 
-### 1) Docker (recommended — full stack)
-
 ```bash
 cp .env.example .env        # change SECRET_KEY + staff passwords
-make up                     # api, worker, postgres+postgis, redis, minio
-make migrate                # alembic upgrade head
-make seed                   # 27 governorates, plan (500 EGP/7d), super admin
-make seed-demo              # + demo owner/tenant/listings with media
+make up                     # api · worker · postgres+postgis · redis · minio
+make migrate                # alembic upgrade head → 0007
+make seed                   # locations, 500 EGP plan, 3 packages, 4 plans, super admin
+make seed-demo              # demo owner/tenant/listings
+make web                    # http://localhost:3000/ar
+make admin                  # http://localhost:5173
 ```
 
-* API + Swagger UI: <http://localhost:8000/docs> · health: `/health`,
-  readiness: `/ready`, metrics: `/metrics`
-* MinIO console: <http://localhost:9001> (minioadmin/minioadmin)
-* Web: `make web` → <http://localhost:3000/ar> · Admin: `make admin` →
-  <http://localhost:5173> (seeded login `admin@aqar-rent.dev` /
-  `ChangeMeAdmin!2026` + TOTP secret `JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP` — dev
-  defaults only; prod refuses to start without real `STAFF_SUPER_ADMIN_*`)
+API + Swagger: <http://localhost:8000/docs> · `/health` · `/ready` · `/metrics`.
+Seeded dev admin: `admin@aqar-rent.dev` / `ChangeMeAdmin!2026` + TOTP
+`JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP` (dev only; prod refuses weak defaults).
 
-### 2) Local development (no Docker)
+For Flutter, see the exact commands in `mobile/README.md` and
+`scripts/mobile-build.sh`.
+
+## Quality gates
 
 ```bash
-# backend
-python3.12 -m venv .venv && source .venv/bin/activate
+# Backend (dev, SQLite)
+python3.12 -m venv backend/.venv && source backend/.venv/bin/activate
 pip install -r backend/requirements-dev.txt
 export DATABASE_URL="sqlite:///./dev.db"   # or postgresql+psycopg://…
 cd backend && alembic upgrade head && python -m app.scripts.seed --demo
 uvicorn app.main:app --reload --port 8000
 
-# web (separate shell)
-cd web && npm install
-BACKEND_URL=http://localhost:8000 NEXT_PUBLIC_MOCK_PAY=true npm run dev   # :3000
-
-# admin (separate shell)
-cd admin && npm install
-BACKEND_URL=http://localhost:8000 npm run dev                            # :5173
+# Web / admin (separate shells; mock pay is dev-only)
+cd web   && npm install && BACKEND_URL=http://localhost:8000 NEXT_PUBLIC_MOCK_PAY=true npm run dev   # :3000
+cd admin && npm install && BACKEND_URL=http://localhost:8000 npm run dev                            # :5173
 ```
 
 ### Tests & quality
@@ -105,128 +125,41 @@ BACKEND_URL=http://localhost:8000 npm run dev                            # :5173
 ```bash
 make test        # backend pytest (SQLite; TEST_DATABASE_URL for PostgreSQL)
 make lint        # ruff
-make typecheck   # mypy (mypy-lite config)
-cd web  && npx tsc --noEmit && npx vitest run   # types + unit + design-system compliance (21)
-cd admin && npx tsc --noEmit && npm run build
-make e2e         # Playwright:10 specs on a hermetic stack (fresh SQLite),
-                 # incl. design-system verification of computed styles/contrast
+make typecheck   # mypy
+cd backend && .venv/bin/python -m pytest -q          # 162 passed (161 + 1 skip without pgserver)
+cd backend && .venv/bin/python -m ruff check app tests && .venv/bin/python -m mypy app
+cd web     && npx tsc --noEmit && npx vitest run && npm run build   # unit + Mantiq compliance
+cd admin   && npx tsc --noEmit && npm run build
+cd backend && .venv/bin/python ../scripts/generate-api-docs.py       # OpenAPI + Postman in sync
+cd ..      && backend/.venv/bin/python scripts/check_mobile.py       # SDK-free Flutter static check
+make e2e         # Playwright: 10 tests in 8 specs (incl. Mantiq computed styles/WCAG)
+                 # requires browser download; not runnable in this sandbox
+# Mobile (requires Flutter SDK; runs in CI via .github/workflows/mobile.yml):
+flutter analyze --fatal-infos && flutter test && flutter test integration_test/
 ```
 
----
-
-## Feature map (as built)
-
-### Public site (`web/`)
-
-- Home (search bar + quick filters + latest), results **list + map sharing
-  one filter state** (price, type, rental type, furnished, bedrooms, baths,
-  area, floor, amenities, available-from, bbox; sort newest/price/area;
-  infinite scroll 20/page; “search this area”), listing detail, six static
-  pages (about, how-it-works, terms, privacy, content-rules, support).
-- SEO: `/{locale}/rent/{gov}/{city}/{uuid}-{slug}` permalinks, sitemap.xml,
-  robots.txt, canonical + hreflang, OG images (`/og`), JSON-LD
-  `Residence`+`Offer`, `next/image` thumbnails, bundled Amiri font.
-- MapLibre GL with **env-driven raster tiles** (no paid key), HTML price
-  pins, GeoJSON clustering; detail page shows an approximate 150 m circle with
-  login-gated exact reveal.
-
-### Authenticated (web)
-
-- OTP login (resend timer), profile/language/delete-account, favorites,
-  notifications center, **owner dashboard** (views/contacts/days-left, renew,
-  mark-rented), **6-step add/edit wizard** (draft autosave, photos 3–15
-  client-compressed ≤1.5 MB with progress/retry/reorder, Arabic validation),
-  verification upload, **checkout** (weeks 1–4, promo with live totals,
-  card/Fawry/Vodafone/bank + receipt upload, success/pending/failed screens,
-  receipts PDF).
-
-### Contracts & handovers (Phase 4A/4B — web + API + mini Flutter)
-
-- Editable Arabic **template files** (`backend/contract_templates/*.txt`) —
-  residential unfurnished / furnished / commercial, each headed
-  “مسودة — تحتاج مراجعة محامي…”. UI and PDF state: *“This is a private
-  agreement template and does not replace official registration or
-  notarization.”*
-- Wizard: both parties’ names + national IDs (**Fernet-encrypted at rest**,
-  masked in the API, never logged), unit address prefilled from the listing,
-  dates, rent, yearly increase, deposit + refund deadline (default 30 days),
-  payment day, utilities, termination, notes.
-- API: `POST/GET/PATCH /contracts`, `POST /contracts/{id}/request-confirmation`,
-  `POST /contracts/{id}/confirm` (**fresh OTP per party**),
-  `GET /contracts/{id}/pdf`, `POST /contracts/{id}/fee-order`
-  (`orders.kind=contract_fee`, default0 EGP via `CONTRACT_FEE_EGP`,
-  suggested50), public `GET /verify/{reference_no}`.
-- On **both** confirmations the contract freezes: SHA-256 of the final terms,
-  timestamps + IPs + device info in `confirmations_log`, Arabic PDF
-  (Amiri + reshaper/bidi) with reference number, **QR → /verify/{ref}** and
-  the confirmation log.
-- Handovers: `POST /contracts/{id}/handovers` (check-in; check-out **from** a
-  confirmed check-in), `PATCH`, `POST /handovers/{id}/media` (photos/videos,
-  re-encoded), `POST /handovers/{id}/confirm` (dual OTP → immutable hash),
-  `GET /handovers/{id}/pdf`; web UI shows the **side-by-side** room/condition
-  diff + meter differences; clients: web + mini Flutter app.
-
-### Staff console (`admin/`)
-
-Dashboard KPIs + conversion funnel · moderation (approve / reject presets) ·
-verification queue (signed-URL viewer) · reports (4 API actions) · users
-(ban/unban, caps) · payments + revenue + refunds + CSV · bank approvals ·
-plans/promos CRUD · staff role matrix + audit activity · audit log with
-before/after diffs · read-only settings presets. Login = email + password +
-**TOTP 2FA**.
-
-### Backend hardening (Phase 4C — code)
-
-- `CommitBeforeSendMiddleware` — commits before the response hits the wire
-  (kills keep-alive read-your-writes races).
-- **Retention jobs**: verification docs purged 90 days after a final decision
-  (unless an open report), contact events after 12 months.
-- **`GET /me/export`** — full JSON data export; delete-account endpoint.
-- **Log redaction** — phones/NIDs/tokens masked (`[PHONE]`, `[NID]`, `[TOKEN]`).
-- **Prometheus** `/metrics` (request latency, webhook/payment/job failure
-  counters) · `/ready` readiness (DB) · optional **Sentry** via `SENTRY_DSN`.
-- **Security headers + prod CSP** · in-process/Redis **cache** for locations
-  & plans (`REDIS_URL`, disabled under test) · funnel
-  `GET /admin/analytics/funnel`.
-- **Search at scale**: denormalized `ad_priority`/`ad_starts_at` sort keys +
-  composite indexes — p95 **5 ms** sequential at 100k listings
-  (report: `docs/load-test/report.md`).
-
----
-
-## Documentation (/docs)
+## Documentation
 
 | Doc | Contents |
 |---|---|
-| `docs/openapi.json` / `docs/api-collection.json` | full API surface (74 paths) + Postman collection |
-| `docs/architecture.md` | system diagram, services, domain rules, hardening |
-| `docs/runbook.md` | moderation SLA24h, reports/bans, refunds, bank approvals, alert rules |
-| `docs/deploy.md` | env separation, staging compose, CI/CD, migrations, rollback, CDN |
-| `docs/backup-restore.md` | pg_dump/restore procedure — **covered by an automated roundtrip test** |
-| `docs/security/owasp-checklist.md` | OWASP Top 10 with evidence |
-| `docs/security/threat-model.md` | broker-impersonation & fake-listing abuse |
-| `docs/security/dependency-report.md` | pip-audit + npm audit results (0 vulns) + CI gates |
-| `docs/privacy/pdpl-note.md` | data inventory, retention, user rights — **flagged for legal review** |
-| `docs/load-test/report.md` | 100k-listing load test, p95 vs targets, fixes found |
-| `docs/uat/plan.md` | acceptance-criteria checklist mapped to automated evidence + manual script |
-| `docs/launch-checklist.md` | pilot plan (1–2 districts), FIRSTAD promo, go-live blockers, store submission |
-| `ASSUMPTIONS.md` | every decision/deviation (items 1–70) |
+| `docs/decisions.md` | every significant decision + rationale + code |
+| `docs/acceptance-criteria.md` | testable criteria for every major feature |
+| `docs/pricing-packaging.md` | business model and packaging explanation |
+| `docs/legal-notes.md` | legal framing + explicit external lawyer sign-off list |
+| `docs/go-live-checklist.md` | ordered production go-live gates |
+| `docs/external-dependencies.md` | everything that cannot be solved in code |
+| `docs/openapi.json` / `docs/api-collection.json` | generated API surface (113 paths / 137 requests) |
+| `mobile/README.md` | exact mobile build/store steps + acceptance criteria |
+| `mobile/docs/demo-script.md` | store screenshots + 75s demo video script |
+| `docs/architecture.md`, `deploy.md`, `runbook.md`, `backup-restore.md` | ops |
+| `docs/security/*`, `docs/privacy/pdpl-note.md`, `docs/uat/plan.md` | security/privacy/UAT |
+| `PRODUCTION_READINESS.md` | honest pass/fail evidence and verdict |
 
-## Operations cheatsheet
+## External go-live blockers
 
-```bash
-make test && make lint && make typecheck   # backend gates
-make e2e                                    # full Playwright suite
-DATABASE_URL=… ./scripts/backup.sh          # daily backup (docs/backup-restore.md)
-curl :8000/ready  :8000/metrics             # probes
-```
-
-## Roadmap
-
-- **Go-live blockers (external — nothing left to build):** Paymob live keys,
-  Twilio credentials, lawyer review of contract templates/terms, Flutter build
-  verification + Firebase/store accounts, tax data for bank details, production
-  map-tile host. Full list: `PRODUCTION_READINESS.md`.
-- **Phase 5 ideas**: WhatsApp/SMS *content* delivery for notifications (channels
-  exist; FCM push is wired in the app), contract-fee paid tier, image forensics
-  at moderation, pg_trigram full-text search.
+Live Paymob keys, Twilio (or approved Egyptian SMS sender), Egyptian lawyer
+sign-off, Apple/Google developer accounts, Firebase project + store credentials,
+tax/commercial-registration data, production map-tile host, domain association
+files, Flutter SDK + macOS build machine. Full table with owners/actions in
+`docs/external-dependencies.md`. Code paths for all of these are real; they are
+credential/legal/hardware items, not unfinished features.

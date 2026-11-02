@@ -25,7 +25,16 @@ class Order(TimestampMixin, Base):
     __tablename__ = "orders"
 
     owner_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="RESTRICT"), index=True)
-    listing_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("listings.id", ondelete="RESTRICT"), index=True)
+    # Nullable for `kind=subscription` / `featured_boost` orders (no listing).
+    listing_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("listings.id", ondelete="RESTRICT"), nullable=True, index=True
+    )
+    subscription_plan_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("subscription_plans.id", ondelete="SET NULL"), nullable=True
+    )
+    ad_package_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("ad_packages.id", ondelete="SET NULL"), nullable=True
+    )
     weeks: Mapped[int] = mapped_column(Integer)
     subtotal: Mapped[float] = mapped_column(Numeric(12, 2))
     discount: Mapped[float] = mapped_column(Numeric(12, 2), default=0)

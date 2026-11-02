@@ -1,32 +1,64 @@
 name: aqar_rent_mobile
-description: "Aqar Rent — full client (search, listings, owner tools, checkout, contracts & handovers)."
+description: "Aqar Rent (عقار رينت) — Arabic-first, production Flutter client for Egypt's trusted rental platform."
 publish_to: "none"
-version: 0.1.0
+version: 1.0.0+1
 
 environment:
-  sdk: ">=3.3.0 <4.0.0"
+  sdk: ">=3.9.0 <4.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+
+  # Networking / secure storage
   dio: ^5.7.0
   flutter_secure_storage: ^9.2.2
-  maplibre_gl: ^0.20.0
-  image_picker: ^1.1.2
+  shared_preferences: ^2.3.2
+  connectivity_plus: ^6.1.1
+
+  # Navigation & platform
+  go_router: ^14.8.1
+  app_links: ^6.3.2
   url_launcher: ^6.3.1
+  local_auth: ^2.3.0
+  package_info_plus: ^8.1.1
+
+  # Media, maps, image caching/compression
+  cached_network_image: ^3.3.1
+  flutter_image_compress: ^2.1.0
+  image_picker: ^1.1.2
+  maplibre_gl: ^0.20.0
+
+  # Push notifications (real FCM; no mock path in production)
   firebase_core: ^3.8.1
   firebase_messaging: ^15.1.6
   flutter_local_notifications: ^18.0.1
-  intl: ^0.19.0
+
+  # Utilities
+  intl: ^0.20.3
   path_provider: ^2.1.4
   share_plus: ^10.0.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  integration_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/brand/
+
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  remove_alpha_ios: true
+  image_path: "assets/brand/app_icon.png"
+  adaptive_icon_background: "#A93408"
+  adaptive_icon_foreground: "assets/brand/app_icon_foreground.png"
+  min_sdk_android: 23

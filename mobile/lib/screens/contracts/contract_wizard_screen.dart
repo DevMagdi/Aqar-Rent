@@ -157,7 +157,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
             content: Column(
               children: [
                 DropdownButtonFormField<String>(
-                  value: _listingId,
+                  initialValue: _listingId,
                   decoration: const InputDecoration(labelText: 'اختر الإعلان *', border: OutlineInputBorder()),
                   items: [
                     for (final l in _listings)
@@ -167,7 +167,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
                 ),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                  value: _template,
+                  initialValue: _template,
                   decoration: const InputDecoration(labelText: 'قالب العقد *', border: OutlineInputBorder()),
                   items: [for (final e in _templates.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
                   onChanged: (v) => setState(() => _template = v ?? _template),
@@ -177,7 +177,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
                   color: Color(0xFFFFF7E6),
                   child: Padding(
                     padding: EdgeInsets.all(8),
-                    child: Text('⚖️ مسودة — تحتاج مراجعة محامي قبل الاستخدام الإنتاجي.', style: TextStyle(fontSize: 12)),
+                    child: Text('⚖️ اتفاق خاص بين الطرفين: ليس موثّقاً ولا مسجّلاً رسمياً ولا سنداً تنفيذياً، ولا يُغني عن التوثيق الرسمي.', style: TextStyle(fontSize: 12)),
                   ),
                 ),
               ],

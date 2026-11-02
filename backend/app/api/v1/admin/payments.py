@@ -94,7 +94,7 @@ def payments_list(
             gateway=order.gateway,
             gateway_txn_id=p.gateway_txn_id,
             owner_phone=u.phone if u else None,
-            listing_id=str(order.listing_id),
+            listing_id=str(order.listing_id) if order.listing_id else None,
             created_at=p.created_at,
         )
         for p, order, u in _payment_rows(db, status, limit, method, owner, date_from, date_to)
@@ -254,7 +254,7 @@ def bank_transfers_list(
         BankTransferOut(
             id=str(t.id),
             order_id=str(t.order_id),
-            listing_id=str(o.listing_id),
+            listing_id=str(o.listing_id) if o.listing_id else None,
             owner_phone=owners[o.owner_id].phone if o.owner_id in owners else None,
             amount=float(o.total),
             status=t.status,

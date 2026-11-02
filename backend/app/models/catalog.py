@@ -41,6 +41,14 @@ class Listing(TimestampMixin, Base):
     __tablename__ = "listings"
 
     owner_id: Mapped[UUID] = mapped_column(Uuid, ForeignKey("users.id", ondelete="RESTRICT"), index=True)
+    # Phase 5: an office may manage units on behalf of owners; the responsible
+    # agent is always attributable. Both are nullable → individuals unchanged.
+    office_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("office_profiles.id", ondelete="SET NULL"), nullable=True, index=True
+    )
+    agent_user_id: Mapped[UUID | None] = mapped_column(
+        Uuid, ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+    )
     title: Mapped[str] = mapped_column(String(200))
     property_type: Mapped[str] = mapped_column(String(20))  # enums.PropertyType
     rental_type: Mapped[str] = mapped_column(String(20))  # enums.RentalType
@@ -79,7 +87,11 @@ class Listing(TimestampMixin, Base):
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     view_count: Mapped[int] = mapped_column(Integer, default=0)
 
-    owner: Mapped[Any] = relationship("User", back_populates="listings")
+    owner: Mapped[Any] = relationship(
+        "User",
+        back_populates="listings",
+        foreign_keys="[Listing.owner_id]",
+    )
     media: Mapped[list[ListingMedia]] = relationship(
         back_populates="listing",
         cascade="all, delete-orphan",

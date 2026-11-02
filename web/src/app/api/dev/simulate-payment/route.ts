@@ -5,6 +5,12 @@ import { createHmac } from "node:crypto";
 const BACKEND = process.env.BACKEND_URL || "http://localhost:8000";
 
 export async function POST(req: Request): Promise<Response> {
+  // Hard rule: mock payment simulation is NEVER reachable in production,
+  // even if an operator accidentally sets NEXT_PUBLIC_MOCK_PAY=true.
+  const env = process.env.NEXT_PUBLIC_ENVIRONMENT || process.env.ENVIRONMENT || process.env.APP_ENV;
+  if (env === "production" || env === "prod" || env === "staging") {
+    return Response.json({ message: "Mock payments are disabled outside dev/test" }, { status: 403 });
+  }
   if (process.env.NEXT_PUBLIC_MOCK_PAY !== "true") {
     return Response.json({ message: "Simulation disabled" }, { status: 403 });
   }

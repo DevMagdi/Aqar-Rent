@@ -100,13 +100,16 @@ def test_create_contract_draft_with_editable_template(client, seeded):
     assert c["parties"][0]["national_id_masked"] == "1234*******2345"
     assert "123456789012345" not in json.dumps(c)
 
-    # template files carry the DRAFT banner + lawyer-review warning
+    # Production-grade private-agreement templates: explicit legal framing,
+    # no "draft / lawyer review required" banner, all variables in the file.
     from app.core.config import get_settings
     from app.services.contract_service import load_template
 
     text = load_template(get_settings(), "residential_unfurnished")
-    assert "مسودة" in text and "محامي" in text
-    assert "{{monthly_rent}}" in text  # variables live in the file, not code
+    assert "مسودة" not in text and "تحتاج مراجعة محامي" not in text
+    assert "سنداً تنفيذياً" in text and "التوثيق" in text
+    assert "{{monthly_rent}}" in text and "{{reference_no}}" in text
+    assert "{{verify_url}}" in text  # variables live in the file, not code
 
     # national IDs encrypted at rest
     from app.models.social import Contract
@@ -126,7 +129,7 @@ def test_templates_render_all_three_ids(client, seeded):
     for tid in ("residential_unfurnished", "residential_furnished", "commercial"):
         text = load_template(get_settings(), tid)
         assert "{{owner_name}}" in text and "private agreement" not in text.lower() or True
-        assert "لا يحل محل التسجيل الرسمي" in text
+        assert "لا يُغني عن التسجيل أو التوثيق الرسمي" in text
 
 
 def test_draft_edit_and_immutability_after_pending(client, seeded):

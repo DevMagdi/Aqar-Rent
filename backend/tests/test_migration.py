@@ -52,6 +52,14 @@ def test_alembic_upgrade_head_builds_all_tables(tmp_path):
         "notifications",
         "staff_users",
         "audit_logs",
+        "office_profiles",
+        "office_members",
+        "leads",
+        "lead_events",
+        "subscription_plans",
+        "subscriptions",
+        "ad_packages",
+        "payment_events",
     }
     assert expected <= tables, expected - tables
 
@@ -75,13 +83,19 @@ def test_migration_is_versioned(tmp_path):
     )
     conn = sqlite3.connect(db_path)
     versions = [r[0] for r in conn.execute("SELECT version_num FROM alembic_version")]
-    # Head advanced with Phase 4 (0003: orders.kind, contract hash/log/fee,
-    # handover source/hash, handover media type/attribution).
-    assert versions == ["0006"]
+    # Head advanced with Phase 5 (0007: offices, subscriptions, trust ladder).
+    assert versions == ["0007"]
     cols = {
         r[1]
         for r in conn.execute("PRAGMA table_info(orders)")
     }
+    assert {"kind", "subscription_plan_id", "ad_package_id"} <= cols
+    user_cols = {r[1] for r in conn.execute("PRAGMA table_info(users)")}
+    assert {"account_type", "verification_level"} <= user_cols
+    doc_cols = {r[1] for r in conn.execute("PRAGMA table_info(verification_documents)")}
+    assert {"reject_reason_code", "appeal_status", "appeal_note"} <= doc_cols
+    contract_cols_2 = {r[1] for r in conn.execute("PRAGMA table_info(contracts)")}
+    assert {"registry_status", "registry_ref"} <= contract_cols_2
     assert "kind" in cols
     contract_cols = {r[1] for r in conn.execute("PRAGMA table_info(contracts)")}
     assert {"terms_hash", "confirmations_log", "fee_order_id"} <= contract_cols
