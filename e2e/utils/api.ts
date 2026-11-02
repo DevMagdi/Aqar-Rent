@@ -16,6 +16,8 @@ export const PHONES = {
   tenant1: "01009998877", // journey tenant
   tenant2: "01009998866", // favorites / report tenant
   banTarget: "01007776655", // admin ban/unban spec
+  contractOwner: "01005556690", // contract & handover spec
+  contractTenant: "01009998860",
 } as const;
 
 export const ADMIN = {
