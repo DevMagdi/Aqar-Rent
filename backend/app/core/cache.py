@@ -20,7 +20,7 @@ _redis_client = None  # lazy, built once
 _redis_dead_until = 0.0
 
 
-def _get_redis():
+def get_redis_client():
     """Return a Redis client or None (unreachable / not configured)."""
     global _redis_client, _redis_dead_until
     from app.core.config import get_settings
@@ -51,7 +51,7 @@ def cache_get(key: str, ttl_seconds: int, settings=None) -> Any | None:
     settings = settings or get_settings()
     if settings.app_env == "test":
         return None
-    client = _get_redis()
+    client = get_redis_client()
     if client is not None:
         try:
             raw = client.get(key)
@@ -76,7 +76,7 @@ def cache_set(key: str, value: Any, ttl_seconds: int, settings=None) -> None:
     if settings.app_env == "test":
         return
     raw = json.dumps(value, ensure_ascii=False)
-    client = _get_redis()
+    client = get_redis_client()
     if client is not None:
         try:
             client.setex(key, ttl_seconds, raw)
@@ -91,7 +91,7 @@ def cache_invalidate(prefix: str) -> None:
     with _local_lock:
         for key in [k for k in _local if k.startswith(prefix)]:
             _local.pop(key, None)
-    client = _get_redis()
+    client = get_redis_client()
     if client is not None:
         try:
             for key in client.scan_iter(match=f"{prefix}*"):
