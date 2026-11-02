@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { useAuth, useI18n, useToast } from "./Providers";
 import type { Geo, ListingDetail } from "@/lib/types";
+import { TOKENS } from "../styles/tokenValues";
 
 const TILES = process.env.NEXT_PUBLIC_MAP_TILES_URL || "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const TILE_NAME = process.env.NEXT_PUBLIC_MAP_STYLE_NAME || "OpenStreetMap";
@@ -56,8 +57,8 @@ export function DetailMap({ geo, address, listingId }: { geo: Geo; address: stri
           source: "circle",
           paint: {
             "circle-radius": 60,
-            "circle-color": "#c2410c22",
-            "circle-stroke-color": "#c2410c",
+            "circle-color": `${TOKENS.gold}33`,
+            "circle-stroke-color": TOKENS.goldDark,
             "circle-stroke-width": 2,
             "circle-stroke-opacity": 0.7,
           },
@@ -65,7 +66,7 @@ export function DetailMap({ geo, address, listingId }: { geo: Geo; address: stri
       }
       const el = document.createElement("div");
       el.dataset.testid = "detail-pin";
-      el.className = "h-6 w-6 rounded-full border-4 border-white bg-brand-600 shadow";
+      el.className = "h-6 w-6 rounded-full border-4 border-white bg-gold shadow";
       markerRef.current = new maplibregl.Marker({ element: el }).setLngLat([current.longitude, current.latitude]).addTo(map);
     });
     mapRef.current = map;
@@ -117,7 +118,7 @@ export function DetailMap({ geo, address, listingId }: { geo: Geo; address: stri
             data-testid="btn-exact-location"
             disabled={busy}
             onClick={revealExact}
-            className="rounded-lg border border-brand-500 px-3 py-1.5 text-xs font-semibold text-brand-700 hover:bg-brand-50 disabled:opacity-60"
+            className="rounded-lg border border-gold px-3 py-1.5 text-xs font-semibold text-ink hover:bg-brand-50 disabled:opacity-60"
           >
             {user ? t("show_exact") : `🔒 ${t("login_exact")}`}
           </button>

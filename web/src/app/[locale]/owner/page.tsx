@@ -1,10 +1,11 @@
 import { OwnerDashboard } from "@/components/OwnerDashboard";
 import { RequireAuth } from "@/components/RequireAuth";
+import { OwnerShell } from "@/components/OwnerShell";
 
 export default function OwnerPage() {
   return (
     <RequireAuth>
-      <OwnerDashboard />
+      <OwnerShell><OwnerDashboard /></OwnerShell>
     </RequireAuth>
   );
 }

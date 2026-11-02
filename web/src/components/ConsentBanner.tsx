@@ -34,7 +34,7 @@ export function ConsentBanner() {
           {locale === "ar" ? (
             <>
               نستخدم بياناتك لتشغيل حسابك وعرض إعلاناتك فقط — راجع{" "}
-              <Link href={`/${locale}/privacy`} className="font-semibold text-brand-600 underline">
+              <Link href={`/${locale}/privacy`} className="font-semibold text-ink underline">
                 {t("privacy")}
               </Link>
               .
@@ -42,7 +42,7 @@ export function ConsentBanner() {
           ) : (
             <>
               We use your data only to run your account and listings — see our{" "}
-              <Link href={`/${locale}/privacy`} className="font-semibold text-brand-600 underline">
+              <Link href={`/${locale}/privacy`} className="font-semibold text-ink underline">
                 {t("privacy")}
               </Link>
               .
@@ -60,7 +60,7 @@ export function ConsentBanner() {
             }
             setOpen(false);
           }}
-          className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-700"
+          className="rounded-xl bg-gold px-5 py-2.5 text-sm font-bold text-brand-deep hover:bg-gold-dark"
         >
           {locale === "ar" ? "موافق" : "Accept"}
         </button>

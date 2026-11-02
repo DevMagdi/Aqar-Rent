@@ -135,7 +135,7 @@ export function HandoverEditor({
     onSaved();
   }
 
-  const inputCls = "w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-brand-500";
+  const inputCls = "w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-gold";
   const condLabel = (c: string | null) => (c ? t(`cond.${c}`) : "—");
   const isConfirmed = status === "confirmed";
 
@@ -376,11 +376,11 @@ export function HandoverEditor({
                       {u.error} ✕
                     </button>
                   ) : (
-                    <span className="font-semibold text-brand-600">{u.pct}%</span>
+                    <span className="font-semibold text-ink">{u.pct}%</span>
                   )}
                 </div>
                 <div className="mt-1 h-1 overflow-hidden rounded bg-stone-200">
-                  <div className={`h-full ${u.error ? "bg-red-400" : "bg-brand-600"}`} style={{ width: `${u.error ? 100 : u.pct}%` }} />
+                  <div className={`h-full ${u.error ? "bg-red-400" : "bg-gold"}`} style={{ width: `${u.error ? 100 : u.pct}%` }} />
                 </div>
               </div>
             ))}
@@ -436,7 +436,7 @@ export function HandoverEditor({
               type="button"
               data-testid="btn-handover-pdf"
               onClick={() => void downloadAuthed(`/handovers/${handoverId}/pdf`, `handover-${kind}.pdf`)}
-              className="rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-700"
+              className="rounded-xl bg-gold px-4 py-2.5 text-sm font-bold text-brand-deep hover:bg-gold-dark"
             >
               ⬇ {t("download_handover_pdf")}
             </button>

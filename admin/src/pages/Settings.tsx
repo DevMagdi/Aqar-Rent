@@ -38,7 +38,7 @@ export function Settings() {
         <ul className="grid gap-2 text-sm sm:grid-cols-2">
           {REJECT_REASONS.map(([k, v]) => (
             <li key={k} className="rounded-xl bg-stone-50 px-3 py-2">
-              <code className="text-xs font-bold text-brand-700">{k}</code>
+              <code className="text-xs font-bold text-ink">{k}</code>
               <p className="text-stone-600">{v}</p>
             </li>
           ))}

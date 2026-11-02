@@ -60,7 +60,7 @@ export function StaffPage() {
                   <td className="p-2 font-semibold text-stone-800">{m.capability}</td>
                   {[m.super_admin, m.finance, m.moderator].map((v, i) => (
                     <td key={i} className="p-2 text-center">
-                      {v ? <span className="text-emerald-600">✓</span> : <span className="text-stone-300">—</span>}
+                      {v ? <span className="text-emerald-600">✓</span> : <span className="text-muted">—</span>}
                     </td>
                   ))}
                 </tr>

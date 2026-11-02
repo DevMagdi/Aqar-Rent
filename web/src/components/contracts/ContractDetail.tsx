@@ -86,7 +86,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
       <div className="mx-auto max-w-2xl rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700" role="alert" data-testid="contract-error">
         {err}
         <div className="mt-3">
-          <Link href={`/${locale}/contracts`} className="font-semibold text-brand-600">
+          <Link href={`/${locale}/contracts`} className="font-semibold text-ink">
             ← {t("contracts")}
           </Link>
         </div>
@@ -175,7 +175,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
               data-testid="btn-request-confirmation"
               disabled={busy}
               onClick={requestConfirmation}
-              className="rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
+              className="rounded-xl bg-gold px-4 py-2.5 text-sm font-bold text-brand-deep hover:bg-gold-dark disabled:opacity-60"
             >
               {t("request_confirmation")}
             </button>
@@ -195,7 +195,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
               type="button"
               data-testid="btn-contract-pdf"
               onClick={downloadPdf}
-              className="rounded-xl border border-brand-500 px-4 py-2.5 text-sm font-bold text-brand-700 hover:bg-brand-50"
+              className="rounded-xl border border-gold px-4 py-2.5 text-sm font-bold text-ink hover:bg-brand-50"
             >
               ⬇ {t("download_pdf")}
             </button>
@@ -232,7 +232,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
                 </option>
               ))}
             </select>
-            <button type="button" data-testid="btn-pay-fee" disabled={busy} onClick={payFee} className="rounded-xl bg-brand-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60">
+            <button type="button" data-testid="btn-pay-fee" disabled={busy} onClick={payFee} className="rounded-xl bg-gold px-4 py-2.5 text-sm font-bold text-brand-deep hover:bg-gold-dark disabled:opacity-60">
               {t("pay_fee")}
             </button>
           </div>
@@ -285,7 +285,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
                 type="button"
                 data-testid="btn-new-checkin"
                 onClick={() => setEditor({ kind: "check_in" })}
-                className="rounded-xl bg-brand-600 px-3 py-2 text-xs font-bold text-white hover:bg-brand-700"
+                className="rounded-xl bg-gold px-3 py-2 text-xs font-bold text-brand-deep hover:bg-gold-dark"
               >
                 + {t("new_checkin")}
               </button>
@@ -295,7 +295,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
                 type="button"
                 data-testid="btn-new-checkout"
                 onClick={() => setEditor({ kind: "check_out", source: confirmedCheckIns[0]!.id })}
-                className="rounded-xl border border-brand-500 px-3 py-2 text-xs font-bold text-brand-700 hover:bg-brand-50"
+                className="rounded-xl border border-gold px-3 py-2 text-xs font-bold text-ink hover:bg-brand-50"
               >
                 + {t("new_checkout")}
               </button>
@@ -342,7 +342,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
                       type="button"
                       data-testid="btn-handover-pdf-row"
                       onClick={() => void downloadAuthed(`/handovers/${h.id}/pdf`, `handover-${h.kind}.pdf`)}
-                      className="rounded-lg border border-brand-500 px-3 py-1.5 text-xs font-bold text-brand-700"
+                      className="rounded-lg border border-gold px-3 py-1.5 text-xs font-bold text-ink"
                     >
                       ⬇ PDF
                     </button>
@@ -441,7 +441,7 @@ function ComparisonModal({ pair, handovers, onClose }: { pair: Handover; handove
                   <td className="p-2 text-stone-600">{t(`meter_${m}`)}</td>
                   <td className="p-2">{source?.data.meters?.[m]?.value || "—"}</td>
                   <td className="p-2">{pair.data.meters?.[m]?.value || "—"}</td>
-                  <td className="p-2 font-bold text-brand-700" data-testid={`meter-diff-${m}`}>
+                  <td className="p-2 font-bold text-ink" data-testid={`meter-diff-${m}`}>
                     {source && pair.data.meters?.[m]?.value ? (isNaN(now - before) ? "—" : String(now - before)) : "—"}
                   </td>
                 </tr>

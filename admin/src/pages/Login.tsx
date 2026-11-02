@@ -33,7 +33,7 @@ export function Login() {
     <div className="grid min-h-screen place-items-center bg-stone-900 p-4">
       <form onSubmit={submit} className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl" data-testid="login-form">
         <div className="mb-5 flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-xl bg-brand-600 text-lg font-bold text-white">A</span>
+          <span className="grid h-11 w-11 place-items-center rounded-xl bg-gold text-lg font-bold text-brand-deep">A</span>
           <div>
             <h1 className="text-lg font-extrabold text-stone-900">Aqar Rent Admin</h1>
             <p className="text-xs text-stone-500">Email + password + authenticator code</p>
@@ -49,7 +49,7 @@ export function Login() {
           type="email"
           dir="ltr"
           autoComplete="username"
-          className="mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-brand-600"
+          className="mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-gold"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
@@ -64,7 +64,7 @@ export function Login() {
           type="password"
           dir="ltr"
           autoComplete="current-password"
-          className="mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-brand-600"
+          className="mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-gold"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
@@ -81,7 +81,7 @@ export function Login() {
           inputMode="numeric"
           maxLength={6}
           placeholder="123456"
-          className="mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-center text-lg tracking-[0.4em] outline-none focus:border-brand-600"
+          className="mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-center text-lg tracking-[0.4em] outline-none focus:border-gold"
           value={code}
           onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
           required
@@ -98,7 +98,7 @@ export function Login() {
           type="submit"
           data-testid="btn-login"
           disabled={busy}
-          className="mt-6 w-full rounded-xl bg-brand-600 py-3 text-sm font-bold text-white hover:bg-brand-700 disabled:opacity-60"
+          className="mt-6 w-full rounded-xl bg-gold py-3 text-sm font-bold text-brand-deep hover:bg-gold-dark disabled:opacity-60"
         >
           {busy ? "Signing in…" : "Sign in"}
         </button>

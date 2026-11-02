@@ -53,13 +53,18 @@ export function Shell({ children }: { children: ReactNode }) {
 
   return (
     <ShellCtx.Provider value={ctx}>
-      <div className="flex min-h-screen bg-stone-100">
-        <aside className="fixed inset-y-0 start-0 z-40 flex w-56 flex-col border-e border-stone-200 bg-stone-900 text-stone-100 max-lg:hidden">
-          <div className="flex h-14 items-center gap-2 border-b border-stone-800 px-4">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand-600 text-sm font-bold">A</span>
+      <div className="flex min-h-screen bg-bg">
+        <aside
+          className="fixed inset-y-0 start-0 z-40 flex w-56 flex-col border-e border-sidebar-hover bg-sidebar text-sidebar-text max-lg:hidden"
+          data-testid="admin-sidebar"
+        >
+          <div className="flex h-14 items-center gap-2 border-b border-sidebar-hover px-4">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-gold to-gold-light text-sm font-bold text-brand-deep">
+              A
+            </span>
             <div>
-              <p className="text-sm font-bold">Aqar Rent</p>
-              <p className="text-[10px] uppercase tracking-widest text-stone-400">Admin</p>
+              <p className="text-sm font-bold text-sidebar-text">Aqar Rent</p>
+              <p className="text-[10px] uppercase tracking-widest text-sidebar-muted">Admin</p>
             </div>
           </div>
           <nav className="flex-1 space-y-0.5 overflow-y-auto p-2" aria-label="admin">
@@ -70,20 +75,33 @@ export function Shell({ children }: { children: ReactNode }) {
                 end={n.to === "/"}
                 data-testid={`nav-${n.to.replace(/\//g, "") || "dashboard"}`}
                 className={({ isActive }) =>
-                  `block rounded-lg px-3 py-2 text-sm font-medium ${
-                    isActive ? "bg-brand-600 text-white" : "text-stone-300 hover:bg-stone-800 hover:text-white"
+                  `relative block rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ${
+                    isActive
+                      ? "bg-sidebar-active-bg text-sidebar-active"
+                      : "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-text"
                   }`
                 }
               >
-                {n.label}
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <span
+                        aria-hidden
+                        className="absolute inset-y-1.5 start-0 w-[3px] rounded-full bg-gold"
+                        data-testid="nav-indicator"
+                      />
+                    )}
+                    {n.label}
+                  </>
+                )}
               </NavLink>
             ))}
           </nav>
-          <div className="border-t border-stone-800 p-3">
-            <p className="truncate text-xs text-stone-400" data-testid="admin-email">
+          <div className="border-t border-sidebar-hover p-3">
+            <p className="truncate text-xs text-sidebar-muted" data-testid="admin-email">
               {me?.email || "…"}
             </p>
-            <p className="text-[11px] font-bold uppercase text-brand-500" data-testid="admin-role">
+            <p className="text-[11px] font-bold uppercase text-sidebar-active" data-testid="admin-role">
               {role}
             </p>
             <button
@@ -93,7 +111,7 @@ export function Shell({ children }: { children: ReactNode }) {
                 clearSession();
                 nav("/login");
               }}
-              className="mt-2 w-full rounded-lg border border-stone-700 py-1.5 text-xs font-semibold text-stone-300 hover:bg-stone-800"
+              className="mt-2 w-full rounded-xl border border-sidebar-hover py-1.5 text-xs font-semibold text-sidebar-muted transition-colors duration-150 hover:bg-sidebar-hover hover:text-sidebar-text"
             >
               Log out
             </button>
@@ -101,29 +119,38 @@ export function Shell({ children }: { children: ReactNode }) {
         </aside>
 
         <div className="flex-1 lg:ps-56">
-          <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-stone-200 bg-white px-4">
-            <p className="text-sm font-bold text-stone-700">Operations console</p>
+          <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-surface px-4">
+            <p className="text-sm font-bold text-ink-strong">Operations console</p>
             <div className="flex items-center gap-3">
-              <span className="hidden rounded-full bg-brand-50 px-2.5 py-1 text-xs font-bold uppercase text-brand-700 sm:block">{role}</span>
+              <span className="hidden rounded-full bg-gold-tint-12 px-2.5 py-1 text-xs font-bold uppercase text-ink sm:block">{role}</span>
             </div>
           </header>
           <main className="p-4 sm:p-6">{children}</main>
         </div>
 
         {/* mobile nav */}
-        <nav className="fixed inset-x-0 bottom-0 z-40 flex gap-1 overflow-x-auto border-t border-stone-200 bg-white p-1.5 lg:hidden">
+        <nav className="fixed inset-x-0 bottom-0 z-40 flex gap-1 overflow-x-auto border-t border-border bg-surface p-1.5 lg:hidden">
           {NAV.filter((n) => n.roles.includes(role)).map((n) => (
             <NavLink
               key={n.to}
               to={n.to}
               end={n.to === "/"}
               className={({ isActive }) =>
-                `whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold ${
-                  isActive ? "bg-brand-600 text-white" : "text-stone-600 hover:bg-stone-100"
+                `relative whitespace-nowrap rounded-lg px-3 py-1.5 pe-3 ps-4 text-xs font-semibold transition-colors duration-150 ${
+                  isActive
+                    ? "bg-gold-tint-14 text-ink"
+                    : "text-muted hover:bg-track hover:text-ink"
                 }`
               }
             >
-              {n.label}
+              {({ isActive }) => (
+                <>
+                  {isActive && (
+                    <span aria-hidden className="absolute inset-y-1 start-0 w-[3px] rounded-full bg-gold" />
+                  )}
+                  {n.label}
+                </>
+              )}
             </NavLink>
           ))}
         </nav>

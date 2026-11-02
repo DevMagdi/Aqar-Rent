@@ -156,7 +156,7 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
     return (
       <div className="mx-auto max-w-lg rounded-3xl border border-stone-200 bg-white p-8 text-center">
         <StatusBadge status={order.status} label={t(`ostatus.${order.status}`) !== `ostatus.${order.status}` ? t(`ostatus.${order.status}`) : order.status} />
-        <Link href={`/${locale}/owner/orders`} className="mt-6 block text-sm font-semibold text-brand-600">
+        <Link href={`/${locale}/owner/orders`} className="mt-6 block text-sm font-semibold text-ink">
           ← {t("orders_title")}
         </Link>
       </div>
@@ -223,7 +223,7 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
               target="_blank"
               rel="noreferrer"
               data-testid="link-gateway"
-              className="block w-full rounded-xl bg-brand-600 py-3 text-center font-bold text-white hover:bg-brand-700"
+              className="block w-full rounded-xl bg-gold py-3 text-center font-bold text-brand-deep hover:bg-gold-dark"
             >
               {t("pay_now")}
             </a>
@@ -299,16 +299,16 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
                 </div>
               ))}
               <div className="flex items-center justify-between gap-3 rounded-xl bg-brand-50 p-2.5">
-                <dt className="text-xs font-bold text-brand-800">{t("bank_reference")}</dt>
+                <dt className="text-xs font-bold text-ink-strong">{t("bank_reference")}</dt>
                 <dd className="flex items-center gap-2">
-                  <span className="font-mono text-sm font-bold text-brand-900" data-testid="bank-reference">
+                  <span className="font-mono text-sm font-bold text-ink-strong" data-testid="bank-reference">
                     {order.bank_instructions.reference}
                   </span>
                   <button
                     type="button"
                     data-testid="btn-copy-reference"
                     onClick={() => copy(order.bank_instructions!.reference, t("bank_reference"))}
-                    className="rounded bg-brand-600 px-2 py-1 text-[10px] font-bold text-white"
+                    className="rounded bg-gold px-2 py-1 text-[10px] font-bold text-brand-deep"
                   >
                     {t("copy")}
                   </button>
@@ -325,7 +325,7 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
               type="file"
               accept="image/*,application/pdf"
               data-testid="input-receipt"
-              className="block w-full text-sm text-stone-600 file:me-3 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-700"
+              className="block w-full text-sm text-stone-600 file:me-3 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink"
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) void uploadReceipt(f);
@@ -333,7 +333,7 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
             />
             {progress !== null && (
               <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-stone-200">
-                <div className="h-full bg-brand-600 transition-all" style={{ width: `${progress}%` }} />
+                <div className="h-full bg-gold transition-all" style={{ width: `${progress}%` }} />
               </div>
             )}
             {(bankStatus || null) && (

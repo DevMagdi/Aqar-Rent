@@ -45,10 +45,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
       <section className="rounded-3xl bg-gradient-to-b from-brand-50 to-stone-50 p-4 sm:p-8" data-testid="hero">
         <SearchBar />
         <div className="mt-4 flex flex-wrap gap-3 text-xs text-stone-500">
-          <Link href={`/${l}/how-it-works`} className="hover:text-brand-600">
+          <Link href={`/${l}/how-it-works`} className="hover:text-ink">
             {t("how_it_works")} →
           </Link>
-          <Link href={`/${l}/content-rules`} className="hover:text-brand-600">
+          <Link href={`/${l}/content-rules`} className="hover:text-ink">
             {t("content_rules")} →
           </Link>
         </div>
@@ -59,7 +59,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           <h2 id="latest-h" className="text-xl font-bold text-stone-900">
             {t("latest_listings")}
           </h2>
-          <Link href={`/${l}/search`} className="text-sm font-semibold text-brand-600 hover:underline" data-testid="view-all">
+          <Link href={`/${l}/search`} className="text-sm font-semibold text-ink hover:underline" data-testid="view-all">
             {t("view_all")} ←
           </Link>
         </div>

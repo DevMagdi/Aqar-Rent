@@ -48,7 +48,7 @@ export function AccountView() {
     }
   }
 
-  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-4 py-3 text-sm outline-none focus:border-brand-500";
+  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-4 py-3 text-sm outline-none focus:border-gold";
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
@@ -81,7 +81,7 @@ export function AccountView() {
               {err}
             </p>
           )}
-          <button type="submit" data-testid="btn-save-profile" disabled={busy} className="w-full rounded-xl bg-brand-600 py-3 font-semibold text-white hover:bg-brand-700 disabled:opacity-60">
+          <button type="submit" data-testid="btn-save-profile" disabled={busy} className="w-full rounded-xl bg-gold py-3 font-semibold text-brand-deep hover:bg-gold-dark disabled:opacity-60">
             {t("save")}
           </button>
         </form>

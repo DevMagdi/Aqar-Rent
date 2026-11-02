@@ -235,7 +235,7 @@ export function Moderation() {
               ))}
             </div>
             <h4 className="font-bold text-stone-900">{detail.title}</h4>
-            <p className="font-semibold text-brand-600">{detail.rent_monthly.toLocaleString()} EGP/month · {detail.property_type.replace(/_/g, " ")}</p>
+            <p className="font-semibold text-ink">{detail.rent_monthly.toLocaleString()} EGP/month · {detail.property_type.replace(/_/g, " ")}</p>
             <p className="text-stone-600">📍 {detail.address_text}, {detail.district_name || ""} {detail.city_name || ""} {detail.governorate_name || ""}</p>
             <p className="whitespace-pre-line rounded-xl bg-stone-50 p-3 text-stone-700">{detail.description}</p>
             <div className="grid grid-cols-2 gap-2 rounded-xl bg-stone-50 p-3">
