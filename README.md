@@ -13,11 +13,23 @@ analytics, bulk tools) and **office/agency subscriptions** (teams, branded
 pages, CRM-lite, dashboards), plus optional premium verification and contract
 packages. All prices are DB-backed and served from `/api/v1/pricing`.
 
-> **Status:** source-complete and tested. Production go-live still requires
-> external credentials/accounts and an Egyptian lawyer's final sign-off — see
-> [`docs/go-live-checklist.md`](docs/go-live-checklist.md) and
-> [`docs/external-dependencies.md`](docs/external-dependencies.md). **Nothing
-> here is a "coming soon" placeholder.**
+Visual language: **Mantiq design system** — Mantiq Navy `#16273B` + Mantiq Gold
+`#BDA77E`, single source of truth in `web/src/styles/tokens.css` /
+`admin/src/styles/tokens.css`. Compliance (hex-free TS/TSX, no white-on-gold,
+byte-identical token files) is test-enforced; see ASSUMPTIONS “Design System
+Migration” (#91–101).
+
+> **Status:** source-complete and tested in this sandbox: backend 162 pytest
+> (161 + 1 skipped when bundled PostgreSQL is absent), ruff + mypy clean, web unit + design-compliance
+> tests, web/admin typecheck and production builds, mobile static checks, and
+> generated API artifacts in sync. **Not cleared for public launch:** production
+> go-live still requires external credentials/accounts and an Egyptian lawyer's
+> final sign-off — see [`docs/go-live-checklist.md`](docs/go-live-checklist.md)
+> and [`docs/external-dependencies.md`](docs/external-dependencies.md). **Nothing
+> here is a "coming soon" placeholder.** Flutter release builds, Playwright e2e,
+> PostgreSQL migration rehearsal and live provider captures require SDK/browsers
+> and credentials unavailable in this sandbox; CI and the go-live checklist own
+> those gates.
 
 ---
 
@@ -96,12 +108,33 @@ For Flutter, see the exact commands in `mobile/README.md` and
 ## Quality gates
 
 ```bash
-cd backend && .venv/bin/python -m pytest -q          # 161 tests (1 skip: pgserver)
+# Backend (dev, SQLite)
+python3.12 -m venv backend/.venv && source backend/.venv/bin/activate
+pip install -r backend/requirements-dev.txt
+export DATABASE_URL="sqlite:///./dev.db"   # or postgresql+psycopg://…
+cd backend && alembic upgrade head && python -m app.scripts.seed --demo
+uvicorn app.main:app --reload --port 8000
+
+# Web / admin (separate shells; mock pay is dev-only)
+cd web   && npm install && BACKEND_URL=http://localhost:8000 NEXT_PUBLIC_MOCK_PAY=true npm run dev   # :3000
+cd admin && npm install && BACKEND_URL=http://localhost:8000 npm run dev                            # :5173
+```
+
+### Tests & quality
+
+```bash
+make test        # backend pytest (SQLite; TEST_DATABASE_URL for PostgreSQL)
+make lint        # ruff
+make typecheck   # mypy
+cd backend && .venv/bin/python -m pytest -q          # 162 passed (161 + 1 skip without pgserver)
 cd backend && .venv/bin/python -m ruff check app tests && .venv/bin/python -m mypy app
-cd web   && npx tsc --noEmit && npm test && npm run build
-cd admin && npx tsc --noEmit && npm run build
-cd backend && .venv/bin/python ../scripts/generate-api-docs.py   # docs in sync
-# Mobile (requires Flutter SDK; runs in CI):
+cd web     && npx tsc --noEmit && npx vitest run && npm run build   # unit + Mantiq compliance
+cd admin   && npx tsc --noEmit && npm run build
+cd backend && .venv/bin/python ../scripts/generate-api-docs.py       # OpenAPI + Postman in sync
+cd ..      && backend/.venv/bin/python scripts/check_mobile.py       # SDK-free Flutter static check
+make e2e         # Playwright: 10 tests in 8 specs (incl. Mantiq computed styles/WCAG)
+                 # requires browser download; not runnable in this sandbox
+# Mobile (requires Flutter SDK; runs in CI via .github/workflows/mobile.yml):
 flutter analyze --fatal-infos && flutter test && flutter test integration_test/
 ```
 

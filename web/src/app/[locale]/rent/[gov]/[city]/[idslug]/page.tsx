@@ -138,7 +138,7 @@ export default async function ListingPage({ params }: { params: Promise<Params> 
                   📍 {d.address_text} · {locationName(city, l)} {locationName(gov, l) ? `· ${locationName(gov, l)}` : ""}
                 </p>
               </div>
-              <p className="text-2xl font-extrabold text-brand-600" data-testid="listing-price">
+              <p className="text-2xl font-extrabold text-gold-dark" data-testid="listing-price">
                 {formatMoney(d.rent_monthly, l)} <span className="text-sm font-semibold">{t("per_month")}</span>
               </p>
             </div>
@@ -163,7 +163,7 @@ export default async function ListingPage({ params }: { params: Promise<Params> 
               {d.office && (
                 <Link
                   href={`/${l}/offices/${d.office.slug}`}
-                  className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-brand-700 hover:underline"
+                  className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-ink hover:underline"
                 >
                   🏢 {l === "ar" ? d.office.name_ar : d.office.name_en}
                 </Link>

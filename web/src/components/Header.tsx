@@ -44,8 +44,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-stone-200 bg-white/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
-        <Link href={`/${locale}`} className="flex items-center gap-2 text-lg font-bold text-brand-600" data-testid="brand">
-          <span aria-hidden className="grid h-9 w-9 place-items-center rounded-xl bg-brand-600 text-white">ع</span>
+        <Link href={`/${locale}`} className="flex items-center gap-2 text-lg font-bold text-ink" data-testid="brand">
+          <span aria-hidden className="grid h-9 w-9 place-items-center rounded-xl bg-gold text-brand-deep">ع</span>
           <span>{t("brand")}</span>
         </Link>
 
@@ -54,10 +54,15 @@ export function Header() {
             <Link
               key={n.href}
               href={n.href}
-              className={`rounded-lg px-3 py-2 text-sm font-medium hover:bg-stone-100 ${
-                pathname === n.href ? "text-brand-600" : "text-stone-700"
+              className={`relative rounded-xl px-3 py-2.5 pe-3 ps-4 text-sm font-medium transition-colors duration-150 ${
+                pathname === n.href
+                  ? "bg-gold-tint-14 font-semibold text-ink"
+                  : "text-muted hover:bg-track hover:text-ink"
               }`}
             >
+              {pathname === n.href && (
+                <span aria-hidden className="absolute inset-y-1.5 start-0 w-[3px] rounded-full bg-gold-dark" data-testid="nav-indicator" />
+              )}
               {n.label}
             </Link>
           ))}
@@ -65,10 +70,15 @@ export function Header() {
             <Link
               key={n.href}
               href={n.href}
-              className={`rounded-lg px-3 py-2 text-sm font-medium hover:bg-stone-100 ${
-                pathname === n.href ? "text-brand-600" : "text-stone-700"
+              className={`relative rounded-xl px-3 py-2.5 pe-3 ps-4 text-sm font-medium transition-colors duration-150 ${
+                pathname === n.href
+                  ? "bg-gold-tint-14 font-semibold text-ink"
+                  : "text-muted hover:bg-track hover:text-ink"
               }`}
             >
+              {pathname === n.href && (
+                <span aria-hidden className="absolute inset-y-1.5 start-0 w-[3px] rounded-full bg-gold-dark" data-testid="nav-indicator" />
+              )}
               {n.label}
             </Link>
           ))}
@@ -100,7 +110,7 @@ export function Header() {
               <Link
                 href={`/${locale}/login`}
                 data-testid="login-link"
-                className="rounded-lg bg-brand-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-brand-700"
+                className="rounded-lg bg-gold px-3 py-1.5 text-sm font-medium text-brand-deep hover:bg-gold-dark"
               >
                 {t("nav_login")}
               </Link>

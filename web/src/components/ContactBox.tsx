@@ -49,7 +49,7 @@ export function ContactBox({ listingId, ownerName }: { listingId: string; ownerN
             href={waHref(phone, t("contact_owner"))}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 rounded-xl bg-[#25D366] px-3 py-2.5 text-center text-sm font-bold text-white hover:brightness-95"
+            className="flex-1 rounded-xl bg-whatsapp px-3 py-2.5 text-center text-sm font-bold text-white hover:brightness-95"
             data-testid="whatsapp-link"
           >
             {t("whatsapp")}
@@ -68,7 +68,7 @@ export function ContactBox({ listingId, ownerName }: { listingId: string; ownerN
         <Link
           href={`/${locale}/login?next=${encodeURIComponent(pathname)}`}
           data-testid="login-for-contact"
-          className="mt-3 block rounded-xl bg-brand-600 px-4 py-2.5 text-center text-sm font-semibold text-white hover:bg-brand-700"
+          className="mt-3 block rounded-xl bg-gold px-4 py-2.5 text-center text-sm font-semibold text-brand-deep hover:bg-gold-dark"
         >
           {t("nav_login")}
         </Link>
@@ -92,7 +92,7 @@ export function ContactBox({ listingId, ownerName }: { listingId: string; ownerN
         data-testid="btn-whatsapp"
         disabled={loading}
         onClick={() => reveal("whatsapp")}
-        className="rounded-xl bg-[#25D366] px-3 py-3 text-sm font-bold text-white hover:brightness-95 disabled:opacity-60"
+        className="rounded-xl bg-whatsapp px-3 py-3 text-sm font-bold text-white hover:brightness-95 disabled:opacity-60"
       >
         {t("whatsapp")}
       </button>

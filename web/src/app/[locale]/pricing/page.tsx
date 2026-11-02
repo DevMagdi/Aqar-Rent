@@ -51,7 +51,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
           <ErrorState message={error || (ar ? "تعذر تحميل الأسعار الآن" : "Prices could not be loaded")} />
         </div>
         <p className="mt-4 text-center text-sm">
-          <Link className="text-brand-600 underline" href={`/${l}/pricing`}>
+          <Link className="text-ink underline" href={`/${l}/pricing`}>
             {ar ? "إعادة المحاولة" : "Retry"}
           </Link>
         </p>
@@ -65,7 +65,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
   return (
     <div className="space-y-10" dir={ar ? "rtl" : "ltr"}>
       <header className="rounded-3xl bg-gradient-to-br from-brand-50 via-white to-emerald-50 p-6 sm:p-10">
-        <p className="text-xs font-bold uppercase tracking-widest text-brand-700">
+        <p className="text-xs font-bold uppercase tracking-widest text-ink">
           {ar ? "أسعار شفافة · بلا مفاجآت" : "Transparent pricing · no surprises"}
         </p>
         <h1 className="mt-2 text-3xl font-extrabold text-stone-900 sm:text-4xl">
@@ -83,7 +83,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
             ar ? "الوسيط اختياري" : "Broker-optional",
             ar ? "أسعار من قاعدة البيانات" : "DB-backed prices",
           ].map((x) => (
-            <span key={x} className="rounded-full border border-brand-200 bg-white px-3 py-1.5 text-xs font-semibold text-brand-700">
+            <span key={x} className="rounded-full border border-brand-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink">
               ✓ {x}
             </span>
           ))}
@@ -98,7 +98,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
           <article className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
             <p className="text-sm text-stone-500">{ar ? "إعلان واحد · ٧ أيام" : "One listing · 7 days"}</p>
-            <p className="mt-2 text-3xl font-extrabold text-brand-700">{money(pricing.weekly_ad.price_egp)}</p>
+            <p className="mt-2 text-3xl font-extrabold text-ink">{money(pricing.weekly_ad.price_egp)}</p>
             <p className="mt-3 text-sm text-stone-600">
               {ar
                 ? "بعد مراجعة الإعلان والمستندات، تدفع مقابل مدة الظهور. لا توجد رسوم خفية أو عمولة عند إتمام الإيجار."
@@ -106,7 +106,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
             </p>
             <Link
               href={`/${l}/owner/new`}
-              className="mt-5 inline-flex rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-bold text-white hover:bg-brand-700"
+              className="mt-5 inline-flex rounded-xl bg-gold px-5 py-2.5 text-sm font-bold text-brand-deep hover:bg-gold-dark"
             >
               {ar ? "أضف إعلانك" : "Post a listing"}
             </Link>
@@ -154,7 +154,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
               <p className="mt-1 text-xs text-stone-500">
                 {p.weeks} {ar ? "أسابيع" : "weeks"} · {ar ? "خصم" : "discount"} {p.discount_pct}%
               </p>
-              <p className="mt-3 text-2xl font-extrabold text-brand-700">{money(p.total)}</p>
+              <p className="mt-3 text-2xl font-extrabold text-ink">{money(p.total)}</p>
               {p.discount > 0 && (
                 <p className="text-xs text-stone-400 line-through">{money(p.subtotal)}</p>
               )}
@@ -186,7 +186,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                 {pricing.subscriptions.filter((s) => s.audience === audience).map((s) => (
                   <article key={s.id} className="flex flex-col rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
                     <h4 className="font-bold text-stone-900">{name(s.name_ar, s.name_en)}</h4>
-                    <p className="mt-2 text-2xl font-extrabold text-brand-700">
+                    <p className="mt-2 text-2xl font-extrabold text-ink">
                       {money(s.monthly_price_egp)}
                       <span className="text-sm font-normal text-stone-500"> / {ar ? "شهر" : "month"}</span>
                     </p>
@@ -206,7 +206,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                     </ul>
                     <Link
                       href={`/${l}/office`}
-                      className="mt-4 rounded-xl border border-brand-600 px-4 py-2 text-center text-sm font-bold text-brand-700 hover:bg-brand-50"
+                      className="mt-4 rounded-xl border border-brand-600 px-4 py-2 text-center text-sm font-bold text-ink hover:bg-brand-50"
                     >
                       {ar ? "ابدأ" : "Get started"}
                     </Link>

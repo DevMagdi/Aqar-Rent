@@ -30,7 +30,7 @@ Images: API/worker build from `backend/Dockerfile`, web from `web/Dockerfile`
 
 - `ci.yml`: **pip-audit**, ruff, mypy, pytest ×{SQLite, PostgreSQL+PostGIS},
   web (npm audit + tsc + vitest + `next build`), admin (npm audit + tsc +
-  build), **Playwright e2e** (7 specs).
+  build), **Playwright e2e** (10 tests in 8 specs, incl. design-system compliance).
 - `deploy-staging.yml`: on push to `main` → build+push api/web/admin images
   to GHCR → SSH deploy when `STAGING_HOST` is set (needs
   `STAGING_SSH_KEY` secret + `.env.staging` on the host). Without those
@@ -41,7 +41,7 @@ Images: API/worker build from `backend/Dockerfile`, web from `web/Dockerfile`
 - Alembic, forward-only in deploy (`alembic upgrade head` runs in the api
   container command before serving).
 - Migrations are additive first (new columns nullable/defaulted — see
-  `0003…0006`); destructive steps go in a later release after the previous
+  `0003…0007`); destructive steps go in a later release after the previous
   version has run for a full day.
 - `alembic downgrade` exists per revision for emergencies; SQLite DDL is
   non-transactional (migrations are written idempotently — `0005` shows the

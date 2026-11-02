@@ -72,5 +72,8 @@ Flutter SDK (see `docs/external-dependencies.md`).
 | F2 | Admin: plans/packages CRUD, office queue, appeals, reconciliation, audit trail | `admin/src/pages/AdminGrowth.tsx`, `Shell.tsx`, `App.tsx` |
 | F3 | Static pages have complete AR/EN copy, no "coming soon" | `StaticSections.tsx`, `StaticPage.tsx` |
 | F4 | `tsc --noEmit` + production build pass for web and admin | local build commands in PR |
-| F5 | Backend 160 pytest, ruff, mypy clean; migration 0001→0007 on SQLite | `backend/tests`, CI |
+| F5 | Backend 162 pytest with pgserver (161 + 1 skip without), ruff, mypy clean; migration 0001→0007 on SQLite and real PostgreSQL | `backend/tests`, `test_backup_restore.py`, CI |
 | F6 | OpenAPI + Postman collection regenerated from live app | `scripts/generate-api-docs.py`, `docs/openapi.json` (113 paths) |
+| F7 | Mantiq design system: byte-identical token files, zero hex in TS/TSX, no white-on-gold | `web/src/styles/tokens.css`, `admin/src/styles/tokens.css`, `web/src/styles/tokens.test.ts` (6 tests) |
+| F8 | Playwright suite lists 10 tests in 8 specs including computed styles/WCAG | `e2e/tests/design-system.spec.ts`, `npx playwright test --list` |
+| F9 | No stale draft/coming-soon copy in web, admin, mobile, docs | `docs/decisions.md`, `PRODUCTION_READINESS.md` |

@@ -38,11 +38,11 @@ export function NotificationsView() {
         <h1 className="text-xl font-bold text-stone-900">
           {t("notifications_title")}
           {data && data.unread_count > 0 && (
-            <span className="ms-2 rounded-full bg-brand-600 px-2 py-0.5 text-xs font-bold text-white">{data.unread_count}</span>
+            <span className="ms-2 rounded-full bg-gold px-2 py-0.5 text-xs font-bold text-brand-deep">{data.unread_count}</span>
           )}
         </h1>
         {data && data.unread_count > 0 && (
-          <button type="button" data-testid="mark-all-read" onClick={markAll} className="text-sm font-semibold text-brand-600 hover:underline">
+          <button type="button" data-testid="mark-all-read" onClick={markAll} className="text-sm font-semibold text-ink hover:underline">
             {t("mark_all_read")}
           </button>
         )}
@@ -68,7 +68,7 @@ export function NotificationsView() {
             >
               <div className="flex items-start justify-between gap-3">
                 <p className="text-sm font-bold text-stone-900">{n.title}</p>
-                {!n.read_at && <span className="rounded-full bg-brand-600 px-2 py-0.5 text-[10px] font-bold text-white">{t("unread")}</span>}
+                {!n.read_at && <span className="rounded-full bg-gold px-2 py-0.5 text-[10px] font-bold text-brand-deep">{t("unread")}</span>}
               </div>
               <p className="mt-1 text-sm text-stone-600">{n.body}</p>
               <p className="mt-2 text-xs text-stone-400">{formatDateTime(n.created_at, locale)}</p>

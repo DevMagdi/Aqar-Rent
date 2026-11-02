@@ -91,7 +91,7 @@ export function VerificationView() {
               data-testid="input-doc-file"
               type="file"
               accept="image/jpeg,image/png,image/webp,application/pdf"
-              className="mt-1 block w-full text-sm text-stone-600 file:me-3 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-brand-700"
+              className="mt-1 block w-full text-sm text-stone-600 file:me-3 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink"
               onChange={(e) => setFile(e.target.files?.[0] ?? null)}
             />
             <p className="mt-1 text-xs text-stone-400">JPEG / PNG / WebP / PDF · ≤ 8 MB</p>
@@ -105,7 +105,7 @@ export function VerificationView() {
             type="submit"
             data-testid="btn-upload-doc"
             disabled={!file || busy}
-            className="w-full rounded-xl bg-brand-600 py-3 font-semibold text-white hover:bg-brand-700 disabled:opacity-50"
+            className="w-full rounded-xl bg-gold py-3 font-semibold text-brand-deep hover:bg-gold-dark disabled:opacity-50"
           >
             {busy ? t("uploading") : t("upload_doc")}
           </button>
@@ -129,7 +129,7 @@ export function VerificationView() {
                 <p className="mt-1 text-xs text-stone-500">{formatDateTime(v.created_at, locale)}</p>
                 {v.reject_reason && <p className="mt-1 text-xs text-red-600">{t("rejected_reason")}: {v.reject_reason}</p>}
                 {v.file_url && (
-                  <a href={v.file_url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-semibold text-brand-600 hover:underline">
+                  <a href={v.file_url} target="_blank" rel="noreferrer" className="mt-1 inline-block text-xs font-semibold text-ink hover:underline">
                     ↗
                   </a>
                 )}

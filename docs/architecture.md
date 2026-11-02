@@ -29,12 +29,12 @@ platform never touches rent or deposits.
 
 | Component | Path | Stack | Notes |
 |---|---|---|---|
-| API | `backend/` | FastAPI + SQLAlchemy 2 + Alembic | 74 OpenAPI paths; migrations `0001…0006` |
+| API | `backend/` | FastAPI + SQLAlchemy 2 + Alembic | 113 OpenAPI paths; migrations `0001…0007` |
 | Worker | `backend/app/worker.py` | ARQ (Redis) | hourly: ad expiry, Fawry 48h expiry, reminders, auto-moderation, **retention jobs** |
 | Public site | `web/` | Next.js 16 App Router, TS, Tailwind 4 | SSR/SEO, RTL ar + en, MapLibre, owner dashboard, **contracts/handovers** |
 | Staff console | `admin/` | React 19 + Vite 8 + Tailwind 4 | moderation/finance/super-admin roles, TOTP 2FA |
 | Mobile (mini) | `mobile/` | Flutter | contract + handover screens (see `mobile/README.md`) |
-| E2E | `e2e/` | Playwright (playwright-core + @sparticuz/chromium) | 7 specs, hermetic stack :8010/:3010/:5180 |
+| E2E | `e2e/` | Playwright (playwright-core + @sparticuz/chromium) | 10 tests in 8 specs (incl. Mantiq design-system compliance), hermetic stack :8010/:3010/:5180 |
 
 ## Key domain rules (backend = source of truth)
 

@@ -38,12 +38,12 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder={t("search_placeholder")}
-          className="w-full flex-1 rounded-xl border border-stone-300 bg-stone-50 px-4 py-3 text-base outline-none focus:border-brand-500 focus:bg-white"
+          className="w-full flex-1 rounded-xl border border-stone-300 bg-stone-50 px-4 py-3 text-base outline-none focus:border-gold focus:bg-white"
         />
         <button
           type="submit"
           data-testid="search-submit"
-          className="rounded-xl bg-brand-600 px-6 py-3 text-base font-semibold text-white hover:bg-brand-700"
+          className="rounded-xl bg-gold px-6 py-3 text-base font-semibold text-brand-deep hover:bg-gold-dark"
         >
           {t("nav_search")}
         </button>
@@ -63,7 +63,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
               router.push(`/${locale}/search?${params.toString()}`);
             }}
             className={`rounded-full border px-3 py-1.5 text-sm font-medium transition ${
-              type === c ? "border-brand-600 bg-brand-50 text-brand-700" : "border-stone-300 bg-white text-stone-700 hover:border-brand-500"
+              type === c ? "border-gold bg-brand-50 text-ink" : "border-stone-300 bg-white text-stone-700 hover:border-gold"
             }`}
           >
             {t(`spec.${c}`)}

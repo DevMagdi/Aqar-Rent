@@ -1,0 +1,67 @@
+/* =============================================================================
+ * Mantiq design system — canonical tokens (ADR-034).
+ * SINGLE SOURCE OF TRUTH. Do not hard-code hex values anywhere else.
+ * Every Tailwind colour utility resolves through these variables.
+ * ============================================================================= */
+
+:root {
+  /* ── Brand palette ─────────────────────────────────────────────── */
+  --color-brand: #16273B;         /* Mantiq Navy – primary ink */
+  --color-brand-deep: #0E1728;    /* Deep Navy – sidebar / darkest chrome */
+  --color-network: #243553;       /* Network Blue – sidebar hover */
+  --color-gold: #BDA77E;          /* Mantiq Gold – main accent */
+  --color-gold-light: #E3D2A8;    /* Gold Light */
+  --color-gold-dark: #8F7A52;     /* Gold Dark – hover / focus */
+  --color-on-dark: #E8E2D4;       /* text/icons on navy */
+
+  /* ── Surfaces ──────────────────────────────────────────────────── */
+  --color-bg: #FAFBFC;
+  --color-surface: #FFFFFF;
+  --color-ink: var(--color-brand);
+  --color-ink-strong: var(--color-brand-deep);
+  --color-muted: #687380;
+  --color-border: rgba(22, 39, 59, 0.10);
+  --color-border-strong: rgba(22, 39, 59, 0.16);
+  --color-track: rgba(22, 39, 59, 0.08);
+
+  /* ── Sidebar / dark chrome ─────────────────────────────────────── */
+  --color-sidebar: var(--color-brand-deep);
+  --color-sidebar-text: var(--color-on-dark);
+  --color-sidebar-active: var(--color-gold);
+  --color-sidebar-active-bg: rgba(189, 167, 126, 0.14);
+  --color-sidebar-hover: var(--color-network);
+  --color-sidebar-muted: rgba(232, 226, 212, 0.62);
+
+  /* ── Functional integration colour (WhatsApp official brand) ───── */
+  --color-whatsapp: #25D366;
+
+  /* ── Soft accent tints (≤ 12% opacity) ─────────────────────────── */
+  --color-gold-tint-8: rgba(189, 167, 126, 0.08);
+  --color-gold-tint-12: rgba(189, 167, 126, 0.12);
+  --color-gold-tint-14: rgba(189, 167, 126, 0.14);
+
+  /* ── Status colours (functional, no neon) ──────────────────────── */
+  --color-success: #1B5E3A;
+  --color-success-bg: #EEF6F0;
+  --color-warn: #8A5A12;
+  --color-warn-bg: #FDF6EA;
+  --color-danger: #A32A22;
+  --color-danger-bg: #FDF0EF;
+  --color-info: #1F4E8C;
+  --color-info-bg: #EDF2F9;
+  --color-neutral: #17565F;
+  --color-neutral-bg: #ECF3F4;
+
+  /* ── Typography ────────────────────────────────────────────────── */
+  --font-sans: "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
+  --text-base-size: 14px;
+  --text-base-line: 22px;
+
+  /* ── Geometry ──────────────────────────────────────────────────── */
+  --radius-card: 18px;
+  --radius-field: 12px;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 2px rgba(14, 23, 40, 0.06);
+  --shadow-pop: 0 12px 32px rgba(14, 23, 40, 0.12);
+  --transition-fast: 150ms;
+}

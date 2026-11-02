@@ -13,14 +13,16 @@ production path; every production flow uses real providers or refuses to boot.
 
 | # | Item | Status | Evidence |
 |---|---|---|---|
-| A1 | Backend tests | ✅ | `backend/.venv/bin/python -m pytest -q` → **161 passed, 1 skipped** (bundled pgserver unavailable); includes 11 new Phase 5 tests |
+| A1 | Backend tests | ✅ | `backend/.venv/bin/python -m pytest -q` → **162 passed** with `pgserver` installed (CI path); **161 passed, 1 skipped** in a minimal sandbox. Includes 11 new Phase 5 tests and the updated backup/restore head assertion |
 | A2 | Lint / types | ✅ | `ruff check app tests` clean · `mypy app` clean (97 files) |
-| A3 | Migration | ⚠️ | `0001→0007` verified on SQLite in `test_migration.py` + manual `alembic upgrade head`; **PostgreSQL staging run is a go-live gate** (no local server in sandbox) |
-| A4 | Web | ✅ | `npx tsc --noEmit`, `npm test` (15 vitest), `npm run build` all pass; pricing/office/legal pages added |
+| A3 | Migration | ✅ / ⚠️ | `0001→0007` verified on SQLite and on a real throwaway PostgreSQL in `test_backup_restore.py` (pgserver); **PostGIS staging rehearsal + production backup drill remain go-live gates** |
+| A4 | Web | ✅ | `npx tsc --noEmit`, `npm test` (**21 vitest**: 15 core + 6 Mantiq design-system compliance), `npm run build` all pass; pricing/office/legal pages added |
 | A5 | Admin | ✅ | `npx tsc --noEmit`, `npm run build` pass; 4 new admin surfaces |
 | A6 | Mobile source | ⚠️ | `flutter analyze/test/build` are executed by `.github/workflows/mobile.yml` with a real SDK — **Flutter SDK unavailable in this sandbox** (`storage.googleapis.com` blocked). All source, native shells, tests, CI and build scripts are committed. |
 | A7 | API docs | ✅ | `scripts/generate-api-docs.py` regenerates `docs/openapi.json` (113 paths, 134 schemas) and Postman collection (137 requests) from the live app |
 | A8 | Static copy | ✅ | No "coming soon"/DRAFT banners; all six static pages complete in AR/EN |
+| A9 | Design system | ✅ | `main` Mantiq navy+gold migration merged; token files byte-identical, zero hard-coded hex in TS/TSX, no white-on-gold — enforced by `tokens.test.ts` |
+| A10 | E2E specs | ⚠️ | `npx playwright test --list` → 10 tests in 8 specs; browser download blocked in sandbox, so execution is a CI/go-live gate |
 
 ## B. Trust, offices, pricing (Phase 5)
 
@@ -72,6 +74,6 @@ four blockers. This round adds: a complete sustainable revenue model, first-clas
 offices, multi-level trust with appeals, production-grade private-agreement
 templates and legal framing, payment audit/reconciliation, strict production
 config (including `ENVIRONMENT=production`), a real Flutter production client with
-native shells/CI, pricing/office/admin/web surfaces, generated API docs, and 10
-new backend tests (161 total). The verdict remains **staging/pilot** because
+native shells/CI, pricing/office/admin/web surfaces, generated API docs, and 11
+new backend tests (162 total with pgserver; 161 + 1 skip without). The verdict remains **staging/pilot** because
 credentials, legal sign-off and store/hardware items are outside the code.

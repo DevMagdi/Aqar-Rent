@@ -5,7 +5,7 @@ sign-off. **Do not launch while any ⛔ blocker is open.**
 
 ## 0. Code quality gates (CI)
 
-- [ ] `cd backend && .venv/bin/python -m pytest -q` → all pass (161 tests, 1 skipped: bundled PostgreSQL)
+- [ ] `cd backend && .venv/bin/python -m pytest -q` → all pass (162 tests with `pgserver`; 161 + 1 skipped without it)
 - [ ] `.venv/bin/python -m ruff check app tests` → clean
 - [ ] `.venv/bin/python -m mypy app` → clean
 - [ ] `cd web && npx tsc --noEmit && npm test && npm run build`

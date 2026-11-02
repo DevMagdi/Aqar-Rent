@@ -37,7 +37,7 @@ export function FavoritesView({ locale, places }: { locale: Locale; places: Reco
         <EmptyState
           title={t("favorites_empty")}
           action={
-            <Link href={`/${locale}/search`} className="rounded-xl bg-brand-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-brand-700">
+            <Link href={`/${locale}/search`} className="rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-brand-deep hover:bg-gold-dark">
               {t("browse_listings")}
             </Link>
           }
@@ -68,7 +68,7 @@ export function FavoritesView({ locale, places }: { locale: Locale; places: Reco
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-semibold text-stone-900">{item.title}</p>
-                    <p className="text-sm font-bold text-brand-600">
+                    <p className="text-sm font-bold text-ink">
                       {formatMoney(item.rent_monthly, locale)} {t("per_month")}
                     </p>
                   </div>

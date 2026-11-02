@@ -87,7 +87,7 @@ export function OtpConfirmModal({
             type="button"
             data-testid="otp-request"
             onClick={requestOtp}
-            className="mt-4 w-full rounded-xl bg-brand-600 py-3 text-sm font-bold text-white hover:bg-brand-700"
+            className="mt-4 w-full rounded-xl bg-gold py-3 text-sm font-bold text-brand-deep hover:bg-gold-dark"
           >
             {t("send_otp")}
           </button>
@@ -103,7 +103,7 @@ export function OtpConfirmModal({
               inputMode="numeric"
               maxLength={6}
               autoFocus
-              className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-3 text-center text-xl tracking-[0.4em] outline-none focus:border-brand-500"
+              className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-3 text-center text-xl tracking-[0.4em] outline-none focus:border-gold"
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
             />
@@ -112,7 +112,7 @@ export function OtpConfirmModal({
               data-testid="otp-resend"
               disabled={resendIn > 0}
               onClick={requestOtp}
-              className="mt-2 text-xs font-semibold text-brand-600 disabled:opacity-50"
+              className="mt-2 text-xs font-semibold text-ink disabled:opacity-50"
             >
               {resendIn > 0 ? `${t("resend_in")} ${resendIn}s` : t("resend")}
             </button>

@@ -193,12 +193,12 @@ export function OfficeWorkspace() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-xl bg-brand-600 px-5 py-3 text-sm font-bold text-white disabled:opacity-60"
+            className="w-full rounded-xl bg-gold px-5 py-3 text-sm font-bold text-brand-deep disabled:opacity-60"
           >
             {busy ? "…" : ar ? "إنشاء المكتب" : "Create office"}
           </button>
           <p className="text-center text-xs text-stone-500">
-            <Link className="text-brand-600 underline" href={`/${locale}/pricing`}>
+            <Link className="text-ink underline" href={`/${locale}/pricing`}>
               {ar ? "اطّلع على باقات المكاتب" : "See office plans"}
             </Link>
           </p>
@@ -211,7 +211,7 @@ export function OfficeWorkspace() {
     <div className="space-y-8" dir={ar ? "rtl" : "ltr"}>
       <header className="flex flex-wrap items-center justify-between gap-4 rounded-3xl bg-gradient-to-br from-brand-50 to-white p-6">
         <div>
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-700">
+          <p className="text-xs font-bold uppercase tracking-widest text-ink">
             {ar ? "لوحة المكتب العقاري" : "Office workspace"}
           </p>
           <h1 className="mt-1 text-2xl font-extrabold text-stone-900">
@@ -219,7 +219,7 @@ export function OfficeWorkspace() {
           </h1>
           <div className="mt-2 flex flex-wrap items-center gap-2 text-xs">
             <StatusBadge status={office.verification_status} />
-            <Link className="text-brand-600 underline" href={`/offices/${office.slug}`}>
+            <Link className="text-ink underline" href={`/offices/${office.slug}`}>
               {ar ? "الصفحة العامة" : "Public page"}
             </Link>
           </div>
@@ -236,7 +236,7 @@ export function OfficeWorkspace() {
                 toast.show((err as Error).message, "err");
               }
             }}
-            className="rounded-xl border border-brand-600 px-4 py-2 text-sm font-bold text-brand-700"
+            className="rounded-xl border border-brand-600 px-4 py-2 text-sm font-bold text-ink"
           >
             {ar ? "طلب توثيق المكتب" : "Request verification"}
           </button>
@@ -352,7 +352,7 @@ export function OfficeWorkspace() {
             <button
               type="submit"
               disabled={busy}
-              className="rounded-xl bg-brand-600 px-4 py-2 text-sm font-bold text-white sm:col-span-2 disabled:opacity-60"
+              className="rounded-xl bg-gold px-4 py-2 text-sm font-bold text-brand-deep sm:col-span-2 disabled:opacity-60"
             >
               {ar ? "إضافة للمسار" : "Add to pipeline"}
             </button>
@@ -412,7 +412,7 @@ export function OfficeWorkspace() {
       </section>
 
       <p className="text-center text-xs text-stone-500">
-        <Link className="text-brand-600 underline" href={`/${locale}/pricing`}>
+        <Link className="text-ink underline" href={`/${locale}/pricing`}>
           {ar ? "ترقية باقة المكتب لحدود ومقاعد أعلى" : "Upgrade your office plan for higher limits and seats"}
         </Link>
       </p>

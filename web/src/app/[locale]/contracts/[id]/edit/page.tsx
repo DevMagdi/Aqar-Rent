@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { ContractWizard } from "@/components/contracts/ContractWizard";
 import { RequireAuth } from "@/components/RequireAuth";
+import { OwnerShell } from "@/components/OwnerShell";
 import { useI18n } from "@/components/Providers";
 import type { Contract } from "@/lib/contracts";
 
@@ -40,7 +41,9 @@ export default function EditContractPage() {
   const params = useParams<{ id: string }>();
   return (
     <RequireAuth>
-      <EditInner id={params.id} />
+      <OwnerShell>
+        <EditInner id={params.id} />
+      </OwnerShell>
     </RequireAuth>
   );
 }

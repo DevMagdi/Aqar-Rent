@@ -143,3 +143,19 @@ content-rules/support copy; the "coming soon" placeholder was deleted.
 Acceptance criteria are centralized in `docs/acceptance-criteria.md`, go-live in
 `docs/go-live-checklist.md`, and external dependencies in
 `docs/external-dependencies.md`.
+
+## D13 — `main` design-system work is merged, not overwritten
+
+While Phase 5 was being built, `main` received the "Mantiq" navy+gold design
+system (ADR-034): per-app `tokens.css`, `tokenValues.ts`, IBM Plex Sans Arabic
+via `@fontsource`, remapped legacy Tailwind utilities, an owner navy sidebar and
+a compliance test (`tokens.test.ts`). Rather than discard it, `origin/main` was
+merged into this branch. The four textual conflicts (`README.md`,
+`ASSUMPTIONS.md`, `/verify`, `StaticPage`) were resolved by keeping both sides:
+Phase 5 product/legal copy and the Mantiq token styling, correct brand name
+"عقار رينت", and the full private-agreement legal notice. New Phase 5 surfaces
+were then brought into compliance: gold buttons use `bg-gold text-brand-deep`
+(never white-on-gold) and normal-size text uses `text-ink` instead of the banned
+`text-brand-500/600/700`. Result: `21/21` web vitest tests pass, including all
+6 design-system compliance checks. A stale `.next` cache can produce a false CSS
+resolution error after such a merge; `rm -rf web/.next` before a fresh build.

@@ -53,7 +53,7 @@ export default async function PublicOfficePage({ params }: { params: Promise<{ l
     return (
       <div className="mx-auto max-w-3xl py-10">
         <ErrorState message={error || (ar ? "المكتب غير موجود" : "Office not found")} />
-        <p className="mt-4 text-center text-sm"><Link className="text-brand-600 underline" href={`/${l}`}>{ar ? "العودة للرئيسية" : "Back home"}</Link></p>
+        <p className="mt-4 text-center text-sm"><Link className="text-ink underline" href={`/${l}`}>{ar ? "العودة للرئيسية" : "Back home"}</Link></p>
       </div>
     );
   }
@@ -80,7 +80,7 @@ export default async function PublicOfficePage({ params }: { params: Promise<{ l
             {listings.map((x) => (
               <Link key={x.id} href={buildListingPath(l, x.city_id, x.city_id, x.id, x.title)} className="rounded-2xl border border-stone-200 bg-white p-5 shadow-sm hover:border-brand-400">
                 <h3 className="line-clamp-2 font-bold text-stone-900">{x.title}</h3>
-                <p className="mt-2 text-brand-700 font-extrabold">{x.rent_monthly.toLocaleString()} {ar ? "ج.م / شهر" : "EGP / month"}</p>
+                <p className="mt-2 text-ink font-extrabold">{x.rent_monthly.toLocaleString()} {ar ? "ج.م / شهر" : "EGP / month"}</p>
                 <p className="mt-1 text-xs text-stone-500">{x.area_m2} م² · {x.property_type}</p>
               </Link>
             ))}
