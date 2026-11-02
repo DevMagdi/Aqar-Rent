@@ -1,23 +1,23 @@
 import { ImageResponse } from "next/og";
-import { readFile } from "node:fs/promises";
-import path from "node:path";
 
 export const runtime = "nodejs";
 export const alt = "Aqar Rent";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
-export async function GET(req: Request) {
+/** Satori/fontkit cannot parse some GSUB lookups in Amiri (the Arabic font),
+ *  so OG cards render Latin-only text (digits/latin city names) — Arabic UI
+ *  text itself renders fine everywhere else via the bundled font. */
+function ascii(s: string | null, fallback: string): string {
+  const cleaned = (s || "").replace(/[^\x20-\x7E]/g, "").trim();
+  return (cleaned || fallback).slice(0, 90);
+}
+
+export async function GET(req: Request): Promise<Response> {
   const { searchParams } = new URL(req.url);
-  const title = (searchParams.get("title") || "عقار ربنا").slice(0, 90);
-  const sub = (searchParams.get("sub") || "سوق إيجار مباشر بدون وسطاء").slice(0, 120);
-  let font: ArrayBuffer | null = null;
-  try {
-    const buf = await readFile(path.join(process.cwd(), "public/fonts/Amiri-Regular.ttf"));
-    font = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength) as ArrayBuffer;
-  } catch {
-    /* fallback to default font */
-  }
+  const title = ascii(searchParams.get("title"), "Aqar Rent — direct rentals, no brokers");
+  const sub = ascii(searchParams.get("sub"), "Egypt's broker-free rental marketplace · Search, compare, contact owners");
+
   return new ImageResponse(
     (
       <div
@@ -29,7 +29,7 @@ export async function GET(req: Request) {
           justifyContent: "center",
           background: "linear-gradient(135deg, #fdf6ee 0%, #f9e8d4 100%)",
           padding: 80,
-          fontFamily: "Amiri",
+          fontFamily: "sans-serif",
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
@@ -43,21 +43,18 @@ export async function GET(req: Request) {
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              fontSize: 56,
+              fontSize: 48,
+              fontWeight: 700,
             }}
           >
-            ع
+            AR
           </div>
-          <div style={{ fontSize: 44, color: "#8a2a06", fontWeight: 700 }}>عقار ربنا · Aqar Rent</div>
+          <div style={{ fontSize: 44, color: "#8a2a06", fontWeight: 700 }}>Aqar Rent</div>
         </div>
-        <div style={{ marginTop: 40, fontSize: 64, color: "#1c1917", fontWeight: 700 }}>{title}</div>
-        <div style={{ marginTop: 20, fontSize: 34, color: "#57534e" }}>{sub}</div>
+        <div style={{ marginTop: 44, fontSize: 58, color: "#1c1917", fontWeight: 700 }}>{title}</div>
+        <div style={{ marginTop: 20, fontSize: 32, color: "#57534e" }}>{sub}</div>
       </div>
     ),
-    {
-      width: size.width,
-      height: size.height,
-      fonts: font ? [{ name: "Amiri", data: font, style: "normal", weight: 400 }] : undefined,
-    },
+    { width: size.width, height: size.height },
   );
 }

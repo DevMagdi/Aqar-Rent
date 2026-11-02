@@ -29,7 +29,13 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
       canonical: `/${l}`,
       languages: { ar: "/ar", en: "/en", "x-default": "/ar" },
     },
-    openGraph: { title, description: desc, siteName: l === "ar" ? "عقار ربنا" : "Aqar Rent", locale: l === "ar" ? "ar_EG" : "en_US" },
+    openGraph: {
+      title,
+      description: desc,
+      siteName: l === "ar" ? "عقار ربنا" : "Aqar Rent",
+      locale: l === "ar" ? "ar_EG" : "en_US",
+      images: [{ url: "/og?title=Aqar%20Rent&sub=Broker-free%20rentals%20in%20Egypt", width: 1200, height: 630 }],
+    },
   };
 }
 

@@ -32,7 +32,15 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
       openGraph: {
         title: d.title,
         description: d.address_text,
-        images: [{ url: `/og?title=${encodeURIComponent(d.title)}`, width: 1200, height: 630 }],
+        images: [
+          {
+            url: `/og?title=${encodeURIComponent("Aqar Rent listing")}&sub=${encodeURIComponent(
+              `${formatMoney(d.rent_monthly, "en")} EGP/month · ${d.area_m2} m² · ${d.bedrooms} bd · ${city}`,
+            )}`,
+            width: 1200,
+            height: 630,
+          },
+        ],
         type: "website",
       },
       twitter: { card: "summary_large_image" },
