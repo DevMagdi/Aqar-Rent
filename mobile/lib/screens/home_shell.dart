@@ -173,7 +173,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 value: _biometric,
                 onChanged: (v) async {
                   if (v && !await BiometricGate.instance.canUse()) {
-                    if (mounted) {
+                    if (context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                         content: Text(AppStrings.isArabic ? 'الجهاز لا يدعم البصمة' : 'Biometrics unavailable on this device'),
                       ));

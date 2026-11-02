@@ -21,9 +21,6 @@ class DeepLinkService {
     _sub = _appLinks.uriLinkStream.listen(_handle, onError: (Object e) {
       debugPrint('[deep-link] stream error: $e');
     });
-    _appLinks.getInitialAppLink().then((uri) {
-      if (uri != null) _handle(uri);
-    }).catchError((Object e) => debugPrint('[deep-link] initial: $e'));
   }
 
   void _handle(Uri uri) {

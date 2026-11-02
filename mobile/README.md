@@ -49,7 +49,7 @@ the API — there is no duplicated price list or hard-coded plan.
 
 ## 2. Local development
 
-Flutter **3.24+ / Dart 3.4+** required (CI uses the current stable channel).
+Flutter **3.35+ / Dart 3.9+** required (CI uses the current stable channel).
 
 ```bash
 cd mobile

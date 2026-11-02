@@ -36,7 +36,7 @@ class AppTheme {
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(18),
-          side: BorderSide(color: scheme.outlineVariant.withOpacity(0.6)),
+          side: BorderSide(color: scheme.outlineVariant.withValues(alpha: 0.6)),
         ),
         color: brightness == Brightness.light ? Colors.white : const Color(0xFF231F1D),
       ),
@@ -69,7 +69,7 @@ class AppTheme {
       navigationBarTheme: NavigationBarThemeData(
         elevation: 2,
         backgroundColor: brightness == Brightness.light ? Colors.white : const Color(0xFF1C1917),
-        indicatorColor: brand.withOpacity(0.14),
+        indicatorColor: brand.withValues(alpha: 0.14),
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
         ),
@@ -83,8 +83,8 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: {
+      pageTransitionsTheme: PageTransitionsTheme(
+        builders: <TargetPlatform, PageTransitionsBuilder>{
           TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
           TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
         },

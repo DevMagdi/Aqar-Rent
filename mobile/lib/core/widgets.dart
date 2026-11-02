@@ -131,7 +131,7 @@ class OfflineBanner extends StatelessWidget {
         child: offline
             ? MaterialBanner(
                 key: const ValueKey('offline'),
-                backgroundColor: AppTheme.amber.withOpacity(0.14),
+                backgroundColor: AppTheme.amber.withValues(alpha: 0.14),
                 content: Text(s('offline'), style: const TextStyle(fontSize: 12)),
                 leading: const Icon(Icons.cloud_off, size: 18),
                 actions: const [SizedBox.shrink()],

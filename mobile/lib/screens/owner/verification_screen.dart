@@ -1,6 +1,4 @@
 // Ownership-proof upload (BR-6): doc type + image/PDF ≤8MB → status list.
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -124,7 +122,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String>(
-            value: _docType,
+            initialValue: _docType,
             decoration: const InputDecoration(labelText: 'نوع المستند', border: OutlineInputBorder()),
             items: [for (final e in _docs.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
             onChanged: (v) => setState(() => _docType = v ?? _docType),

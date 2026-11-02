@@ -1,6 +1,8 @@
 /// Runtime configuration via --dart-define. NO secrets are embedded here:
 /// Firebase public identifiers and the API host are supplied by the operator
 /// at build time. A release build refuses to start on a dev/mock endpoint.
+library;
+
 import 'package:flutter/foundation.dart';
 
 class AppConfig {

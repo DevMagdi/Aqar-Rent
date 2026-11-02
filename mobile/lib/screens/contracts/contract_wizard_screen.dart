@@ -157,7 +157,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
             content: Column(
               children: [
                 DropdownButtonFormField<String>(
-                  value: _listingId,
+                  initialValue: _listingId,
                   decoration: const InputDecoration(labelText: 'اختر الإعلان *', border: OutlineInputBorder()),
                   items: [
                     for (final l in _listings)
@@ -167,7 +167,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
                 ),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                  value: _template,
+                  initialValue: _template,
                   decoration: const InputDecoration(labelText: 'قالب العقد *', border: OutlineInputBorder()),
                   items: [for (final e in _templates.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
                   onChanged: (v) => setState(() => _template = v ?? _template),

@@ -21,11 +21,11 @@ class MapScreen extends StatefulWidget {
 }
 
 class _MapScreenState extends State<MapScreen> {
-  MaplibreMapController? _controller;
-  final List<Offset> _pinOffsets = [];
+  MapLibreMapController? _controller;
+  List<Offset> _pinOffsets = [];
   bool _layoutDone = false;
 
-  static const _style = {
+  static Map<String, dynamic> get _style => {
     'version': 8,
     'sources': {
       'base': {'type': 'raster', 'tiles': [_tiles], 'tileSize': 256, 'attribution': '© OSM'},
@@ -60,12 +60,11 @@ class _MapScreenState extends State<MapScreen> {
         }
         return Stack(
           children: [
-            MaplibreMap(
+            MapLibreMap(
               styleString: jsonEncode(_style),
               initialCameraPosition: const CameraPosition(target: LatLng(30.0444, 31.2357), zoom: 6),
               onMapCreated: (c) => _controller = c,
               onCameraIdle: _projectPins,
-              onCameraChanged: (_) {},
             ),
             for (var i = 0; i < widget.items.length && i < _pinOffsets.length; i++)
               if (_pinOffsets[i].dx > -9999 && _pinOffsets[i].dx < box.maxWidth + 50)

@@ -137,7 +137,8 @@ class ListingDetail {
         media = ((j['media'] as List?) ?? []).whereType<Map<String, dynamic>>().map(Media.fromJson).toList();
 
   final String id, title, propertyType, rentalType, furnished;
-  final int rentMonthly, depositMonths, areaM2, bedrooms, bathrooms, minTermMonths, viewCount;
+  final int rentMonthly, depositMonths, bedrooms, bathrooms, minTermMonths, viewCount;
+  final double areaM2;
   final int? floor;
   final bool hasElevator, verifiedBadge, isOwner, isFeatured;
   final String trustLevel;

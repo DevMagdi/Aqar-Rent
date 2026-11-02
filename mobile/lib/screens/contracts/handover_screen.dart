@@ -121,6 +121,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
 
   Future<void> _confirm() async {
     if (_id == null && !await _save()) return;
+    if (!mounted) return;
     final ctrl = TextEditingController();
     final code = await showDialog<String>(
       context: context,
@@ -168,6 +169,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
 
   Future<void> _capture() async {
     if (_id == null && !await _save()) return;
+    if (!mounted) return;
     final src = await showModalBottomSheet<ImageSource>(
       context: context,
       builder: (ctx) => SafeArea(
@@ -296,7 +298,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
                         const SizedBox(height: 8),
                         TextField(
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'عدد المفاتيح', isDense: true, border: const OutlineInputBorder()),
+                          decoration: const InputDecoration(labelText: 'عدد المفاتيح', isDense: true, border: OutlineInputBorder()),
                           controller: TextEditingController(text: '${_data['keys_count'] ?? ''}'),
                           onChanged: (v) => setState(() => _data = {..._data, 'keys_count': int.tryParse(v)}),
                         ),
@@ -431,7 +433,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
         for (final e in meters.entries)
           if ('${(e.value as Map<String, dynamic>?)?['value'] ?? ''}'.isNotEmpty)
             Text('${_meters[e.key]}: ${(e.value as Map<String, dynamic>)['value']}', style: const TextStyle(fontSize: 13)),
-        if ((_data['keys_count'] ?? null) != null)
+        if (_data['keys_count'] != null)
           Text('المفاتيح: ${_data['keys_count']}', style: const TextStyle(fontSize: 13)),
         const SizedBox(height: 12),
         FilledButton.icon(

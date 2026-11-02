@@ -173,3 +173,17 @@ regenerate the project for `flutter analyze`/`flutter test`, and only on
 missing Xcode/Gradle-wrapper files, then delete template leftovers. This keeps
 one source of truth for native shells and makes the PR quality gate deterministic.
 
+## D15 — `flutter analyze --fatal-infos` is a hard gate, not a suggestion
+
+Current stable Flutter (3.47.x) surfaced 52 analyzer findings in the first real
+SDK run: deprecated `withOpacity`/`DropdownButtonFormField.value`/`Maplibre*`
+names, a stale `app_links.getInitialAppLink()` call, non-const page-transition
+map, `Colors.emerald`, a `num→int` model field, MapLibre callback signature
+changes, missing imports and `BuildContext`-across-async-gap warnings. All were
+fixed in source rather than suppressed: `withValues(alpha:)`, `initialValue:`,
+`MapLibreMap`/`MapLibreMapController`, `uriLinkStream` (which already delivers
+the cold-start link), `context.mounted`, explicit `!mounted` guards, a real
+error/retry state in the listing wizard, and a typed `PageTransitionsTheme`.
+`mobile/README.md` and `pubspec.yaml` now declare the SDK floor these APIs need.
+The PR gate stays `flutter analyze --fatal-infos && flutter test --coverage`.
+

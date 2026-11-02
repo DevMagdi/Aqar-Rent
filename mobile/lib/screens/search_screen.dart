@@ -45,7 +45,7 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_loading) return;
     setState(() { _loading = true; if (reset) _error = null; });
     try {
-      final res = await api.get('/listings?${_query}') as Map<String, dynamic>;
+      final res = await api.get('/listings?$_query') as Map<String, dynamic>;
       final items = ((res['items'] as List?) ?? []).whereType<Map<String, dynamic>>().map(SearchItem.fromJson).toList();
       if (!mounted) return;
       setState(() {
@@ -196,7 +196,7 @@ class ListingCard extends StatelessWidget {
                   children: [
                     Text(item.title, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w600)),
                     const SizedBox(height: 4),
-                    Text('${item.addressText ?? ''}', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                    Text(item.addressText ?? '', maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 12, color: Colors.black54)),
                     const SizedBox(height: 6),
                     Row(
                       children: [
@@ -270,7 +270,7 @@ class _FilterSheetState extends State<FilterSheet> {
           Row(children: [Expanded(child: _num('min_price', 'الحد الأدنى')), const SizedBox(width: 8), Expanded(child: _num('max_price', 'الحد الأقصى'))]),
           Row(children: [Expanded(child: _num('bedrooms', 'غرف النوم')), const SizedBox(width: 8), Expanded(child: _num('bathrooms', 'دورات المياه'))]),
           DropdownButtonFormField<String>(
-            value: f['property_type'] as String?,
+            initialValue: f['property_type'] as String?,
             decoration: const InputDecoration(labelText: 'نوع العقار', isDense: true, border: OutlineInputBorder()),
             items: const [
               DropdownMenuItem(value: null, child: Text('—')),
@@ -285,7 +285,7 @@ class _FilterSheetState extends State<FilterSheet> {
             onChanged: (v) => f['property_type'] = v,
           ),
           DropdownButtonFormField<String>(
-            value: f['furnished'] as String?,
+            initialValue: f['furnished'] as String?,
             decoration: const InputDecoration(labelText: 'التأثيث', isDense: true, border: OutlineInputBorder()),
             items: const [
               DropdownMenuItem(value: null, child: Text('—')),
@@ -296,7 +296,7 @@ class _FilterSheetState extends State<FilterSheet> {
             onChanged: (v) => f['furnished'] = v,
           ),
           DropdownButtonFormField<String>(
-            value: f['sort'] as String? ?? 'newest',
+            initialValue: f['sort'] as String? ?? 'newest',
             decoration: const InputDecoration(labelText: 'الترتيب', isDense: true, border: OutlineInputBorder()),
             items: const [
               DropdownMenuItem(value: 'newest', child: Text('الأحدث')),

@@ -75,7 +75,7 @@ class _PricingScreenState extends State<PricingScreen> {
         child: ListTile(
           contentPadding: const EdgeInsets.all(14),
           leading: CircleAvatar(
-            backgroundColor: AppTheme.brand.withOpacity(0.1),
+            backgroundColor: AppTheme.brand.withValues(alpha: 0.1),
             child: Text('${p['weeks']}', style: const TextStyle(fontWeight: FontWeight.w900, color: AppTheme.brand)),
           ),
           title: Text(_name(p), style: const TextStyle(fontWeight: FontWeight.w800)),
@@ -140,7 +140,7 @@ class _Hero extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22),
-          gradient: LinearGradient(colors: [AppTheme.brand.withOpacity(0.10), const Color(0xFFEFF6F5)]),
+          gradient: LinearGradient(colors: [AppTheme.brand.withValues(alpha: 0.10), const Color(0xFFEFF6F5)]),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

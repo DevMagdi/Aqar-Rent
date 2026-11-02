@@ -298,7 +298,7 @@ class _OrderPayScreenState extends State<OrderPayScreen> {
             )
           else if (o.status == 'pending' && o.method != 'bank_transfer')
             FilledButton.icon(
-              onPressed: o.checkoutUrl == null ? _refreshCheckout : () => launchExternal(Uri.parse(o.checkoutUrl!)),
+              onPressed: o.checkoutUrl == null ? _refreshCheckout : () => launchUrl(Uri.parse(o.checkoutUrl!), mode: LaunchMode.externalApplication),
               icon: const Icon(Icons.open_in_new),
               label: Text(o.checkoutUrl == null ? 'تجهيز الدفع' : 'فتح صفحة الدفع'),
             )

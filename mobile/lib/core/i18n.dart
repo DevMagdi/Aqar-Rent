@@ -1,6 +1,5 @@
 // Lightweight Arabic-first / English i18n. No code generation, no build step,
 // no missing strings: every key has an explicit bilingual value.
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 class LocaleController extends ChangeNotifier {

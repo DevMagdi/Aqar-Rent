@@ -205,7 +205,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
               if (d.hasElevator) const Chip(label: Text('مصعد')),
               if (d.verifiedBadge)
                 const Chip(
-                  avatar: Icon(Icons.verified, size: 16, color: Colors.emerald),
+                  avatar: Icon(Icons.verified, size: 16, color: Color(0xFF059669)),
                   label: Text('مالك موثّق'),
                   backgroundColor: Color(0xFFECFDF5),
                 ),
