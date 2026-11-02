@@ -5,6 +5,7 @@ import { LOCALES, DEFAULT_LOCALE, dirOf } from "@/lib/i18n";
 import type { Locale } from "@/lib/types";
 import { Providers } from "@/components/Providers";
 import { Header } from "@/components/Header";
+import { ConsentBanner } from "@/components/ConsentBanner";
 import { Footer } from "@/components/Footer";
 import "@/app/globals.css";
 
@@ -56,6 +57,7 @@ export default async function LocaleLayout({
           <Header />
           <main className="mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6">{children}</main>
           <Footer />
+          <ConsentBanner />
         </Providers>
       </body>
     </html>
