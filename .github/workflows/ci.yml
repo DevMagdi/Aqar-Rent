@@ -93,11 +93,12 @@ jobs:
         run: |
           set -o pipefail
           python -m pytest -q 2>&1 | tee ../pytest-pg.log
-      - name: Dump failure tail (step summary)
+      - name: Dump failure tail (step summary + annotation)
         if: failure()
         run: |
-          echo '## alembic' >> "$GITHUB_STEP_SUMMARY"; tail -40 alembic-pg.log >> "$GITHUB_STEP_SUMMARY" || true
-          echo '## pytest' >> "$GITHUB_STEP_SUMMARY"; tail -120 pytest-pg.log >> "$GITHUB_STEP_SUMMARY" || true
+          { echo '## alembic'; tail -40 alembic-pg.log || true; echo '## pytest'; tail -120 pytest-pg.log || true; } >> "$GITHUB_STEP_SUMMARY"
+          echo "::error::PG-ALEMBIC::$(tail -20 alembic-pg.log 2>/dev/null | tr '\n' ' ')"
+          echo "::error::PG-PYTEST::$(tail -40 pytest-pg.log 2>/dev/null | tr '\n' ' ')"
 
   web:
     runs-on: ubuntu-latest
