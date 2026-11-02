@@ -1,4 +1,4 @@
-# Aqar Rent — عقار ربنا
+# Aqar Rent — عقار رينت
 
 A broker-free rental marketplace for Egypt. Owners pay a **flat ad fee
 (500 EGP / 7 days per listing — price lives in the `plans` table)** — the
