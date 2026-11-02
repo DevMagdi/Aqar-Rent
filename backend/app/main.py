@@ -30,6 +30,14 @@ commission and never handles rent or deposits.
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     configure_logging(settings.log_level)
+    # Hard rule: prod/staging refuse to boot with unsafe configuration
+    # (SQLite, DEBUG, weak secrets, console OTP, mock payments, wildcard CORS…).
+    problems = settings.validate_runtime()
+    if problems:
+        raise SystemExit(
+            f"Refusing to start with invalid {settings.app_env} config:\n- "
+            + "\n- ".join(problems)
+        )
 
     # Optional error tracking (real Sentry when SENTRY_DSN is set; no-op else).
     if settings.sentry_dsn:

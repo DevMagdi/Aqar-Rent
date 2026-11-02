@@ -1,39 +1,75 @@
-# Aqar Rent — mini Flutter app (contract & handover screens)
+# Aqar Rent — Flutter app (Android + iOS)
 
-Phase-4 mobile client (scope agreed for this round): the **contract and
-handover** flows on top of a minimal OTP login. The full Phase-3B app
-(search/map/dashboard/checkout) is **not** part of this package — see
-ASSUMPTIONS.md #76.
+Full client for the broker-free rental marketplace: search + map + filters,
+listing details with call/WhatsApp contact, owner tools (create/edit/submit
+listings, photo uploads, verification, checkout, orders/receipts), favorites,
+notifications, profile — **plus** the Phase-4 contract & handover screens.
 
-## What's in `lib/`
+## Layout
 
-| File | Screen |
-|---|---|
-| `main.dart` | MaterialApp, Arabic (RTL) locale, routes |
-| `api.dart` | API client: OTP login, token refresh (secure storage), contracts, handovers, media upload, PDF fetch (base64 → share) |
-| `models.dart` | Contract/Handover DTOs + room/condition labels |
-| `screens/login_screen.dart` | phone →6-digit OTP |
-| `screens/contracts_screen.dart` | my contracts list (owner + tenant) |
-| `screens/contract_wizard_screen.dart` |4-step create (listing+template → parties+NIDs → terms → review) |
-| `screens/contract_detail_screen.dart` | status, terms, **OTP confirmation dialog**, PDF share, fee, handover list |
-| `screens/handover_screen.dart` | check-in/check-out checklist, meters, keys, inventory, **camera capture + upload**, review comment, OTP confirm, PDF |
+```
+lib/
+  main.dart                 app entry, RTL/ar locale, boot gate
+  config.dart               API_BASE / FIREBASE_* via --dart-define
+  push_service.dart         FCM registration → POST /me/devices (real FCM)
+  api/api_client.dart       dio + token refresh (secure storage) + progress uploads
+  models/models.dart        DTOs mirroring the OpenAPI schemas
+  screens/
+    login_screen.dart       OTP login (resend timer)
+    home_shell.dart         bottom nav: search · favorites · notifications · profile
+    search_screen.dart      query + filter sheet + infinite list + map tab
+    map_screen.dart         MapLibre raster (tiles via MAP_TILES_URL) + price pins
+    listing_detail_screen.dart  gallery, specs, favorite/share, call/WhatsApp
+    favorites_screen.dart / notifications_screen.dart
+    owner/
+      dashboard_screen.dart     stats, edit/renew/mark-rented
+      listing_wizard_screen.dart create/edit6-step wizard + photo uploads (progress)
+      verification_screen.dart  ownership proof upload + status
+      checkout_screen.dart       weeks/promo/methods → real orders; order pay screen
+      orders_screen.dart         statuses + Arabic PDF receipt share
+    contracts/              Phase 4: list, wizard, detail (OTP confirm, PDF), handover
+```
 
-## Build & run (requires the Flutter SDK — not available in this sandbox)
+## Build & run (Flutter SDK required — not available in this sandbox)
 
 ```bash
 cd mobile
-flutter create .            # generates android/ + ios/ platform shells (once)
+flutter create . --org com.aqarrent    # generate android/ + ios/ shells (once)
 flutter pub get
-flutter run --dart-define=API_BASE=http://10.0.2.2:8000   # Android emulator
-# release:
-flutter build apk --release --dart-define=API_BASE=https://api.example.com
-flutter build ios --release --dart-define=API_BASE=https://api.example.com
+flutter run --dart-define=API_BASE=http://10.0.2.2:8000 \
+            --dart-define=MAP_TILES_URL=https://tile.openstreetmap.org/{z}/{x}/{y}.png
 ```
 
-- Tokens live in `flutter_secure_storage`; PDFs are fetched with the bearer
-  token and handed to `share_plus` (they can never be fetched anonymously).
-- Handover photos use `image_picker` (camera/gallery) and upload through the
-  same authenticated multipart endpoint as the web client.
-- Verification: `flutter analyze` + `flutter test` before release (SDK
-  unavailable in this environment — flagged as a known gap in the Phase-4
-  report; store submission steps: `docs/launch-checklist.md`).
+### Push notifications (FCM) — real, needs your Firebase project
+
+```bash
+dart pub global activate flutterfire_cli
+flutterfire configure --project=<your-firebase-project>   # adds google-services.json / GoogleService-Info.plist
+flutter run --dart-define=API_BASE=https://api.example.com \
+            --dart-define=FIREBASE_API_KEY=… --dart-define=FIREBASE_APP_ID=… \
+            --dart-define=FIREBASE_SENDER_ID=… --dart-define=FIREBASE_PROJECT_ID=…
+```
+Without the `FIREBASE_*` defines the app runs normally and push registration is
+skipped with a console note (nothing faked). Tokens are registered via the real
+`POST /api/v1/me/devices` endpoint.
+
+### Release / store-ready
+
+```bash
+flutter build appbundle --release --dart-define=API_BASE=https://api.example.com # Play
+flutter build ipa --release --dart-define=API_BASE=https://api.example.com       # App Store
+```
+- Signing: Android upload-keystore (`key.properties` + `upload-keystore.jks`,
+  never commit them), iOS distribution certificate + provisioning in Xcode.
+- Privacy labels/data-safety must match `docs/privacy/pdpl-note.md`.
+- Store submission checklist: `docs/launch-checklist.md`.
+
+## Notes
+
+- Same business rules as web: OTP login required for contact, BR-6 proof
+  before first approval, ads only after payment, contracts freeze after dual
+  OTP confirmation with SHA-256, handovers immutable after both parties.
+- **Verified**: `flutter analyze` / `flutter test` / builds must be run on a
+  machine with the Flutter SDK — this sandbox cannot download it
+  (storage.googleapis.com unreachable); tracked as a go-live item in
+  `PRODUCTION_READINESS.md`.

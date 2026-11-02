@@ -26,8 +26,12 @@ class Settings(BaseSettings):
     bcrypt_rounds: int = 12
 
     # OTP
-    otp_provider: str = "console"  # console | test
+    otp_provider: str = "console"  # console | test (dev only) | twilio (staging/prod)
     otp_ttl_minutes: int = 5
+    # Twilio SMS (real delivery). Required when otp_provider=twilio.
+    twilio_account_sid: str = ""
+    twilio_auth_token: str = ""
+    twilio_from_number: str = ""  # e.g. +15551234567 or Egyptian sender ID
     otp_max_attempts: int = 5
     otp_max_per_hour: int = 5
     otp_max_requests_per_ip_hour: int = 30
@@ -108,6 +112,60 @@ class Settings(BaseSettings):
     @property
     def is_prod(self) -> bool:
         return self.app_env == "prod"
+
+    def validate_runtime(self) -> list[str]:
+        """Refuse unsafe prod/staging configuration at boot (Phase 4C #9).
+
+        Returns the list of problems (empty = OK). `dev`/`test` are lenient —
+        everything strict applies from `staging` upwards, per the hard rules:
+        PostgreSQL+PostGIS only, no DEBUG, no weak secrets, no console OTP,
+        no mock payments in prod, S3 storage, explicit CORS, Paymob keys.
+        """
+        if self.app_env not in ("prod", "staging"):
+            return []
+        problems: list[str] = []
+        if not self.database_url.startswith("postgres"):
+            problems.append("DATABASE_URL must be PostgreSQL (PostGIS image) — SQLite is unit-test only")
+        if self.debug:
+            problems.append("DEBUG must be false outside dev")
+        weak = len(self.secret_key) < 32 or self.secret_key in {
+            "dev-secret-change-me",
+            "dev-secret-key-arena-stage3a-0123456789",
+            "test-secret-key-for-pytest-only-32bytes!!",
+        }
+        if weak:
+            problems.append("SECRET_KEY is weak/short (min 32 chars, not a known dev value)")
+        if self.storage_backend != "s3":
+            problems.append("STORAGE_BACKEND must be s3 (MinIO/S3) outside dev")
+        if self.otp_provider == "console":
+            problems.append("OTP_PROVIDER=console is dev-only — configure twilio for real SMS")
+        if self.otp_provider == "twilio" and not (
+            self.twilio_account_sid and self.twilio_auth_token and self.twilio_from_number
+        ):
+            problems.append("twilio_account_sid/twilio_auth_token/twilio_from_number are required")
+        if not self.webhook_secret:
+            problems.append("WEBHOOK_SECRET is required (payment webhook HMAC)")
+        origins = self.cors_origin_list
+        if not origins or origins == ["*"]:
+            problems.append("CORS_ORIGINS must be an explicit allow-list outside dev")
+        if not self.staff_super_admin_password or len(self.staff_super_admin_password) < 12:
+            problems.append("STAFF_SUPER_ADMIN_PASSWORD must be set (min 12 chars)")
+        if not self.staff_super_admin_totp_secret:
+            problems.append("STAFF_SUPER_ADMIN_TOTP_SECRET must be set")
+        if self.app_env == "prod":
+            if self.payment_provider == "mock":
+                problems.append("PAYMENT_PROVIDER=mock is dev/test only — configure paymob")
+            if self.payment_provider == "paymob" and not (
+                self.paymob_api_key
+                and self.paymob_hmac_secret
+                and (self.paymob_integration_id_card or self.paymob_integration_id_wallet)
+            ):
+                problems.append("Paymob keys incomplete (api_key, hmac_secret, integration ids)")
+            if not self.contract_nid_key:
+                problems.append("CONTRACT_NID_KEY must be set explicitly in prod (Fernet)")
+            if not self.site_url.startswith("https://"):
+                problems.append("SITE_URL must be https in prod")
+        return problems
 
 
 @lru_cache
