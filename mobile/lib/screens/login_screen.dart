@@ -1,56 +1,76 @@
-// OTP login (phone → code) required to view & confirm contracts.
+// OTP login: phone →6-digit code (resend timer) → session.
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 
-import '../api.dart';
-import 'contracts_screen.dart';
+import '../api/api_client.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
-
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _api = ApiClient();
+  final api = ApiClient();
   final _phone = TextEditingController();
   final _code = TextEditingController();
   bool _codeStep = false;
   bool _busy = false;
+  int _resendIn = 0;
   String? _error;
 
   Future<void> _send() async {
     setState(() { _busy = true; _error = null; });
     try {
-      final dev = await _api.requestOtp(_phone.text.trim());
+      final res = await api.post('/auth/otp/request', data: {'phone': _phone.text.trim()});
+      final dev = (res as Map)['dev_code'] as String?;
       if (!mounted) return;
-      setState(() { _codeStep = true; _busy = false; });
-      if (dev.isNotEmpty) _code.text = dev; // dev builds expose the code
+      setState(() {
+        _codeStep = true;
+        _busy = false;
+        _resendIn = ((res['expires_in'] as num?)?.toInt() ?? 60).clamp(0, 60);
+      });
+      if (dev != null) _code.text = dev; // dev builds expose the code
+      _tick();
     } catch (e) {
-      setState(() { _error = '$e'; _busy = false; });
+      if (mounted) setState(() { _error = '$e'; _busy = false; });
     }
+  }
+
+  void _tick() {
+    Future.doWhile(() async {
+      await Future<void>.delayed(const Duration(seconds: 1));
+      if (!mounted || _resendIn <= 0) return false;
+      setState(() => _resendIn--);
+      return true;
+    });
   }
 
   Future<void> _verify() async {
     setState(() { _busy = true; _error = null; });
     try {
-      await _api.verifyOtp(_phone.text.trim(), _code.text.trim());
+      await api.post('/auth/otp/verify', data: {
+        'phone': _phone.text.trim(),
+        'code': _code.text.trim(),
+        'platform': Platform.isIOS ? 'ios' : 'android',
+      });
       if (!mounted) return;
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (_) => const ContractsScreen()));
+      Navigator.of(context).pushReplacementNamed('/home');
     } catch (e) {
-      setState(() { _error = '$e'; _busy = false; });
+      if (mounted) setState(() { _error = '$e'; _busy = false; });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('عقار ربنا — العقود')),
+      appBar: AppBar(title: const Text('عقار ربنا')),
       body: Center(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
+            constraints: const BoxConstraints(maxWidth: 440),
             child: Card(
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -58,18 +78,19 @@ class _LoginScreenState extends State<LoginScreen> {
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(_codeStep ? 'تأكيد رقم الهاتف' : 'تسجيل الدخول', style: Theme.of(context).textTheme.titleLarge),
+                    Text(_codeStep ? 'تأكيد رقم الهاتف' : 'تسجيل الدخول',
+                        style: Theme.of(context).textTheme.titleLarge),
                     const SizedBox(height: 6),
                     Text(_codeStep ? 'أدخل رمز التحقق المرسل إليك' : 'أدخل رقم هاتفك وسنرسل لك رمز تحقق',
                         style: Theme.of(context).textTheme.bodySmall),
                     const SizedBox(height: 16),
-                    if (!_codeStep) ...[
+                    if (!_codeStep)
                       TextField(
                         controller: _phone,
                         keyboardType: TextInputType.phone,
                         decoration: const InputDecoration(labelText: 'رقم الهاتف', hintText: '01xxxxxxxxx'),
-                      ),
-                    ] else ...[
+                      )
+                    else ...[
                       TextField(
                         controller: _code,
                         keyboardType: TextInputType.number,
@@ -77,12 +98,16 @@ class _LoginScreenState extends State<LoginScreen> {
                         textAlign: TextAlign.center,
                         decoration: const InputDecoration(labelText: 'رمز التحقق', counterText: ''),
                       ),
+                      TextButton(
+                        onPressed: _resendIn > 0 || _busy ? null : _send,
+                        child: Text(_resendIn > 0 ? 'إعادة الإرسال بعد $_resendIn ث' : 'إعادة إرسال الرمز'),
+                      ),
                     ],
                     if (_error != null) ...[
                       const SizedBox(height: 10),
                       Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 13)),
                     ],
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 14),
                     FilledButton(
                       onPressed: _busy ? null : (_codeStep ? _verify : _send),
                       child: Text(_busy ? '…' : (_codeStep ? 'تأكيد' : 'إرسال الرمز')),

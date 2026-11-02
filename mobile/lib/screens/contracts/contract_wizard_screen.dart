@@ -1,25 +1,25 @@
-// Contract wizard: listing → parties+NIDs → terms → review & save.
+// Contract wizard (4 steps): listing+template → parties+NIDs → terms → review.
+// Mirrors the web wizard; saves draft then optionally sends for confirmation.
 import 'package:flutter/material.dart';
 
-import '../api.dart';
+import '../../api/api_client.dart';
+import 'contract_detail_screen.dart';
 
 class ContractWizardScreen extends StatefulWidget {
   const ContractWizardScreen({super.key});
-
   @override
   State<ContractWizardScreen> createState() => _ContractWizardScreenState();
 }
 
 class _ContractWizardScreenState extends State<ContractWizardScreen> {
-  final _api = ApiClient();
+  final api = ApiClient();
   int _step = 0;
   bool _busy = false;
   String? _error;
 
-  // form state
   String? _listingId;
   String _template = 'residential_unfurnished';
-  List<dynamic> _listings = [];
+  List<Map<String, dynamic>> _listings = [];
   final _ownerName = TextEditingController();
   final _tenantName = TextEditingController();
   final _tenantPhone = TextEditingController();
@@ -37,6 +37,12 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
   final _notes = TextEditingController();
   DateTime? _start;
 
+  static const _templates = {
+    'residential_unfurnished': 'سكني — غير مفروش',
+    'residential_furnished': 'سكني — مفروش',
+    'commercial': 'تجاري',
+  };
+
   @override
   void initState() {
     super.initState();
@@ -45,8 +51,8 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
 
   Future<void> _loadListings() async {
     try {
-      final rows = await _api.get('/me/listings');
-      final mine = (rows as List)
+      final rows = await api.get('/me/listings') as List;
+      final mine = rows
           .whereType<Map<String, dynamic>>()
           .where((r) => const ['approved', 'active', 'expired', 'rejected'].contains(r['status']))
           .toList();
@@ -59,6 +65,10 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
           _rent.text = '${mine.first['rent_monthly'] ?? 0}';
         }
       });
+      final me = await api.get('/me') as Map<String, dynamic>;
+      if (mounted && (me['full_name'] ?? '').toString().isNotEmpty) {
+        setState(() => _ownerName.text = me['full_name'] as String);
+      }
     } catch (e) {
       if (mounted) setState(() => _error = '$e');
     }
@@ -77,7 +87,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
       case 2:
         return _address.text.trim().isNotEmpty &&
             _start != null &&
-            int.tryParse(_duration.text) != null &&
+            (int.tryParse(_duration.text) ?? 0) >= 1 &&
             (double.tryParse(_rent.text) ?? 0) > 0;
       default:
         return true;
@@ -99,37 +109,36 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
         'extra_notes': _notes.text.trim(),
       };
 
-  Future<void> _save({bool requestConfirmation = false}) async {
+  Future<void> _save({required bool requestConfirmation}) async {
     setState(() { _busy = true; _error = null; });
     try {
-      var contract = await _api.createContract({
+      var contract = await api.post('/contracts', data: {
         'listing_id': _listingId,
         'template': _template,
         'tenant_phone': _tenantPhone.text.trim(),
         'national_ids': {'owner': _ownerNid.text.trim(), 'tenant': _tenantNid.text.trim()},
         'terms': _terms(),
-      });
+      }) as Map<String, dynamic>;
       if (requestConfirmation) {
-        contract = await _api.requestContractConfirmation(contract['id'] as String);
+        contract = await api.post('/contracts/${contract['id']}/request-confirmation', data: {}) as Map<String, dynamic>;
       }
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(requestConfirmation ? 'تم إرسال العقد للتأكيد' : 'تم حفظ المسودة')));
-      Navigator.of(context).pop(true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(requestConfirmation ? 'تم إرسال العقد للتأكيد' : 'تم حفظ المسودة')),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => ContractDetailScreen(contractId: contract['id'] as String)),
+      );
     } catch (e) {
-      setState(() { _error = '$e'; _busy = false; });
+      if (mounted) setState(() { _error = '$e'; _busy = false; });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    const templates = {
-      'residential_unfurnished': 'سكني — غير مفروش',
-      'residential_furnished': 'سكني — مفروش',
-      'commercial': 'تجاري',
-    };
-
     return Scaffold(
-      appBar: AppBar(title: const Text('إنشاء عقد جديد')),
+      appBar: AppBar(title: const Text('إنشاء عقد')),
       body: Stepper(
         currentStep: _step,
         onStepTapped: (i) => setState(() => _step = i),
@@ -149,18 +158,19 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
               children: [
                 DropdownButtonFormField<String>(
                   value: _listingId,
-                  decoration: const InputDecoration(labelText: 'اختر الإعلان *'),
-                  items: _listings
-                      .map((l) => DropdownMenuItem(value: l['id'] as String, child: Text('${l['title']}', overflow: TextOverflow.ellipsis)))
-                      .toList(),
+                  decoration: const InputDecoration(labelText: 'اختر الإعلان *', border: OutlineInputBorder()),
+                  items: [
+                    for (final l in _listings)
+                      DropdownMenuItem(value: l['id'] as String, child: Text('${l['title']}', overflow: TextOverflow.ellipsis)),
+                  ],
                   onChanged: (v) => setState(() => _listingId = v),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
                   value: _template,
-                  decoration: const InputDecoration(labelText: 'قالب العقد *'),
-                  items: templates.entries.map((e) => DropdownMenuItem(value: e.key, child: Text(e.value))).toList(),
-                  onChanged: (v) => setState(() => _template = v ?? 'residential_unfurnished'),
+                  decoration: const InputDecoration(labelText: 'قالب العقد *', border: OutlineInputBorder()),
+                  items: [for (final e in _templates.entries) DropdownMenuItem(value: e.key, child: Text(e.value))],
+                  onChanged: (v) => setState(() => _template = v ?? _template),
                 ),
                 const SizedBox(height: 8),
                 const Card(
@@ -178,14 +188,29 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
             isActive: _step >= 1,
             content: Column(
               children: [
-                TextField(controller: _ownerName, decoration: const InputDecoration(labelText: 'اسم المالك *')),
-                TextField(controller: _tenantName, decoration: const InputDecoration(labelText: 'اسم المستأجر *')),
-                TextField(controller: _tenantPhone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'هاتف المستأجر (دعوة) *')),
+                TextField(controller: _ownerName, decoration: const InputDecoration(labelText: 'اسم المالك *', border: OutlineInputBorder())),
+                const SizedBox(height: 10),
+                TextField(controller: _tenantName, decoration: const InputDecoration(labelText: 'اسم المستأجر *', border: OutlineInputBorder())),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _tenantPhone,
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(labelText: 'هاتف المستأجر (دعوة) *', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _ownerNid,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'البطاقة الوطنية للمالك *', border: OutlineInputBorder()),
+                ),
+                const SizedBox(height: 10),
+                TextField(
+                  controller: _tenantNid,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(labelText: 'البطاقة الوطنية للمستأجر *', border: OutlineInputBorder()),
+                ),
                 const SizedBox(height: 8),
-                TextField(controller: _ownerNid, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'البطاقة الوطنية للمالك *')),
-                TextField(controller: _tenantNid, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'البطاقة الوطنية للمستأجر *')),
-                const SizedBox(height: 8),
-                const Text('تُخزَّن الأرقام الوطنية مشفَّرة ولا تظهر إلا للطرفين.', style: TextStyle(fontSize: 11, color: Colors.grey)),
+                const Text('تُخزَّن الأرقام الوطنية مشفَّرة ولا تظهر إلا للطرفين.', style: TextStyle(fontSize: 11, color: Colors.black54)),
               ],
             ),
           ),
@@ -194,42 +219,81 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
             isActive: _step >= 2,
             content: Column(
               children: [
-                TextField(controller: _address, decoration: const InputDecoration(labelText: 'عنوان الوحدة *')),
-                const SizedBox(height: 8),
+                TextField(controller: _address, decoration: const InputDecoration(labelText: 'عنوان الوحدة *', border: OutlineInputBorder())),
                 ListTile(
                   contentPadding: EdgeInsets.zero,
                   title: Text(_start == null ? 'تاريخ البداية *' : 'البداية: ${_start!.toIso8601String().substring(0, 10)}'),
                   trailing: const Icon(Icons.calendar_today, size: 18),
                   onTap: () async {
                     final now = DateTime.now();
-                    final picked = await showDatePicker(context: context, firstDate: now, lastDate: now.add(const Duration(days: 365 * 3)));
+                    final picked = await showDatePicker(
+                      context: context,
+                      firstDate: now,
+                      lastDate: now.add(const Duration(days: 365 * 3)),
+                    );
                     if (picked != null) setState(() => _start = picked);
                   },
                 ),
                 Row(
                   children: [
-                    Expanded(child: TextField(controller: _duration, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'المدة (شهور) *'))),
+                    Expanded(
+                      child: TextField(
+                        controller: _duration,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'المدة (شهور) *', border: OutlineInputBorder()),
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    Expanded(child: TextField(controller: _rent, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'الإيجار الشهري *'))),
+                    Expanded(
+                      child: TextField(
+                        controller: _rent,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'الإيجار الشهري *', border: OutlineInputBorder()),
+                      ),
+                    ),
                   ],
                 ),
                 Row(
                   children: [
-                    Expanded(child: TextField(controller: _increase, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'الزيادة السنوية %'))),
+                    Expanded(
+                      child: TextField(
+                        controller: _increase,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'الزيادة السنوية %', border: OutlineInputBorder()),
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    Expanded(child: TextField(controller: _deposit, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'التأمين'))),
+                    Expanded(
+                      child: TextField(
+                        controller: _deposit,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'التأمين', border: OutlineInputBorder()),
+                      ),
+                    ),
                   ],
                 ),
                 Row(
                   children: [
-                    Expanded(child: TextField(controller: _depositDays, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'رد التأمين (يوم)'))),
+                    Expanded(
+                      child: TextField(
+                        controller: _depositDays,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'رد التأمين (يوم)', border: OutlineInputBorder()),
+                      ),
+                    ),
                     const SizedBox(width: 8),
-                    Expanded(child: TextField(controller: _paymentDay, keyboardType: TextInputType.number, decoration: const InputDecoration(labelText: 'يوم السداد'))),
+                    Expanded(
+                      child: TextField(
+                        controller: _paymentDay,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'يوم السداد', border: OutlineInputBorder()),
+                      ),
+                    ),
                   ],
                 ),
-                TextField(controller: _utilities, maxLines: 2, decoration: const InputDecoration(labelText: 'مسؤولية المرافق')),
-                TextField(controller: _termination, maxLines: 2, decoration: const InputDecoration(labelText: 'شروط الإنهاء')),
-                TextField(controller: _notes, maxLines: 2, decoration: const InputDecoration(labelText: 'ملاحظات إضافية')),
+                TextField(controller: _utilities, maxLines: 2, decoration: const InputDecoration(labelText: 'مسؤولية المرافق', border: OutlineInputBorder())),
+                TextField(controller: _termination, maxLines: 2, decoration: const InputDecoration(labelText: 'شروط الإنهاء', border: OutlineInputBorder())),
+                TextField(controller: _notes, maxLines: 2, decoration: const InputDecoration(labelText: 'ملاحظات إضافية', border: OutlineInputBorder())),
               ],
             ),
           ),
@@ -239,7 +303,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
             content: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('القالب: ${templates[_template]}', style: const TextStyle(fontWeight: FontWeight.bold)),
+                Text('القالب: ${_templates[_template]}', style: const TextStyle(fontWeight: FontWeight.bold)),
                 Text('الطرفان: ${_ownerName.text} — ${_tenantName.text}'),
                 Text('العنوان: ${_address.text}'),
                 Text('المدة: ${_duration.text} شهراً · الإيجار: ${_rent.text} جنيه'),
@@ -249,7 +313,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
                     child: Text('$_error', style: const TextStyle(color: Colors.red, fontSize: 13)),
                   ),
                 const SizedBox(height: 8),
-                const Text('بعد الحفظ يؤكد الطرفان برمز تحقق، وبعدها يصبح العقد نهائياً.', style: TextStyle(fontSize: 12, color: Colors.grey)),
+                const Text('بعد الحفظ يؤكد الطرفان برمز تحقق، وبعدها يصبح العقد نهائياً.', style: TextStyle(fontSize: 12, color: Colors.black54)),
               ],
             ),
           ),
@@ -262,7 +326,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
             children: [
               Expanded(
                 child: OutlinedButton(
-                  onPressed: _busy || _step < 3 ? null : () => _save(),
+                  onPressed: _busy || _step < 3 ? null : () => _save(requestConfirmation: false),
                   child: const Text('حفظ مسودة'),
                 ),
               ),

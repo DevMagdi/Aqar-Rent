@@ -1,5 +1,5 @@
 name: aqar_rent_mobile
-description: "Aqar Rent — contract & handover screens (mini app, Phase 4)."
+description: "Aqar Rent — full client (search, listings, owner tools, checkout, contracts & handovers)."
 publish_to: "none"
 version: 0.1.0
 
@@ -11,12 +11,17 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
-  http: ^1.2.0
+  dio: ^5.7.0
   flutter_secure_storage: ^9.2.2
-  path_provider: ^2.1.3
-  share_plus: ^10.0.0
+  maplibre_gl: ^0.20.0
   image_picker: ^1.1.2
+  url_launcher: ^6.3.1
+  firebase_core: ^3.8.1
+  firebase_messaging: ^15.1.6
+  flutter_local_notifications: ^18.0.1
   intl: ^0.19.0
+  path_provider: ^2.1.4
+  share_plus: ^10.0.0
 
 dev_dependencies:
   flutter_test:
