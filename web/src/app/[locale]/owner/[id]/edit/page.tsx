@@ -1,0 +1,12 @@
+import { ListingWizard } from "@/components/ListingWizard";
+import { RequireAuth } from "@/components/RequireAuth";
+
+export default async function EditListingPage({ params }: { params: Promise<{ locale: string; id: string }> }) {
+  const { locale, id } = await params;
+  const l = locale === "en" ? "en" : "ar";
+  return (
+    <RequireAuth>
+      <ListingWizard locale={l} editId={id} />
+    </RequireAuth>
+  );
+}

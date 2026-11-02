@@ -4,9 +4,11 @@ A broker-free rental marketplace for Egypt. Owners pay a **flat 500 EGP per 7 da
 to advertise — the platform takes **no commission**, never holds rent or deposits, and never
 mediates money between landlord and tenant. Arabic-first (RTL), English secondary.
 
-> **Status:** Phase 1 (backend core) implemented — auth (OTP), locations, listings + media,
-> owner verification, moderation, search, admin API, seed data, tests, OpenAPI docs.
-> Phases 2–4 (payments, clients, contracts) are planned next — see [Roadmap](#roadmap).
+> **Status:** Phase 1 (backend core) + Phase 2 (payments: Paymob/Mock, orders, promo,
+> receipts, refunds, bank transfers) are implemented and tested (108 backend tests).
+> Phase 3A is implemented: `/web` (Next.js), `/admin` (React+Vite) and the Playwright
+> **owner-journey e2e** (`e2e/`, hermetic stack). Phase 3B (Flutter `/mobile` + notification
+> delivery) and Phase 4 (contracts) are next — see [Roadmap](#roadmap).
 
 ---
 

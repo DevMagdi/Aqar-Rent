@@ -25,6 +25,7 @@ storage/
 node_modules/
 dist/
 .next/
+.next-e2e/
 out/
 *.log
 
@@ -45,3 +46,13 @@ build/
 android/.gradle/
 ios/Pods/
 ios/.symlinks/
+
+# E2E artifacts
+e2e/test-results/
+e2e/playwright-report/
+e2e/.cache/
+web/tsconfig.tsbuildinfo
+admin/tsconfig.tsbuildinfo
+
+# Generated per e2e run (backend photo-dedupe requires unique images)
+e2e/fixtures/*.jpg

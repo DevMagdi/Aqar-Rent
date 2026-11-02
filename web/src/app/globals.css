@@ -1,0 +1,41 @@
+@import "tailwindcss";
+
+/* Design tokens — warm stone palette, high contrast for accessibility. */
+@theme {
+  --color-brand-50: #fdf6ee;
+  --color-brand-100: #f9e8d4;
+  --color-brand-500: #c2410c;
+  --color-brand-600: #a93408;
+  --color-brand-700: #8a2a06;
+  --font-sans: "Segoe UI", Tahoma, system-ui, -apple-system, sans-serif;
+}
+
+/* Bundled Arabic webfont (no Google Fonts fetch — works offline). */
+@font-face {
+  font-family: "Amiri";
+  src: url("/fonts/Amiri-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-display: swap;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-sans);
+}
+
+/* RTL-first: logical properties everywhere via Tailwind's ps/pe/ms/me. */
+:focus-visible {
+  outline: 3px solid #c2410c;
+  outline-offset: 2px;
+}
+
+.maplibregl-popup-content {
+  font-family: var(--font-sans);
+}
