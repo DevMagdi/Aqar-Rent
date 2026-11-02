@@ -12,7 +12,7 @@ async function ensureBrowser() {
   if (!fs.existsSync("/tmp/al2023/lib/libnss3.so")) {
     const br = path.join(__dirname, "node_modules/@sparticuz/chromium/bin/al2023.tar.br");
     console.log("inflating", br);
-    await inflate(fs.readFileSync(br));
+    await inflate(br); // inflate takes a file path (string), not a Buffer
   }
   const exe = await chromiumPkg.executablePath();
   console.log("exe:", exe, "libs:", fs.existsSync("/tmp/al2023/lib/libnss3.so"));

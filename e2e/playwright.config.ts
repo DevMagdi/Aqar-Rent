@@ -73,6 +73,7 @@ export default defineConfig({
         NEXT_PUBLIC_MOCK_PAY: "true",
         WEBHOOK_SECRET: process.env.WEBHOOK_SECRET,
         NEXT_DIST_DIR: ".next-e2e",
+        NEXT_PUBLIC_SITE_URL: E2E_WEB, // correct absolute canonicals/OG in tests
       },
     },
     {
