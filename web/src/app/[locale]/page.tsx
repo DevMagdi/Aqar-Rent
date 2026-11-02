@@ -54,7 +54,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         </div>
       </section>
 
-      <section aria-labelledby="latest-h">
+      <section aria-labelledby="latest-h" data-testid="latest-listings">
         <div className="mb-4 flex items-center justify-between">
           <h2 id="latest-h" className="text-xl font-bold text-stone-900">
             {t("latest_listings")}
