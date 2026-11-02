@@ -71,6 +71,10 @@ class Listing(TimestampMixin, Base):
     available_from: Mapped[date | None] = mapped_column(Date, nullable=True)
     min_term_months: Mapped[int] = mapped_column(Integer, default=1)
     status: Mapped[str] = mapped_column(String(20), default="draft", index=True)
+    # Denormalized ad rank (kept in sync by activate/cancel/expire paths) —
+    # lets the public "newest" sort use a plain indexed ORDER BY at scale.
+    ad_priority: Mapped[float] = mapped_column(Float, default=0.0, server_default="0")
+    ad_starts_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     reject_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     published_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     view_count: Mapped[int] = mapped_column(Integer, default=0)

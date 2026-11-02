@@ -75,6 +75,24 @@ def test_migration_is_versioned(tmp_path):
     )
     conn = sqlite3.connect(db_path)
     versions = [r[0] for r in conn.execute("SELECT version_num FROM alembic_version")]
-    # Head revision advanced with Phase 2 (0002: orders.plan_id, refunds.gateway_ref).
-    assert versions == ["0002"]
+    # Head advanced with Phase 4 (0003: orders.kind, contract hash/log/fee,
+    # handover source/hash, handover media type/attribution).
+    assert versions == ["0006"]
+    cols = {
+        r[1]
+        for r in conn.execute("PRAGMA table_info(orders)")
+    }
+    assert "kind" in cols
+    contract_cols = {r[1] for r in conn.execute("PRAGMA table_info(contracts)")}
+    assert {"terms_hash", "confirmations_log", "fee_order_id"} <= contract_cols
+    handover_cols = {r[1] for r in conn.execute("PRAGMA table_info(handovers)")}
+    assert {"source_handover_id", "hash"} <= handover_cols
+    # Phase-4C search indexes + denormalized ad-rank columns
+    indexes = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='index'")}
+    assert "ix_listings_rent_monthly" in indexes
+    assert "ix_listings_area_m2" in indexes
+    assert "ix_listings_active_rank" in indexes
+    assert "ix_listings_status_rent_monthly" in indexes
+    listing_cols = {r[1] for r in conn.execute("PRAGMA table_info(listings)")}
+    assert {"ad_priority", "ad_starts_at"} <= listing_cols
     conn.close()
