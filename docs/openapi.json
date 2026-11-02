@@ -269,6 +269,35 @@
         ]
       }
     },
+    "/api/v1/me/export": {
+      "get": {
+        "tags": [
+          "me"
+        ],
+        "summary": "Export all my data as JSON (privacy)",
+        "description": "Data portability (privacy): profile, listings, favorites, orders,\nnotifications, contact events, reports, verification docs and the\ncontracts/handovers I take part in.",
+        "operationId": "export_my_data_api_v1_me_export_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Export My Data Api V1 Me Export Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/me/devices": {
       "post": {
         "tags": [
@@ -447,7 +476,7 @@
           "locations"
         ],
         "summary": "List locations (Public)",
-        "description": "No parent_id → governorates; parent_id → children of that node.",
+        "description": "No parent_id → governorates; parent_id → children of that node.\n\nRead-mostly reference data → cached (Redis when reachable, in-process\nTTL otherwise; disabled in tests).",
         "operationId": "list_locations_api_v1_locations_get",
         "parameters": [
           {
@@ -1510,7 +1539,7 @@
           "plans & orders"
         ],
         "summary": "Active ad plans (Public)",
-        "description": "BR-1: prices live in the plans table — never hard-coded in the client.",
+        "description": "BR-1: prices live in the plans table — never hard-coded in the client.\n\nCached (Redis/in-process TTL) — plan prices change rarely.",
         "operationId": "list_plans_api_v1_plans_get",
         "responses": {
           "200": {
@@ -2098,6 +2127,810 @@
         }
       }
     },
+    "/api/v1/contracts": {
+      "get": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "My contracts (owner or tenant)",
+        "operationId": "list_contracts_api_v1_contracts_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ContractOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Contracts Api V1 Contracts Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Create a contract draft (owner)",
+        "operationId": "create_contract_api_v1_contracts_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContractCreateIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/contracts/{contract_id}": {
+      "get": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Contract detail (party only)",
+        "operationId": "get_contract_api_v1_contracts__contract_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Edit draft terms (owner)",
+        "operationId": "patch_contract_api_v1_contracts__contract_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ContractPatchIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/contracts/{contract_id}/request-confirmation": {
+      "post": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Send the final text to the other party",
+        "operationId": "request_confirmation_api_v1_contracts__contract_id__request_confirmation_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/contracts/{contract_id}/confirm": {
+      "post": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Confirm with a fresh OTP",
+        "operationId": "confirm_api_v1_contracts__contract_id__confirm_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContractOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/contracts/{contract_id}/pdf": {
+      "get": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Arabic PDF (party only, after both confirm)",
+        "operationId": "contract_pdf_api_v1_contracts__contract_id__pdf_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/contracts/{contract_id}/fee-order": {
+      "post": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Optional contract fee order (kind=contract_fee)",
+        "operationId": "create_fee_order_api_v1_contracts__contract_id__fee_order_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeeOrderIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeeOrderOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/verify/{reference_no}": {
+      "get": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Public contract verification (no auth)",
+        "operationId": "verify_api_v1_verify__reference_no__get",
+        "parameters": [
+          {
+            "name": "reference_no",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Reference No"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicVerifyOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/contracts/{contract_id}/handovers": {
+      "post": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Create check-in / check-out (from check-in)",
+        "operationId": "create_handover_api_v1_contracts__contract_id__handovers_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HandoverCreateIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HandoverOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Handovers of a contract (+ check-out pairing)",
+        "operationId": "list_handovers_api_v1_contracts__contract_id__handovers_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "contract_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Contract Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/HandoverOut"
+                  },
+                  "title": "Response List Handovers Api V1 Contracts  Contract Id  Handovers Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/handovers/{handover_id}": {
+      "get": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Handover detail",
+        "operationId": "get_handover_api_v1_handovers__handover_id__get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "handover_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Handover Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HandoverOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Edit a draft handover",
+        "operationId": "patch_handover_api_v1_handovers__handover_id__patch",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "handover_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Handover Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/HandoverPatchIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HandoverOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/handovers/{handover_id}/media": {
+      "post": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Upload photo/video for a handover room",
+        "operationId": "upload_media_api_v1_handovers__handover_id__media_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "handover_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Handover Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_media_api_v1_handovers__handover_id__media_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HandoverMediaOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/handovers/{handover_id}/confirm": {
+      "post": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Confirm a handover with a fresh OTP",
+        "operationId": "confirm_handover_api_v1_handovers__handover_id__confirm_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "handover_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Handover Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConfirmIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HandoverOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/handovers/{handover_id}/pdf": {
+      "get": {
+        "tags": [
+          "contracts & handovers"
+        ],
+        "summary": "Arabic handover PDF (party only)",
+        "operationId": "handover_pdf_api_v1_handovers__handover_id__pdf_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "handover_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Handover Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/admin/auth/login": {
       "post": {
         "tags": [
@@ -2179,6 +3012,33 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DashboardOut"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/admin/analytics/funnel": {
+      "get": {
+        "tags": [
+          "admin-dashboard"
+        ],
+        "summary": "Acquisition funnel (super admin)",
+        "description": "Real funnel from existing events: users → submitted → approved → paid → contact.",
+        "operationId": "analytics_funnel_api_v1_admin_analytics_funnel_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FunnelOut"
                 }
               }
             }
@@ -3834,6 +4694,48 @@
           }
         }
       }
+    },
+    "/ready": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Readiness probe (DB reachable)",
+        "operationId": "ready_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Ready Ready Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/metrics": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Prometheus metrics",
+        "operationId": "metrics_metrics_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -4375,6 +5277,36 @@
         ],
         "title": "Body_upload_bank_receipt_api_v1_orders__order_id__bank_receipt_post"
       },
+      "Body_upload_media_api_v1_handovers__handover_id__media_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          },
+          "room": {
+            "type": "string",
+            "title": "Room"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file",
+          "room"
+        ],
+        "title": "Body_upload_media_api_v1_handovers__handover_id__media_post"
+      },
       "Body_upload_media_api_v1_listings__listing_id__media_post": {
         "properties": {
           "file": {
@@ -4454,6 +5386,20 @@
         "title": "CheckoutOut",
         "description": "Fresh checkout details for a pending gateway order (re-minted key)."
       },
+      "ConfirmIn": {
+        "properties": {
+          "otp_code": {
+            "type": "string",
+            "pattern": "^\\d{6}$",
+            "title": "Otp Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "otp_code"
+        ],
+        "title": "ConfirmIn"
+      },
       "ContactChannel": {
         "type": "string",
         "enum": [
@@ -4491,6 +5437,372 @@
           "phone"
         ],
         "title": "ContactOut"
+      },
+      "ContractCreateIn": {
+        "properties": {
+          "listing_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Listing Id"
+          },
+          "template": {
+            "type": "string",
+            "enum": [
+              "residential_unfurnished",
+              "residential_furnished",
+              "commercial"
+            ],
+            "title": "Template"
+          },
+          "tenant_phone": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 8,
+            "title": "Tenant Phone"
+          },
+          "national_ids": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "National Ids"
+          },
+          "terms": {
+            "$ref": "#/components/schemas/ContractTermsIn"
+          }
+        },
+        "type": "object",
+        "required": [
+          "listing_id",
+          "template",
+          "tenant_phone",
+          "national_ids",
+          "terms"
+        ],
+        "title": "ContractCreateIn"
+      },
+      "ContractOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "reference_no": {
+            "type": "string",
+            "title": "Reference No"
+          },
+          "listing_id": {
+            "type": "string",
+            "title": "Listing Id"
+          },
+          "listing_title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Listing Title"
+          },
+          "template": {
+            "type": "string",
+            "title": "Template"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "terms": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Terms"
+          },
+          "parties": {
+            "items": {
+              "$ref": "#/components/schemas/ContractPartyOut"
+            },
+            "type": "array",
+            "title": "Parties"
+          },
+          "terms_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms Hash"
+          },
+          "owner_confirmed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Owner Confirmed At"
+          },
+          "tenant_confirmed_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tenant Confirmed At"
+          },
+          "confirmations_log": {
+            "items": {},
+            "type": "array",
+            "title": "Confirmations Log"
+          },
+          "fee_required": {
+            "type": "boolean",
+            "title": "Fee Required",
+            "default": false
+          },
+          "fee_amount": {
+            "type": "number",
+            "title": "Fee Amount",
+            "default": 0
+          },
+          "fee_order_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fee Order Id"
+          },
+          "fee_order_status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Fee Order Status"
+          },
+          "pdf_ready": {
+            "type": "boolean",
+            "title": "Pdf Ready",
+            "default": false
+          },
+          "can_edit": {
+            "type": "boolean",
+            "title": "Can Edit",
+            "default": false
+          },
+          "can_confirm": {
+            "type": "boolean",
+            "title": "Can Confirm",
+            "default": false
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "reference_no",
+          "listing_id",
+          "template",
+          "status",
+          "terms",
+          "parties"
+        ],
+        "title": "ContractOut"
+      },
+      "ContractPartyOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "full_name": {
+            "type": "string",
+            "title": "Full Name"
+          },
+          "phone": {
+            "type": "string",
+            "title": "Phone"
+          },
+          "national_id_masked": {
+            "type": "string",
+            "title": "National Id Masked"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "role",
+          "full_name",
+          "phone",
+          "national_id_masked"
+        ],
+        "title": "ContractPartyOut"
+      },
+      "ContractPatchIn": {
+        "properties": {
+          "national_ids": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "National Ids"
+          },
+          "terms": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ContractTermsIn"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "ContractPatchIn",
+        "description": "Draft-only edits to the terms before confirmation."
+      },
+      "ContractTermsIn": {
+        "properties": {
+          "party_names": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Party Names"
+          },
+          "unit_address": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 3,
+            "title": "Unit Address"
+          },
+          "start_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Start Date"
+          },
+          "duration_months": {
+            "type": "integer",
+            "maximum": 120.0,
+            "minimum": 1.0,
+            "title": "Duration Months"
+          },
+          "monthly_rent": {
+            "type": "number",
+            "maximum": 10000000.0,
+            "exclusiveMinimum": 0.0,
+            "title": "Monthly Rent"
+          },
+          "yearly_increase_pct": {
+            "type": "number",
+            "maximum": 100.0,
+            "minimum": 0.0,
+            "title": "Yearly Increase Pct"
+          },
+          "deposit_amount": {
+            "type": "number",
+            "maximum": 10000000.0,
+            "minimum": 0.0,
+            "title": "Deposit Amount"
+          },
+          "deposit_refund_days": {
+            "type": "integer",
+            "maximum": 180.0,
+            "minimum": 1.0,
+            "title": "Deposit Refund Days",
+            "default": 30
+          },
+          "payment_day": {
+            "type": "integer",
+            "maximum": 28.0,
+            "minimum": 1.0,
+            "title": "Payment Day",
+            "default": 1
+          },
+          "utilities_responsibility": {
+            "type": "string",
+            "maxLength": 1000,
+            "title": "Utilities Responsibility",
+            "default": ""
+          },
+          "termination_terms": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Termination Terms",
+            "default": ""
+          },
+          "extra_notes": {
+            "type": "string",
+            "maxLength": 2000,
+            "title": "Extra Notes",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "party_names",
+          "unit_address",
+          "start_date",
+          "duration_months",
+          "monthly_rent",
+          "yearly_increase_pct",
+          "deposit_amount"
+        ],
+        "title": "ContractTermsIn",
+        "description": "Wizard fields stored on the contract (national IDs go encrypted, not here)."
       },
       "DashboardOut": {
         "properties": {
@@ -4798,6 +6110,48 @@
         ],
         "title": "FavoritesOut"
       },
+      "FeeOrderIn": {
+        "properties": {
+          "method": {
+            "type": "string",
+            "enum": [
+              "card",
+              "fawry",
+              "vodafone_cash",
+              "bank_transfer"
+            ],
+            "title": "Method"
+          }
+        },
+        "type": "object",
+        "required": [
+          "method"
+        ],
+        "title": "FeeOrderIn"
+      },
+      "FeeOrderOut": {
+        "properties": {
+          "order_id": {
+            "type": "string",
+            "title": "Order Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "order_id",
+          "status",
+          "amount"
+        ],
+        "title": "FeeOrderOut"
+      },
       "Finishing": {
         "type": "string",
         "enum": [
@@ -4808,6 +6162,44 @@
           "deluxe"
         ],
         "title": "Finishing"
+      },
+      "FunnelOut": {
+        "properties": {
+          "users_registered": {
+            "type": "integer",
+            "title": "Users Registered"
+          },
+          "listings_submitted_or_beyond": {
+            "type": "integer",
+            "title": "Listings Submitted Or Beyond"
+          },
+          "listings_approved_or_beyond": {
+            "type": "integer",
+            "title": "Listings Approved Or Beyond"
+          },
+          "orders_paid": {
+            "type": "integer",
+            "title": "Orders Paid"
+          },
+          "contact_events": {
+            "type": "integer",
+            "title": "Contact Events"
+          },
+          "conversion_pct": {
+            "type": "number",
+            "title": "Conversion Pct"
+          }
+        },
+        "type": "object",
+        "required": [
+          "users_registered",
+          "listings_submitted_or_beyond",
+          "listings_approved_or_beyond",
+          "orders_paid",
+          "contact_events",
+          "conversion_pct"
+        ],
+        "title": "FunnelOut"
       },
       "Furnished": {
         "type": "string",
@@ -4853,6 +6245,342 @@
         },
         "type": "object",
         "title": "HTTPValidationError"
+      },
+      "HandoverCreateIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "check_in",
+              "check_out"
+            ],
+            "title": "Kind"
+          },
+          "source_handover_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Handover Id"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HandoverDataIn"
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind"
+        ],
+        "title": "HandoverCreateIn"
+      },
+      "HandoverDataIn": {
+        "properties": {
+          "occurred_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Occurred At"
+          },
+          "rooms": {
+            "items": {
+              "$ref": "#/components/schemas/HandoverRoomIn"
+            },
+            "type": "array",
+            "title": "Rooms"
+          },
+          "meters": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/MeterIn"
+            },
+            "type": "object",
+            "title": "Meters"
+          },
+          "keys_count": {
+            "anyOf": [
+              {
+                "type": "integer",
+                "maximum": 100.0,
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Keys Count"
+          },
+          "inventory": {
+            "items": {
+              "$ref": "#/components/schemas/HandoverItemIn"
+            },
+            "type": "array",
+            "title": "Inventory"
+          },
+          "comments": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object",
+            "title": "Comments"
+          }
+        },
+        "type": "object",
+        "title": "HandoverDataIn"
+      },
+      "HandoverItemIn": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "condition": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "good",
+                  "needs_repair",
+                  "damaged"
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Condition"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 500,
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "label"
+        ],
+        "title": "HandoverItemIn"
+      },
+      "HandoverMediaOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "room": {
+            "type": "string",
+            "title": "Room"
+          },
+          "media_type": {
+            "type": "string",
+            "title": "Media Type"
+          },
+          "url": {
+            "type": "string",
+            "title": "Url"
+          },
+          "note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Note"
+          },
+          "added_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Added By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "room",
+          "media_type",
+          "url"
+        ],
+        "title": "HandoverMediaOut"
+      },
+      "HandoverOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "contract_id": {
+            "type": "string",
+            "title": "Contract Id"
+          },
+          "contract_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Reference"
+          },
+          "kind": {
+            "type": "string",
+            "title": "Kind"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "data": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Data"
+          },
+          "source_handover_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Handover Id"
+          },
+          "hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Hash"
+          },
+          "media": {
+            "items": {
+              "$ref": "#/components/schemas/HandoverMediaOut"
+            },
+            "type": "array",
+            "title": "Media"
+          },
+          "confirmations": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Confirmations"
+          },
+          "can_edit": {
+            "type": "boolean",
+            "title": "Can Edit",
+            "default": false
+          },
+          "can_confirm": {
+            "type": "boolean",
+            "title": "Can Confirm",
+            "default": false
+          },
+          "created_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created By"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "contract_id",
+          "kind",
+          "status",
+          "data"
+        ],
+        "title": "HandoverOut"
+      },
+      "HandoverPatchIn": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/HandoverDataIn"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "HandoverPatchIn"
+      },
+      "HandoverRoomIn": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 60,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/HandoverItemIn"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "HandoverRoomIn"
       },
       "ListingAdminDetailOut": {
         "properties": {
@@ -6018,6 +7746,18 @@
         ],
         "title": "MediaOut"
       },
+      "MeterIn": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "maxLength": 40,
+            "title": "Value",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "title": "MeterIn"
+      },
       "MethodTotal": {
         "properties": {
           "method": {
@@ -7027,6 +8767,60 @@
           "clinic"
         ],
         "title": "PropertyType"
+      },
+      "PublicVerifyOut": {
+        "properties": {
+          "valid": {
+            "type": "boolean",
+            "title": "Valid"
+          },
+          "reference_no": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reference No"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "parties_masked": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Parties Masked"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "valid"
+        ],
+        "title": "PublicVerifyOut"
       },
       "QueueItemOut": {
         "properties": {

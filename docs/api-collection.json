@@ -1,7 +1,7 @@
 {
   "info": {
-    "name": "Aqar Rent API — Phase 2",
-    "description": "إيجار مباشر — Phase 1 collection (auth OTP, listings lifecycle, moderation, search, favorites, reports, plans/orders, admin). Import into Postman, or into Bruno via Import → Postman Collection.",
+    "name": "Aqar Rent API — Phase 4",
+    "description": "إيجار مباشر — full collection (auth OTP, listings lifecycle, moderation, search, favorites, reports, plans/orders, admin). Import into Postman, or into Bruno via Import → Postman Collection.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -1978,6 +1978,458 @@
                 "revenue"
               ]
             }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contracts & Handovers (Phase 4)",
+      "description": "Contracts (draft → dual OTP confirm → immutable SHA-256 → Arabic PDF + QR), handovers (check-in/out), public /verify.",
+      "item": [
+        {
+          "name": "GET /api/v1/contracts",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/contracts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts"
+              ]
+            },
+            "description": "My contracts (owner or tenant)"
+          }
+        },
+        {
+          "name": "POST /api/v1/contracts",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/v1/contracts",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts"
+              ]
+            },
+            "description": "Create a contract draft (owner)",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/contracts/{contract_id}",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/contracts/{contract_id}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "contract_id"
+              ]
+            },
+            "description": "Contract detail (party only)"
+          }
+        },
+        {
+          "name": "PATCH /api/v1/contracts/{contract_id}",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/api/v1/contracts/{contract_id}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "contract_id"
+              ]
+            },
+            "description": "Edit draft terms (owner)",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /api/v1/contracts/{contract_id}/confirm",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/v1/contracts/{contract_id}/confirm",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "contract_id",
+                "confirm"
+              ]
+            },
+            "description": "Confirm with a fresh OTP",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /api/v1/contracts/{contract_id}/fee-order",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/v1/contracts/{contract_id}/fee-order",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "contract_id",
+                "fee-order"
+              ]
+            },
+            "description": "Optional contract fee order (kind=contract_fee)",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /api/v1/contracts/{contract_id}/handovers",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/v1/contracts/{contract_id}/handovers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "contract_id",
+                "handovers"
+              ]
+            },
+            "description": "Create check-in / check-out (from check-in)",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/contracts/{contract_id}/handovers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/contracts/{contract_id}/handovers",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "contract_id",
+                "handovers"
+              ]
+            },
+            "description": "Handovers of a contract (+ check-out pairing)"
+          }
+        },
+        {
+          "name": "GET /api/v1/contracts/{contract_id}/pdf",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/contracts/{contract_id}/pdf",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "contract_id",
+                "pdf"
+              ]
+            },
+            "description": "Arabic PDF (party only, after both confirm)"
+          }
+        },
+        {
+          "name": "POST /api/v1/contracts/{contract_id}/request-confirmation",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/v1/contracts/{contract_id}/request-confirmation",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "contracts",
+                "contract_id",
+                "request-confirmation"
+              ]
+            },
+            "description": "Send the final text to the other party",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/handovers/{handover_id}",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/handovers/{handover_id}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "handovers",
+                "handover_id"
+              ]
+            },
+            "description": "Handover detail"
+          }
+        },
+        {
+          "name": "PATCH /api/v1/handovers/{handover_id}",
+          "request": {
+            "method": "PATCH",
+            "url": {
+              "raw": "{{base_url}}/api/v1/handovers/{handover_id}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "handovers",
+                "handover_id"
+              ]
+            },
+            "description": "Edit a draft handover",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /api/v1/handovers/{handover_id}/confirm",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/v1/handovers/{handover_id}/confirm",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "handovers",
+                "handover_id",
+                "confirm"
+              ]
+            },
+            "description": "Confirm a handover with a fresh OTP",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "POST /api/v1/handovers/{handover_id}/media",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{base_url}}/api/v1/handovers/{handover_id}/media",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "handovers",
+                "handover_id",
+                "media"
+              ]
+            },
+            "description": "Upload photo/video for a handover room",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "GET /api/v1/handovers/{handover_id}/pdf",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/handovers/{handover_id}/pdf",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "handovers",
+                "handover_id",
+                "pdf"
+              ]
+            },
+            "description": "Arabic handover PDF (party only)"
+          }
+        },
+        {
+          "name": "GET /api/v1/verify/{reference_no}",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/api/v1/verify/{reference_no}",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "api",
+                "v1",
+                "verify",
+                "reference_no"
+              ]
+            },
+            "description": "Public contract verification (no auth)"
           }
         }
       ]
