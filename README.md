@@ -1,8 +1,11 @@
 # Aqar Rent — عقار رينت
 
-A broker-free rental marketplace for Egypt. Visual language: **Mantiq design
-system** — Mantiq Navy `#16273B` + Mantiq Gold `#BDA77E`, single source of
-truth in `web/src/styles/tokens.css` / `admin/src/styles/tokens.css`. Owners pay a **flat ad fee
+A broker-free rental marketplace for Egypt. Visual language: **Mantiq premium
+system** — navy `#0F1C2E` + gold `#C9A86C` with **full dark mode** (`#0B1220`
+surfaces), cinematic listing cards, motion, Arabic-first typography (IBM Plex
+Sans Arabic). Single source of truth: `web/src/styles/tokens.css` (byte-mirrored
+in admin, colour-mirrored in `mobile/lib/core/theme.dart`, all test-enforced —
+see `docs/design/premium-tokens.md`). Owners pay a **flat ad fee
 (500 EGP / 7 days per listing — price lives in the `plans` table)** — the
 platform takes **no commission**, never holds rent or deposits, and never
 mediates money between landlord and tenant. Arabic-first (RTL), English

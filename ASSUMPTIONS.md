@@ -382,3 +382,44 @@ Every decision the spec left open, made here so review is easy. Business rules
     "design: adopt Mantiq design system (navy + gold tokens)" instead of a
     `design/mantiq-tokens` branch (branch creation outside the session branch
     is not possible here).
+
+## Premium Visual Overhaul (unified identity, motion, dark mode)
+
+95. **Proposal-first**: exact token values, ratios and derivations were written
+    to `docs/design/premium-tokens.md` **before** implementation; every number
+    in that document is recomputed by the test suite / design e2e assertions.
+96. **Palette locked**: brand `#0F1C2E`, deep `#0B1220`, network `#1D2D45`
+    (derived hover), gold `#C9A86C`, gold-light `#E7D6AF` (derived),
+    gold-dark `#9C814E` (derived —3.7:1, large-text/graphics only), on-dark
+    `#EAE7E0` (derived), teal `#0D9488` with teal-ink `#0B726A` (derived) /
+    teal-bg `#E6F5F3` / teal-on-dark `#2DD4BF`, bg `#F8F7F4`, muted `#5C6570`;
+    status colours unchanged (AA-proven). Dark: bg `#0B1220`, surface
+    `#141C2B` (spec) + derived ink/muted/sidebar/status-on-dark values — all
+    ratios tabled in the proposal doc (≥4.5 text, ≥3 graphics).
+97. **Tokens stay byte-identical across web/admin**; mobile mirrors them in
+    `mobile/lib/core/theme.dart` — equality is enforced by
+    `web/src/styles/tokens.test.ts` (also rejects terracotta/orange leftovers
+    and any hex outside the three token files).
+98. **Gold-text rule reaffirmed**: white-on-gold banned (buttons = gold +
+    `#0F1C2E`/`#0B1220` text ≈7.6:1+); gold on white still2.3:1 → accent text
+    at normal sizes uses ink; `text-gold-dark` limited to WCAG-large text
+    (listing price24px/extrabold) and ≥3:1 graphics — test-enforced.
+99. **Dark mode**: class strategy on `<html>` (`aqar.theme` localStorage +
+    `prefers-color-scheme` bootstrap script to avoid FOUC); Flutter follows
+    system by default with an in-app toggle (persisted). Sidebars flip via
+    token overrides only — zero per-component dark code.
+100. **Motion is CSS-first** (page fade-up, card `scale(1.02)` + layered
+    shadow, press scale, brand shimmer skeletons, toast slide-up) with a
+    `prefers-reduced-motion` kill-switch; Flutter uses `PageTransitionsTheme`
+    + `Hero` on listing images + `AnimatedScale` press.
+101. **Geometry/type upgrade**: cards22 / shells24 / buttons-fields14 / pill999;
+    base15/24 (Arabic line-height), titles26/36, KPI34/42; layered shadows
+    (`--shadow-card/pop/elevate`).
+102. **Screenshots**: the PR carries a text before/after description; visual
+    proof lives in the design e2e suite (`e2e/tests/design-system.spec.ts`
+    computes styles + WCAG ratios on home ar/en, search, detail, dashboard,
+    checkout, admin, dark mode, premium card) — this sandbox cannot capture
+    pixel screenshots, so computed-style evidence is used instead.
+103. **Branch**: platform-fixed `arena/659701e4-aqar-rent` carries the PR with
+    the requested title (no `design/…` branch can be created here; deletion of
+    the session branch is not possible either — its content is in `main`).
