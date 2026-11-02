@@ -3,22 +3,28 @@
 Run this in order. Every item is either a command, a config gate or an external
 sign-off. **Do not launch while any ⛔ blocker is open.**
 
-## 0. Code quality gates (CI)
+## 0. Code quality gates (CI) — **all green on PR #7**
 
-- [ ] `cd backend && .venv/bin/python -m pytest -q` → all pass (162 tests with `pgserver`; 161 + 1 skipped without it)
-- [ ] `.venv/bin/python -m ruff check app tests` → clean
-- [ ] `.venv/bin/python -m mypy app` → clean
-- [ ] `cd web && npx tsc --noEmit && npm test && npm run build`
-- [ ] `cd admin && npx tsc --noEmit && npm run build`
-- [ ] `cd backend && .venv/bin/python ../scripts/generate-api-docs.py` → no diff (docs in sync)
-- [ ] `.github/workflows/mobile.yml` green: `flutter analyze --fatal-infos`, `flutter test`, integration smoke
+Verified by GitHub Actions runs `41494237189` (ci.yml) and `41494237192`
+(mobile.yml); local battery reproduced before the merge.
+
+- [x] `cd backend && .venv/bin/python -m pytest -q` → 162 passed with `pgserver` (161 + 1 skip without it)
+- [x] `.venv/bin/python -m ruff check app tests` + `ruff check .` → clean
+- [x] `.venv/bin/python -m mypy app` → clean (97 files)
+- [x] `cd web && npx tsc --noEmit && npm test && npm run build` → 21 vitest + production build
+- [x] `cd admin && npx tsc --noEmit && npm run build`
+- [x] `cd backend && .venv/bin/python ../scripts/generate-api-docs.py` → no diff (113 paths / 137 requests)
+- [x] `.github/workflows/mobile.yml` → `flutter analyze --fatal-infos`: **No issues found**, `flutter test --coverage`: **5/5 passed**
+- [x] `e2e` job → 10 Playwright tests in 8 specs passed (incl. Mantiq computed-style/WCAG checks)
+- [ ] `flutter test integration_test/` on a real device/emulator (requires SDK + device; release-dispatch gate)
 
 ## 1. Database & migrations
 
 - [ ] Provision PostgreSQL 16 + PostGIS; `DATABASE_URL=postgresql+psycopg://…`
-- [ ] `alembic upgrade head` → `0007` (offices/subscriptions/trust). SQLite path
-      is validated in `tests/test_migration.py`; run once on a staging Postgres
-      clone before production.
+- [x] `alembic upgrade head` → `0007` on **both** SQLite (`test_migration.py`)
+      and PostgreSQL 16 + PostGIS (CI `test (postgres)` job); backup/restore
+      drill passes in `test_backup_restore.py`. Still run once on a staging clone
+      with production-shaped data before go-live.
 - [ ] `python -m app.services.seed_service` → 27 governorates, default weekly
       plan 500 EGP/7 days, 3 ad packages, 4 subscription plans, Super Admin
 - [ ] Verify `/pricing` and `/admin/growth/subscription-plans` show the same data

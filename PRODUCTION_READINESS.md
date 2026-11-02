@@ -15,14 +15,14 @@ production path; every production flow uses real providers or refuses to boot.
 |---|---|---|---|
 | A1 | Backend tests | ✅ | `backend/.venv/bin/python -m pytest -q` → **162 passed** with `pgserver` installed (CI path); **161 passed, 1 skipped** in a minimal sandbox. Includes 11 new Phase 5 tests and the updated backup/restore head assertion |
 | A2 | Lint / types | ✅ | `ruff check app tests` clean · `mypy app` clean (97 files) |
-| A3 | Migration | ✅ / ⚠️ | `0001→0007` verified on SQLite and on a real throwaway PostgreSQL in `test_backup_restore.py` (pgserver); **PostGIS staging rehearsal + production backup drill remain go-live gates** |
+| A3 | Migration | ✅ | `0001→0007` verified on SQLite, on a throwaway PostgreSQL via `test_backup_restore.py`, and on PostgreSQL 16 + PostGIS in the PR CI `test (postgres)` job; production-shaped staging rehearsal is still a go-live step |
 | A4 | Web | ✅ | `npx tsc --noEmit`, `npm test` (**21 vitest**: 15 core + 6 Mantiq design-system compliance), `npm run build` all pass; pricing/office/legal pages added |
 | A5 | Admin | ✅ | `npx tsc --noEmit`, `npm run build` pass; 4 new admin surfaces |
-| A6 | Mobile source | ⚠️ | `flutter analyze/test/build` are executed by `.github/workflows/mobile.yml` with a real SDK — **Flutter SDK unavailable in this sandbox** (`storage.googleapis.com` blocked). All source, native shells, tests, CI and build scripts are committed. |
+| A6 | Mobile source | ✅ CI / ⚠️ release | PR CI `quality` ran a real Flutter 3.47.9 SDK: `flutter analyze --fatal-infos` → **No issues found**, `flutter test --coverage` → **5/5 passed**; SDK-free static check also clean. Release APK/AAB/IPA remain `workflow_dispatch` gates needing store secrets and macOS. Flutter SDK is unavailable in the local sandbox only. |
 | A7 | API docs | ✅ | `scripts/generate-api-docs.py` regenerates `docs/openapi.json` (113 paths, 134 schemas) and Postman collection (137 requests) from the live app |
 | A8 | Static copy | ✅ | No "coming soon"/DRAFT banners; all six static pages complete in AR/EN |
 | A9 | Design system | ✅ | `main` Mantiq navy+gold migration merged; token files byte-identical, zero hard-coded hex in TS/TSX, no white-on-gold — enforced by `tokens.test.ts` |
-| A10 | E2E specs | ⚠️ | `npx playwright test --list` → 10 tests in 8 specs; browser download blocked in sandbox, so execution is a CI/go-live gate |
+| A10 | E2E | ✅ CI | PR CI `e2e` job executed **10 Playwright tests in 8 specs** (incl. Mantiq design-system computed styles/WCAG); local sandbox cannot download browsers, but CI provides them |
 
 ## B. Trust, offices, pricing (Phase 5)
 
@@ -75,5 +75,8 @@ offices, multi-level trust with appeals, production-grade private-agreement
 templates and legal framing, payment audit/reconciliation, strict production
 config (including `ENVIRONMENT=production`), a real Flutter production client with
 native shells/CI, pricing/office/admin/web surfaces, generated API docs, and 11
-new backend tests (162 total with pgserver; 161 + 1 skip without). The verdict remains **staging/pilot** because
-credentials, legal sign-off and store/hardware items are outside the code.
+new backend tests (162 total with pgserver; 161 + 1 skip without). PR #7 CI is
+fully green: backend SQLite + PostgreSQL/PostGIS, ruff, mypy, pip-audit,
+web/admin builds and audits, Playwright e2e, and Flutter analyze/unit/widget
+tests on a real SDK. The verdict remains **staging/pilot** because credentials,
+legal sign-off and store/hardware items are outside the code.

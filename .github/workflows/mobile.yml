@@ -1,4 +1,6 @@
 name: Mobile quality & release builds
+# PR #7 CI evidence: Flutter 3.47.9 `analyze --fatal-infos` → 0 issues;
+# `flutter test --coverage` → 5/5 passed. Release jobs stay workflow_dispatch.
 
 on:
   push:
