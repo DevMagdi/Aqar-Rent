@@ -17,14 +17,23 @@ logger = logging.getLogger(__name__)
 def build_engine(database_url: str) -> Engine:
     kwargs: dict = {"pool_pre_ping": True}
     if database_url.startswith("sqlite"):
-        kwargs = {"poolclass": None, "connect_args": {"check_same_thread": False}}
+        # WAL + busy_timeout: concurrent readers during writes (multiple
+        # uvicorn workers / the load-test profile) without "database is locked".
+        kwargs = {
+            "poolclass": None,
+            "connect_args": {"check_same_thread": False, "timeout": 10.0},
+        }
     engine = create_engine(database_url, **kwargs)
     if database_url.startswith("sqlite"):
 
         @event.listens_for(engine, "connect")
-        def _fk_on(dbapi_conn, _record):  # pragma: no cover - trivial
+        def _sqlite_pragmas(dbapi_conn, _record):  # pragma: no cover - trivial
             cur = dbapi_conn.cursor()
             cur.execute("PRAGMA foreign_keys=ON")
+            if database_url != "sqlite:///:memory:":
+                cur.execute("PRAGMA journal_mode=WAL")
+                cur.execute("PRAGMA synchronous=NORMAL")
+                cur.execute("PRAGMA busy_timeout=10000")
             cur.close()
 
     return engine

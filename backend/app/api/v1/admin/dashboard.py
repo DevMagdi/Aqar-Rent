@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi import APIRouter, Depends, Query
+from pydantic import BaseModel
 from sqlalchemy import func, select
 
 from app.api.deps import DbDep, require_roles
@@ -71,6 +72,65 @@ def dashboard(db: DbDep, staff: StaffUser = Depends(require_roles(StaffRole.mode
         revenue_egp=float(revenue),
         contact_events_total=contacts,
         active_ad_periods=active_ads,
+    )
+
+
+class FunnelOut(BaseModel):
+    users_registered: int
+    listings_submitted_or_beyond: int
+    listings_approved_or_beyond: int
+    orders_paid: int
+    contact_events: int
+    conversion_pct: float
+
+
+@router.get("/analytics/funnel", response_model=FunnelOut, summary="Acquisition funnel (super admin)")
+def analytics_funnel(
+    db: DbDep, staff: StaffUser = Depends(require_roles(StaffRole.super_admin))
+) -> FunnelOut:
+    """Real funnel from existing events: users → submitted → approved → paid → contact."""
+    users = db.execute(select(func.count()).select_from(User)).scalar_one() or 0
+    submitted = db.execute(
+        select(func.count())
+        .select_from(Listing)
+        .where(
+            Listing.status.in_(
+                [
+                    ListingStatus.submitted.value,
+                    ListingStatus.approved.value,
+                    ListingStatus.active.value,
+                    ListingStatus.expired.value,
+                    ListingStatus.rented.value,
+                ]
+            )
+        )
+    ).scalar_one() or 0
+    approved = db.execute(
+        select(func.count())
+        .select_from(Listing)
+        .where(
+            Listing.status.in_(
+                [
+                    ListingStatus.approved.value,
+                    ListingStatus.active.value,
+                    ListingStatus.expired.value,
+                    ListingStatus.rented.value,
+                ]
+            )
+        )
+    ).scalar_one() or 0
+    paid_orders = db.execute(
+        select(func.count()).select_from(Order).where(Order.status == OrderStatus.paid.value)
+    ).scalar_one() or 0
+    contacts = db.execute(select(func.count()).select_from(ContactEvent)).scalar_one() or 0
+    conversion = round(100.0 * paid_orders / users, 1) if users else 0.0
+    return FunnelOut(
+        users_registered=users,
+        listings_submitted_or_beyond=submitted,
+        listings_approved_or_beyond=approved,
+        orders_paid=paid_orders,
+        contact_events=contacts,
+        conversion_pct=conversion,
     )
 
 

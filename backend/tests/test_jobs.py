@@ -160,7 +160,15 @@ def test_run_hourly_jobs_bundle(client, app, seeded):
     try:
         result = run_hourly_jobs(session)
         session.commit()
-        assert set(result) == {"ended_ad_periods", "expired_orders", "reminders_sent", "auto_moderated"}
+        assert set(result) == {
+            "ended_ad_periods",
+            "expired_orders",
+            "reminders_sent",
+            "auto_moderated",
+            "purged_verification_docs",
+            "purged_contact_events",
+        }
+        assert all(v >= 0 for v in result.values())  # no job failed
     finally:
         session.close()
 
