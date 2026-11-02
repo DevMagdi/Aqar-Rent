@@ -2,6 +2,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { api, clearSession, getRole } from "@/lib/api";
+import { ThemeToggle } from "./ThemeToggle";
 
 interface NavItem {
   to: string;
@@ -122,6 +123,7 @@ export function Shell({ children }: { children: ReactNode }) {
           <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-surface px-4">
             <p className="text-sm font-bold text-ink-strong">Operations console</p>
             <div className="flex items-center gap-3">
+              <ThemeToggle />
               <span className="hidden rounded-full bg-gold-tint-12 px-2.5 py-1 text-xs font-bold uppercase text-ink sm:block">{role}</span>
             </div>
           </header>

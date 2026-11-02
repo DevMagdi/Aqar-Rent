@@ -78,9 +78,18 @@ export function Modal({ title, children, onClose, footer }: { title: string; chi
 
 export function Empty({ text = "Nothing here" }: { text?: string }) {
   return (
-    <p className="rounded-xl border border-dashed border-stone-300 px-4 py-8 text-center text-sm text-stone-500" data-testid="empty">
-      {text}
-    </p>
+    <div
+      className="mx-auto max-w-sm rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface px-6 py-10 text-center shadow-card"
+      data-testid="empty"
+    >
+      <svg width="88" height="64" viewBox="0 0 88 64" fill="none" aria-hidden className="mx-auto mb-4">
+        <rect x="6" y="12" width="58" height="40" rx="11" stroke="var(--color-brand)" strokeOpacity="0.5" strokeWidth="2" />
+        <rect x="18" y="20" width="58" height="40" rx="11" fill="var(--color-surface)" stroke="var(--color-brand)" strokeWidth="2" />
+        <circle cx="66" cy="15" r="6.5" fill="var(--color-gold)" />
+        <path d="M30 41h32" stroke="var(--color-gold-dark)" strokeWidth="3" strokeLinecap="round" opacity="0.85" />
+      </svg>
+      <p className="text-sm font-semibold text-ink">{text}</p>
+    </div>
   );
 }
 

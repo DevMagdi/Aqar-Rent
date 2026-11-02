@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, saveSession } from "@/lib/api";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function Login() {
   const [email, setEmail] = useState("admin@aqar-rent.dev");
@@ -30,8 +31,11 @@ export function Login() {
   }
 
   return (
-    <div className="grid min-h-screen place-items-center bg-stone-900 p-4">
-      <form onSubmit={submit} className="w-full max-w-md rounded-3xl bg-white p-7 shadow-2xl" data-testid="login-form">
+    <div className="relative grid min-h-screen place-items-center bg-sidebar p-4">
+      <div className="absolute end-4 top-4">
+        <ThemeToggle />
+      </div>
+      <form onSubmit={submit} className="w-full max-w-md rounded-[22px] bg-surface p-7 shadow-pop" data-testid="login-form">
         <div className="mb-5 flex items-center gap-3">
           <span className="grid h-11 w-11 place-items-center rounded-xl bg-gold text-lg font-bold text-brand-deep">A</span>
           <div>

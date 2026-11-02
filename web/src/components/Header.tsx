@@ -3,6 +3,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth, useI18n, useToast } from "./Providers";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function Header() {
   const { locale, t, otherLocale, otherHref } = useI18n();
@@ -83,6 +84,7 @@ export function Header() {
         </nav>
 
         <div className="ms-auto flex items-center gap-2">
+          <ThemeToggle />
           <Link
             href={otherHref}
             hrefLang={otherLocale}
