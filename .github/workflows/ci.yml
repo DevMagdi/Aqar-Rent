@@ -76,7 +76,15 @@ jobs:
         if: failure()
         run: tail -120 pytest-sqlite.log >> "$GITHUB_STEP_SUMMARY" || true
 
-      - name: Migrate PostgreSQL + run tests (validates PostGIS path)
+      - name: Migrate PostgreSQL (PostGIS path)
+        if: matrix.database == 'postgres'
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+psycopg://aqar:aqar@localhost:5432/aqar
+        run: |
+          set -o pipefail
+          alembic upgrade head 2>&1 | tee ../alembic-pg.log
+      - name: Run tests (PostgreSQL)
         if: matrix.database == 'postgres'
         working-directory: backend
         env:
@@ -84,7 +92,6 @@ jobs:
           TEST_DATABASE_URL: postgresql+psycopg://aqar:aqar@localhost:5432/aqar
         run: |
           set -o pipefail
-          alembic upgrade head 2>&1 | tee ../alembic-pg.log
           python -m pytest -q 2>&1 | tee ../pytest-pg.log
       - name: Dump failure tail (step summary)
         if: failure()
