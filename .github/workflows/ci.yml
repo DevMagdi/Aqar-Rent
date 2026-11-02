@@ -71,7 +71,14 @@ jobs:
       - name: Run tests (SQLite — fast default)
         if: matrix.database == 'sqlite'
         working-directory: backend
-        run: python -m pytest -q --cov=app --cov-report=term-missing
+        run: python -m pytest -q --cov=app --cov-report=term-missing 2>&1 | tee ../pytest-sqlite.log
+      - name: Upload pytest log (failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-sqlite-log
+          path: pytest-sqlite.log
+          if-no-files-found: ignore
 
       - name: Migrate PostgreSQL + run tests (validates PostGIS path)
         if: matrix.database == 'postgres'
@@ -80,8 +87,18 @@ jobs:
           DATABASE_URL: postgresql+psycopg://aqar:aqar@localhost:5432/aqar
           TEST_DATABASE_URL: postgresql+psycopg://aqar:aqar@localhost:5432/aqar
         run: |
-          alembic upgrade head
-          python -m pytest -q
+          set -o pipefail
+          alembic upgrade head 2>&1 | tee ../alembic-pg.log
+          python -m pytest -q 2>&1 | tee ../pytest-pg.log
+      - name: Upload pytest log (failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-pg-log
+          path: |
+            pytest-pg.log
+            alembic-pg.log
+          if-no-files-found: ignore
 
   web:
     runs-on: ubuntu-latest
@@ -153,4 +170,13 @@ jobs:
         working-directory: e2e
         env:
           E2E_PYTHON: python
-        run: npx playwright test --reporter=line
+        run: npx playwright test --reporter=line 2>&1 | tee ../playwright-e2e.log
+      - name: Upload e2e artifacts (failure)
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-failure-artifacts
+          path: |
+            playwright-e2e.log
+            e2e/test-results/
+          if-no-files-found: ignore
