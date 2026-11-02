@@ -11,7 +11,7 @@ from app.api.v1 import api_router
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
-from app.db.session import setup_app_db
+from app.db.session import CommitBeforeSendMiddleware, setup_app_db
 from app.integrations.otp import build_otp_provider
 from app.services.storage import build_storage
 
@@ -36,6 +36,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if engine is not None:
             engine.dispose()
 
+    # Commit each request's DB session before the response is sent (see
+    # CommitBeforeSendMiddleware docstring — closes the create→next-request
+    # read-your-writes race on keep-alive connections).
     app = FastAPI(
         title=settings.app_name,
         description=DESCRIPTION,
@@ -53,6 +56,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         allow_headers=["*"],
     )
     register_exception_handlers(app)
+    app.add_middleware(CommitBeforeSendMiddleware)
     setup_app_db(app, settings)
     app.state.settings = settings
     app.state.storage = build_storage(settings)
