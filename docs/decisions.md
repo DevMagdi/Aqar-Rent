@@ -159,3 +159,17 @@ were then brought into compliance: gold buttons use `bg-gold text-brand-deep`
 `text-brand-500/600/700`. Result: `21/21` web vitest tests pass, including all
 6 design-system compliance checks. A stale `.next` cache can produce a false CSS
 resolution error after such a merge; `rm -rf web/.next` before a fresh build.
+
+## D14 — Flutter CI analyses the committed project, not a regenerated template
+
+The first PR CI run of `.github/workflows/mobile.yml` failed in
+`flutter create .` before analysis: current stable Flutter's
+`flutter_localizations` requires `intl ^0.20.3`, while the checked-in pubspec
+pinned `^0.19.0`; `flutter create` also implicitly ran `pub get`, added a
+template `test/widget_test.dart` and Kotlin-DSL Gradle files that conflict with
+the committed Groovy Android shell. Fix: pin `intl: ^0.20.3`, do **not**
+regenerate the project for `flutter analyze`/`flutter test`, and only on
+`workflow_dispatch` release builds call `flutter create --no-pub` to add the
+missing Xcode/Gradle-wrapper files, then delete template leftovers. This keeps
+one source of truth for native shells and makes the PR quality gate deterministic.
+

@@ -17,9 +17,9 @@ jobs:
         with:
           channel: stable
           cache: true
-      - name: Bootstrap native shells (generates Gradle wrapper / Xcode project)
-        working-directory: mobile
-        run: flutter create . --org com.aqarrent --platforms android,ios --project-name aqar_rent_mobile
+      # Android/iOS shells are committed. `flutter create` is NOT run for
+      # analysis/tests: it would add a template widget_test.dart and Kotlin-DSL
+      # Gradle files that conflict with the checked-in Groovy shell.
       - name: Pub get
         working-directory: mobile
         run: flutter pub get
@@ -33,6 +33,16 @@ jobs:
       - name: Unit + widget tests
         working-directory: mobile
         run: flutter test --coverage
+      - name: Generate missing native project files for a release build
+        if: github.event_name == 'workflow_dispatch'
+        working-directory: mobile
+        run: |
+          flutter create . --org com.aqarrent --platforms android,ios --project-name aqar_rent_mobile --no-pub
+          # Keep our committed Groovy Gradle shell, own Dart tests and manifests.
+          rm -f android/settings.gradle.kts android/build.gradle.kts android/app/build.gradle.kts
+          rm -f android/*.iml *.iml test/widget_test.dart
+          rm -rf .idea android/app/src/main/kotlin/com/aqarrent/aqar_rent_mobile
+          rm -f android/app/src/main/res/drawable-v21/launch_background.xml
       - name: Android release APK + App Bundle
         if: github.event_name == 'workflow_dispatch'
         env:
@@ -69,7 +79,9 @@ jobs:
           cache: true
       - working-directory: mobile
         run: |
-          flutter create . --org com.aqarrent --platforms ios --project-name aqar_rent_mobile
+          flutter create . --org com.aqarrent --platforms ios --project-name aqar_rent_mobile --no-pub
+          rm -f test/widget_test.dart *.iml
+          rm -rf .idea
           flutter pub get
       - name: CocoaPods
         working-directory: mobile/ios

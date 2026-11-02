@@ -49,13 +49,18 @@ the API — there is no duplicated price list or hard-coded plan.
 
 ## 2. Local development
 
-Flutter **3.24+ / Dart 3.4+** required (Flutter 3.35 recommended).
+Flutter **3.24+ / Dart 3.4+** required (CI uses the current stable channel).
 
 ```bash
 cd mobile
-# One-time: generates Gradle wrapper + Xcode project for the checked-in shells.
-# `flutter create` adds only MISSING files and keeps our manifests/plists intact.
-flutter create . --org com.aqarrent --platforms android,ios --project-name aqar_rent_mobile
+# One-time (only for a real device/store build): generate the Xcode project and
+# Gradle wrapper files that are not committed. --no-pub avoids an implicit
+# `pub get` before the project is complete; then remove template leftovers that
+# conflict with our Groovy Android shell and our own Dart tests.
+flutter create . --org com.aqarrent --platforms android,ios --project-name aqar_rent_mobile --no-pub
+rm -f android/settings.gradle.kts android/build.gradle.kts android/app/build.gradle.kts \
+      android/*.iml *.iml test/widget_test.dart
+rm -rf .idea android/app/src/main/kotlin/com/aqarrent/aqar_rent_mobile
 flutter pub get
 flutter run \
   --dart-define=ENVIRONMENT=dev \
