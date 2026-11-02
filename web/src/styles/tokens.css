@@ -1,46 +1,53 @@
 /* =============================================================================
- * Mantiq design system — canonical tokens (ADR-034).
- * SINGLE SOURCE OF TRUTH. Do not hard-code hex values anywhere else.
- * Every Tailwind colour utility resolves through these variables.
+ * Aqar Rent premium tokens (Mantiq evolution) — SINGLE SOURCE OF TRUTH.
+ * Exact values + WCAG evidence: docs/design/premium-tokens.md
+ * Light in :root · Dark in .dark (class on <html>, prefers-color-scheme aware)
+ * Zero hex outside this file & tokenValues.ts (test-enforced).
  * ============================================================================= */
 
 :root {
-  /* ── Brand palette ─────────────────────────────────────────────── */
-  --color-brand: #16273B;         /* Mantiq Navy – primary ink */
-  --color-brand-deep: #0E1728;    /* Deep Navy – sidebar / darkest chrome */
-  --color-network: #243553;       /* Network Blue – sidebar hover */
-  --color-gold: #BDA77E;          /* Mantiq Gold – main accent */
-  --color-gold-light: #E3D2A8;    /* Gold Light */
-  --color-gold-dark: #8F7A52;     /* Gold Dark – hover / focus */
-  --color-on-dark: #E8E2D4;       /* text/icons on navy */
+  /* ── Brand (spec) ─────────────────────────────────────────────── */
+  --color-brand: #0F1C2E;          /* primary ink —16:1 on bg */
+  --color-brand-deep: #0B1220;     /* deepest navy = dark bg */
+  --color-network: #1D2D45;        /* sidebar hover (derived) */
+  --color-gold: #C9A86C;           /* refined warm gold —7.6:1 on primary */
+  --color-gold-light: #E7D6AF;     /* logo gradient (derived) */
+  --color-gold-dark: #9C814E;      /* focus/hover/graphics —3.7:1 (large/≥3:1 only) */
+  --color-on-dark: #EAE7E0;        /* text on navy —13.9:1 */
 
-  /* ── Surfaces ──────────────────────────────────────────────────── */
-  --color-bg: #FAFBFC;
+  /* ── Trust/secondary (spec) ───────────────────────────────────── */
+  --color-teal: #0D9488;           /* fills/icons —3.7:1 vs white (graphics) */
+  --color-teal-ink: #0B726A;       /* teal text —5.8:1 (derived) */
+  --color-teal-bg: #E6F5F3;        /* soft teal panels (derived) */
+  --color-teal-on-dark: #2DD4BF;   /* dark surfaces —9.2:1 (derived) */
+
+  /* ── Surfaces (spec) ──────────────────────────────────────────── */
+  --color-bg: #F8F7F4;             /* warm off-white */
   --color-surface: #FFFFFF;
   --color-ink: var(--color-brand);
   --color-ink-strong: var(--color-brand-deep);
-  --color-muted: #687380;
-  --color-border: rgba(22, 39, 59, 0.10);
-  --color-border-strong: rgba(22, 39, 59, 0.16);
-  --color-track: rgba(22, 39, 59, 0.08);
+  --color-muted: #5C6570;          /* 5.5:1 on bg */
+  --color-border: rgba(15, 28, 46, 0.10);
+  --color-border-strong: rgba(15, 28, 46, 0.16);
+  --color-track: rgba(15, 28, 46, 0.08);
 
-  /* ── Sidebar / dark chrome ─────────────────────────────────────── */
-  --color-sidebar: var(--color-brand-deep);
+  /* ── Sidebar / dark chrome (light mode) ───────────────────────── */
+  --color-sidebar: var(--color-brand);
   --color-sidebar-text: var(--color-on-dark);
   --color-sidebar-active: var(--color-gold);
-  --color-sidebar-active-bg: rgba(189, 167, 126, 0.14);
+  --color-sidebar-active-bg: rgba(201, 168, 108, 0.14);
   --color-sidebar-hover: var(--color-network);
-  --color-sidebar-muted: rgba(232, 226, 212, 0.62);
+  --color-sidebar-muted: rgba(234, 231, 224, 0.62);
 
-  /* ── Functional integration colour (WhatsApp official brand) ───── */
+  /* ── Functional ───────────────────────────────────────────────── */
   --color-whatsapp: #25D366;
 
-  /* ── Soft accent tints (≤ 12% opacity) ─────────────────────────── */
-  --color-gold-tint-8: rgba(189, 167, 126, 0.08);
-  --color-gold-tint-12: rgba(189, 167, 126, 0.12);
-  --color-gold-tint-14: rgba(189, 167, 126, 0.14);
+  /* ── Soft gold tints (≤14%) ───────────────────────────────────── */
+  --color-gold-tint-8: rgba(201, 168, 108, 0.08);
+  --color-gold-tint-12: rgba(201, 168, 108, 0.12);
+  --color-gold-tint-14: rgba(201, 168, 108, 0.14);
 
-  /* ── Status colours (functional, no neon) ──────────────────────── */
+  /* ── Status (functional, AA-proven — unchanged) ───────────────── */
   --color-success: #1B5E3A;
   --color-success-bg: #EEF6F0;
   --color-warn: #8A5A12;
@@ -52,16 +59,60 @@
   --color-neutral: #17565F;
   --color-neutral-bg: #ECF3F4;
 
-  /* ── Typography ────────────────────────────────────────────────── */
+  /* ── Typography (upgraded scale) ──────────────────────────────── */
   --font-sans: "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
-  --text-base-size: 14px;
-  --text-base-line: 22px;
+  --text-base-size: 15px;
+  --text-base-line: 24px;        /* generous Arabic line-height */
 
-  /* ── Geometry ──────────────────────────────────────────────────── */
-  --radius-card: 18px;
-  --radius-field: 12px;
+  /* ── Geometry (spec: cards20–24, buttons14–16) ────────────────── */
+  --radius-card: 22px;
+  --radius-shell: 24px;
+  --radius-field: 14px;
   --radius-pill: 999px;
-  --shadow-card: 0 1px 2px rgba(14, 23, 40, 0.06);
-  --shadow-pop: 0 12px 32px rgba(14, 23, 40, 0.12);
+  --shadow-card: 0 1px 2px rgba(11, 18, 32, 0.05), 0 10px 28px -14px rgba(11, 18, 32, 0.12);
+  --shadow-pop: 0 12px 32px rgba(11, 18, 32, 0.16);
+  --shadow-elevate: 0 20px 48px -20px rgba(11, 18, 32, 0.32);
   --transition-fast: 150ms;
+}
+
+/* ── Dark mode (full support) — ratios in docs/design/premium-tokens.md ── */
+.dark {
+  --color-bg: #0B1220;             /* spec */
+  --color-surface: #141C2B;        /* spec */
+  --color-ink: #E9EDF5;            /*14.5:1 on surface */
+  --color-ink-strong: #F5F8FC;     /*16:1 */
+  --color-muted: #9AA4B4;          /*6.8:1 on surface */
+  --color-border: rgba(233, 237, 244, 0.12);
+  --color-border-strong: rgba(233, 237, 244, 0.20);
+  --color-track: rgba(233, 237, 244, 0.08);
+
+  --color-sidebar: #101A2C;        /* elevated nav — gold label7.7:1 */
+  --color-network: #223149;
+  --color-sidebar-active-bg: rgba(201, 168, 108, 0.16);
+  --color-sidebar-muted: rgba(233, 237, 244, 0.60);
+
+  --color-gold-dark: #D9BE87;      /* price/focus on dark —9.5:1 */
+  --color-teal: #2DD4BF;
+  --color-teal-ink: #2DD4BF;       /*9.2:1 on dark surface */
+  --color-teal-bg: rgba(45, 212, 191, 0.16);
+  --color-teal-on-dark: #2DD4BF;
+
+  --color-success: #5CD6A0;        /*9.4:1 */
+  --color-success-bg: rgba(92, 214, 160, 0.16);
+  --color-warn: #E9B44C;           /*9.0:1 */
+  --color-warn-bg: rgba(233, 180, 76, 0.16);
+  --color-danger: #F28B82;         /*7.1:1 */
+  --color-danger-bg: rgba(242, 139, 130, 0.16);
+  --color-info: #8AB8EC;           /*8.3:1 */
+  --color-info-bg: rgba(138, 184, 236, 0.16);
+  --color-neutral: #7FC9D6;        /*9.1:1 */
+  --color-neutral-bg: rgba(127, 201, 214, 0.16);
+
+  --color-gold-tint-8: rgba(201, 168, 108, 0.10);
+  --color-gold-tint-12: rgba(201, 168, 108, 0.14);
+  --color-gold-tint-14: rgba(201, 168, 108, 0.18);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 28px -14px rgba(0, 0, 0, 0.55);
+  --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.55);
+  --shadow-elevate: 0 20px 48px -20px rgba(0, 0, 0, 0.7);
 }
