@@ -11,8 +11,12 @@ secondary.
 >   moderation, search, admin API) — 108 tests
 > - **Phase 2** payments (Paymob card/wallet/Fawry + MockProvider for dev,
 >   orders/promos/receipts/refunds/bank transfers) — 112 tests
-> - **Phase 3A** `/web` (Next.js), `/admin` (React+Vite), Playwright e2e
-> - **Phase 3B (mini)** Flutter `/mobile` — contract & handover screens
+> - **Phase 3A** `/web` (Next.js), `/admin` (React+Vite), Playwright e2e (8 specs)
+> - **Phase 3B** Flutter `/mobile` — **full client** (search+map+filters,
+>   detail/contact, owner create/edit/submit + photos, verification, checkout,
+>   orders, favorites, notifications, profile + contracts/handovers + FCM push
+>   registration) — code complete; **build not verified in this sandbox**
+>   (Flutter SDK unavailable — see PRODUCTION_READINESS.md D29)
 > - **Phase 4A** standard lease contracts (templates, dual-OTP confirmation,
 >   SHA-256 immutability, Arabic PDF + QR, encrypted national IDs, optional
 >   contract fee, public `/verify/{ref}`) — web + Flutter clients
@@ -21,8 +25,15 @@ secondary.
 > - **Phase 4C** hardening & launch readiness: security/privacy/reliability/
 >   performance/DevOps/launch-kit docs + code (see [/docs](#docs))
 >
-> Test totals: **backend141** (pytest) · **web15** (vitest) · **e2e7 specs**
-> (Playwright) · ruff + mypy clean · CI green.
+> Hardening (this round): prod boot validation (refuses SQLite/DEBUG/weak
+> secrets/console OTP/mock-payments), Redis rate limiting, real Twilio SMS
+> provider, declared dependencies, production compose (healthchecks/limits/
+> log-rotation/required secrets), full Flutter client.
+>
+> Test totals: **backend151** (pytest) · **web15** (vitest) · **e2e8 specs**
+> (Playwright) · ruff + mypy clean · pip-audit + npm audit =0 vulns · CI green.
+> **See [PRODUCTION_READINESS.md](PRODUCTION_READINESS.md) for the pass/fail
+> evidence and the four external go-live blockers.**
 
 ---
 
@@ -205,9 +216,10 @@ curl :8000/ready  :8000/metrics             # probes
 
 ## Roadmap
 
-- **Phase 4 remaining go-live items** (see `docs/launch-checklist.md`):
-  Paymob live keys, lawyer review of contract templates/terms, tax/commercial
-  registration, production map tiles, SMS/WhatsApp providers, store accounts.
-- **Phase 5 ideas**: contract-fee paid tier, image forensics at moderation,
-  pg_trigram full-text search, push/WhatsApp delivery channels (design in
-  notifications table already).
+- **Go-live blockers (external — nothing left to build):** Paymob live keys,
+  Twilio credentials, lawyer review of contract templates/terms, Flutter build
+  verification + Firebase/store accounts, tax data for bank details, production
+  map-tile host. Full list: `PRODUCTION_READINESS.md`.
+- **Phase 5 ideas**: WhatsApp/SMS *content* delivery for notifications (channels
+  exist; FCM push is wired in the app), contract-fee paid tier, image forensics
+  at moderation, pg_trigram full-text search.

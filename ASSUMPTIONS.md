@@ -305,3 +305,29 @@ Every decision the spec left open, made here so review is easy. Business rules
 77. **Admin console is English-only** (staff tool); the public site is
     Arabic-first. Consent banner gates the web app (localStorage version
     flag); retention jobs run hourly in the worker.
+
+## Production-hardening round (branch production work, 2026-11-02)
+
+78. **Boot validation is the enforcement point**: `Settings.validate_runtime()`
+    refuses to start staging/prod with SQLite, DEBUG=true, weak/known
+    SECRET_KEY, console OTP, wildcard CORS, missing webhook/staff secrets;
+    prod additionally refuses mock payments, incomplete Paymob keys, http
+    SITE_URL and an unset `CONTRACT_NID_KEY`. Compose adds `${VAR:?}` on top.
+79. **Rate limiting** uses a Redis ZSET sliding window when Redis is reachable
+    (shared across uvicorn workers/hosts) with the previous in-process window
+    as dev/test fallback; tests never touch Redis (`app_env=test`).
+80. **Undeclared dependencies were a real CI bug**: `cryptography`,
+    `prometheus-client` and `qrcode` were used by Phase-4 code but only
+    installed manually — declared in `requirements.txt` this round; a clean
+    venv reproduces CI (`151 tests collect`).
+81. **SMS**: `TwilioOTPProvider` is the production path (E.164, basic-auth,
+    errors never leak the code); `console` remains dev/test-only and is
+    refused outside dev. Twilio credentials are an external blocker.
+82. **Full Flutter client** (Phase3B scope absorbed): `mobile/lib` covers all
+    core flows with the same business rules; `flutter analyze/test/build` must
+    run on a machine with the SDK (unavailable in this sandbox — measured
+    storage.googleapis.com unreachable) — recorded as a go-live item.
+83. **CI PostgreSQL job root cause** (exit4) was the undeclared-dependency
+    import failure at conftest collection — fixed by item80; steps are split
+    (migrate vs test) and failure tails are emitted as annotations.
+
