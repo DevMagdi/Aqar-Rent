@@ -72,13 +72,9 @@ jobs:
         if: matrix.database == 'sqlite'
         working-directory: backend
         run: python -m pytest -q --cov=app --cov-report=term-missing 2>&1 | tee ../pytest-sqlite.log
-      - name: Upload pytest log (failure)
+      - name: Dump failure tail (step summary)
         if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-sqlite-log
-          path: pytest-sqlite.log
-          if-no-files-found: ignore
+        run: tail -120 pytest-sqlite.log >> "$GITHUB_STEP_SUMMARY" || true
 
       - name: Migrate PostgreSQL + run tests (validates PostGIS path)
         if: matrix.database == 'postgres'
@@ -90,15 +86,11 @@ jobs:
           set -o pipefail
           alembic upgrade head 2>&1 | tee ../alembic-pg.log
           python -m pytest -q 2>&1 | tee ../pytest-pg.log
-      - name: Upload pytest log (failure)
+      - name: Dump failure tail (step summary)
         if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pytest-pg-log
-          path: |
-            pytest-pg.log
-            alembic-pg.log
-          if-no-files-found: ignore
+        run: |
+          echo '## alembic' >> "$GITHUB_STEP_SUMMARY"; tail -40 alembic-pg.log >> "$GITHUB_STEP_SUMMARY" || true
+          echo '## pytest' >> "$GITHUB_STEP_SUMMARY"; tail -120 pytest-pg.log >> "$GITHUB_STEP_SUMMARY" || true
 
   web:
     runs-on: ubuntu-latest
@@ -171,12 +163,6 @@ jobs:
         env:
           E2E_PYTHON: python
         run: npx playwright test --reporter=line 2>&1 | tee ../playwright-e2e.log
-      - name: Upload e2e artifacts (failure)
+      - name: Dump failure tail (step summary)
         if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-failure-artifacts
-          path: |
-            playwright-e2e.log
-            e2e/test-results/
-          if-no-files-found: ignore
+        run: tail -150 playwright-e2e.log >> "$GITHUB_STEP_SUMMARY" || true
