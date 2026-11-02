@@ -32,8 +32,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   ];
 
   Future<void> _finish() async {
-    await markOnboardingSeen();
+    // Navigation must never wait on (or be blocked by) local persistence; the
+    // platform channel is also absent in pure widget tests.
     widget.onDone();
+    try {
+      await markOnboardingSeen();
+    } catch (_) {
+      // Ignore: the next launch simply shows onboarding again.
+    }
   }
 
   @override

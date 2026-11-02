@@ -36,10 +36,13 @@ class DeepLinkService {
   static String? toLocation(Uri uri) {
     final segments = uri.pathSegments.where((p) => p.isNotEmpty).toList();
     if (uri.scheme == 'aqarrent') {
-      if (segments.isEmpty) return '/';
-      switch (segments.first) {
+      // `aqarrent://listing/<id>` parses `listing` as the host, not a path
+      // segment, so include the host as the first logical part.
+      final parts = <String>[if (uri.host.isNotEmpty) uri.host, ...segments];
+      if (parts.isEmpty) return '/';
+      switch (parts.first) {
         case 'listing':
-          return segments.length > 1 ? '/listing/${segments[1]}' : '/';
+          return parts.length > 1 ? '/listing/${parts[1]}' : '/';
         case 'contracts':
           return '/contracts';
         case 'pricing':
@@ -47,24 +50,29 @@ class DeepLinkService {
         case 'office':
           return '/office';
         case 'verify':
-          return segments.length > 1 ? '/verify/${segments[1]}' : null;
+          return parts.length > 1 ? '/verify/${parts[1]}' : null;
         default:
           return null;
       }
     }
     if (uri.host.endsWith('aqarrent.app') || uri.host.endsWith('aqar-rent.com')) {
-      if (segments.isEmpty) return '/';
-      if (segments.first == 'rent' && segments.length >= 4) {
-        // /{locale}/rent/{gov}/{city}/{id}-{slug} → native listing detail
-        final idSlug = segments.length >= 5 ? segments[4] : segments.last;
-        final id = idSlug.split('-').first;
+      // Strip an optional /ar or /en locale prefix before matching.
+      final path = segments.where((p) => p != 'ar' && p != 'en').toList();
+      if (path.isEmpty) return '/';
+      if (path.first == 'rent' && path.length >= 4) {
+        // /{locale}/rent/{gov}/{city}/{uuid}-{slug} → native listing detail.
+        final idSlug = path.length >= 5 ? path[4] : path.last;
+        final uuid = RegExp(
+          r'^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}',
+        ).firstMatch(idSlug)?.group(0);
+        final id = uuid ?? idSlug.split('-').first;
         return '/listing/$id';
       }
-      if (segments.first == 'verify' && segments.length > 1) {
-        return '/verify/${segments[1]}';
+      if (path.first == 'verify' && path.length > 1) {
+        return '/verify/${path[1]}';
       }
-      if (segments.contains('pricing')) return '/pricing';
-      if (segments.contains('offices')) return '/office';
+      if (path.contains('pricing')) return '/pricing';
+      if (path.contains('offices')) return '/office';
       return null;
     }
     return null;

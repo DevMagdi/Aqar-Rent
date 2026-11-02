@@ -187,3 +187,14 @@ error/retry state in the listing wizard, and a typed `PageTransitionsTheme`.
 `mobile/README.md` and `pubspec.yaml` now declare the SDK floor these APIs need.
 The PR gate stays `flutter analyze --fatal-infos && flutter test --coverage`.
 
+## D16 — Mobile unit/widget tests are part of the same hard gate
+
+With `flutter analyze --fatal-infos` green, `flutter test --coverage` exposed two
+genuine behavioural bugs rather than being waived: custom-scheme links such as
+`aqarrent://listing/abc-123` parse `listing` as the URI host, and locale-prefixed
+web URLs carry UUID slugs whose first hyphen is not the ID boundary. `toLocation`
+now normalises host/path parts, strips `/ar|/en`, and matches a UUID prefix.
+Onboarding's completion callback no longer depends on the SharedPreferences
+platform channel (which is absent in pure widget tests): `onDone()` fires first
+and persistence failures are caught. Both fixes are covered by `test/core_test.dart`.
+
