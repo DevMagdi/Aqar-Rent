@@ -251,3 +251,57 @@ Every decision the spec left open, made here so review is easy. Business rules
     are staged** (drag + arrow buttons) — the API has no media-reorder endpoint, so the
     final order is fixed at upload time (cover = first uploaded). Client-side compression
     targets ≤ 1.5 MB / 1920 px before upload with per-file progress + retry.
+
+## Phase 4 — contracts, handovers, hardening (4A/4B/4C)
+
+66. **Contract templates** live as editable Arabic `.txt` files under
+    `backend/app/contract_templates/` (override with `CONTRACT_TEMPLATE_DIR`)
+    — never hard-coded. Each carries the mandated header
+    “مسودة — تحتاج مراجعة محامي قبل الاستخدام الإنتاجي” and the UI/PDF state
+    *“This is a private agreement template and does not replace official
+    registration or notarization.”* No legal claims are made anywhere.
+67. **Confirmation = fresh OTP per party** on top of OTP login: `POST
+    /auth/otp/request` then `POST /contracts/{id}/confirm {otp_code}`
+    (`consume_otp` is shared with login so codes are single-use). Both
+    confirmations freeze the record: SHA-256 over the canonical JSON of
+    template+terms+parties+encrypted-NIDs, plus `confirmations_log`
+    (party, UTC time, IP, user-agent, `otp_verified`).
+68. **National IDs**: Fernet (`CONTRACT_NID_KEY`, derived from `SECRET_KEY`
+    when unset — dev only). API returns `1234******2345` masks only; full
+    values appear solely inside the party-only PDF; logs redact 14-digit runs.
+    Rotation notes: `app/core/crypto_service.py`.
+69. **Contract fee**: `CONTRACT_FEE_EGP` (default **0**, suggested50) creates a
+    normal payable order with `orders.kind=contract_fee`, `weeks=0`. Settling
+    it **never activates an ad period** (`mark_order_paid` guards on `kind`).
+    The spec's example fee is therefore configurable without touching plans.
+70. **Verification page** `/verify/{reference_no}` exposes only
+    valid/not-found + creation date + masked party names (public, no auth).
+71. **Handover immutability**: check-out may only be created from a
+    **confirmed** check-in (structure copied server-side); both parties OTP-
+    confirm; `handovers.hash` freezes the payload + media keys. Media uploads
+    re-encode images (magic bytes via PIL) and type/size-check videos.
+72. **Search at 100k (load-test findings)**: the original `newest` sort used
+    correlated subqueries in ORDER BY and timed out; final design denormalizes
+    `listings.ad_priority`/`ad_starts_at` (kept in sync by
+    `refresh_ad_rank()` on activate/cancel/expire/refund) + composite indexes
+    (`0004…0006`). Sequential p95: newest5ms, price17ms, bbox12ms, detail15ms.
+    Free-text `q` has a ~1.5s concurrent tail on SQLite — flagged for
+    pg_trigram/FTS before relying on text search under load (report).
+73. **Backfill migrations are O(n)**: correlated SQL took >10min on100k rows;
+    `0005` uses two GROUP BY passes + batched UPDATE (2.7s) and is idempotent
+    (SQLite DDL is non-transactional — a killed run can leave columns without
+    the stamp).
+74. **PostGIS is optional**: `0001` creates the `geo` GiST column only when
+    the extension is available (vanilla PostgreSQL still migrates; the ORM/
+    search use portable lat/lon either way).
+75. **Backup/restore is tested**: `scripts/backup.sh` + `restore.sh`
+    (pg_dump custom format) roundtrip-tested against a throwaway PostgreSQL
+    (`tests/test_backup_restore.py`), including index + migration version.
+76. **Mini Flutter app** (user's choice for this round): `/mobile` contains
+    login, contract list/wizard/detail (OTP confirm, PDF share) and handover
+    editor (checklist, camera upload, OTP confirm) — **not compiled in this
+    sandbox** (no Flutter SDK; `flutter create .` generates platform shells —
+    see `mobile/README.md`).
+77. **Admin console is English-only** (staff tool); the public site is
+    Arabic-first. Consent banner gates the web app (localStorage version
+    flag); retention jobs run hourly in the worker.

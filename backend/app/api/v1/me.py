@@ -58,6 +58,62 @@ def patch_me(payload: MePatch, user: CurrentUser, db: DbDep) -> UserOut:
     return UserOut(**user_dict(user))
 
 
+@router.get("/export", summary="Export all my data as JSON (privacy)")
+def export_my_data(user: CurrentUser, db: DbDep) -> dict:
+    """Data portability (privacy): profile, listings, favorites, orders,
+    notifications, contact events, reports, verification docs and the
+    contracts/handovers I take part in."""
+    from sqlalchemy import select as _s
+
+    from app.models.catalog import Listing
+    from app.models.commerce import Order
+    from app.models.identity import VerificationDocument
+    from app.models.social import (
+        ContactEvent,
+        Contract,
+        Favorite,
+        Handover,
+        HandoverMedia,
+        Notification,
+        Report,
+    )
+    from app.services.common import utcnow
+
+    def dump(obj) -> dict:
+        return {c.name: getattr(obj, c.name) for c in obj.__table__.columns}  # type: ignore[attr-defined]
+
+    def dump_list(stmt) -> list[dict]:
+        return [
+            {k: (str(v) if hasattr(v, "hex") else v) for k, v in dump(r).items()}
+            for r in db.execute(stmt).scalars().all()
+        ]
+
+    my_contracts = _s(Contract).where((Contract.owner_id == user.id) | (Contract.tenant_id == user.id))
+    contract_ids = [r.id for r in db.execute(my_contracts).scalars()]
+
+    def in_contracts(column):
+        return column.in_(contract_ids) if contract_ids else False
+
+    return {
+        "exported_at": utcnow().isoformat(),
+        "profile": dump(user),
+        "listings": dump_list(_s(Listing).where(Listing.owner_id == user.id)),
+        "favorites": dump_list(_s(Favorite).where(Favorite.user_id == user.id)),
+        "orders": dump_list(_s(Order).where(Order.owner_id == user.id)),
+        "notifications": dump_list(_s(Notification).where(Notification.user_id == user.id)),
+        "contact_events": dump_list(_s(ContactEvent).where(ContactEvent.user_id == user.id)),
+        "reports_filed": dump_list(_s(Report).where(Report.reporter_id == user.id)),
+        "verification_documents": dump_list(
+            _s(VerificationDocument).where(VerificationDocument.user_id == user.id)
+        ),
+        "contracts": dump_list(my_contracts),
+        "handovers": dump_list(_s(Handover).where(in_contracts(Handover.contract_id))),
+        "handover_media": dump_list(
+            _s(HandoverMedia).where(in_contracts(HandoverMedia.handover_id))
+        ),
+    }
+
+
 @router.delete("", response_model=Msg, summary="Delete account (anonymize, keep financial records)")
 def delete_me(user: CurrentUser, db: DbDep, storage: StorageDep) -> Msg:
     from app.models.enums import UserStatus, UserVerificationStatus

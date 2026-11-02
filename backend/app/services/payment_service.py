@@ -117,6 +117,20 @@ def mark_order_paid(
     if provider:
         order.gateway = provider
 
+    if getattr(order, "kind", "ad_period") == "contract_fee":
+        # Phase 4: contract fees settle like any order but NEVER start an ad
+        # period (weeks=0, no plan). Notification goes to the payer.
+        create_notification(
+            db,
+            order.owner_id,
+            "contract_fee_paid",
+            "تم دفع رسوم العقد ✅",
+            f"تم استلام رسوم العقد بقيمة {order.total} جنيه.",
+            {"order_id": str(order.id)},
+        )
+        db.flush()
+        return True
+
     listing = db.get(Listing, order.listing_id)
     if listing is not None:
         plan = _plan_for_order(db, order)
@@ -506,6 +520,9 @@ def _cancel_ad_periods(db: Session, order: Order, *, full: bool, fraction: Decim
                     f"أُوقف إعلان «{listing.title}» بسبب استرجاع الدفع.",
                     {"listing_id": str(listing.id), "order_id": str(order.id)},
                 )
+    from app.services.listing_service import refresh_ad_rank
+
+    refresh_ad_rank(db, order.listing_id)
     return True
 
 

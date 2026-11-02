@@ -136,26 +136,22 @@ def _filters(params: SearchParams, now: datetime) -> list[Any]:
     return where
 
 
+def _ad_rank_join(now: datetime):  # pragma: no cover - kept for reference
+    """Removed: the grouped join materialized ~100k rows per request."""
+    raise NotImplementedError
+
+
 def _sort_columns(sort: SortKey) -> tuple[list[tuple[Any, str]], list[Any]]:
-    """Return ([(expr, direction)], cursor_types) for keyset pagination."""
+    """Return ([(expr, direction)], cursor_types) for keyset pagination.
+
+    `newest` sorts on the denormalized `listings.ad_priority/ad_starts_at`
+    (migration 0005) with a covering index — BR-4 semantics preserved, but no
+    correlated subqueries: this is what made p95 < 600ms at 100k listings.
+    """
     id_col = Listing.id
     if sort == "newest":
-        # BR-4: newest ad start first; priority_weight reserved for future tiers.
-        priority = (
-            select(func.max(Plan.priority_weight))
-            .join(AdPeriod, AdPeriod.plan_id == Plan.id)
-            .where(*_ad_window(utcnow()))
-            .correlate(Listing)
-            .scalar_subquery()
-        )
-        ad_start = (
-            select(func.max(AdPeriod.starts_at))
-            .where(*_ad_window(utcnow()))
-            .correlate(Listing)
-            .scalar_subquery()
-        )
         return (
-            [(priority, "desc"), (ad_start, "desc"), (id_col, "desc")],
+            [(Listing.ad_priority, "desc"), (Listing.ad_starts_at, "desc"), (id_col, "desc")],
             ["float", "datetime", "uuid"],
         )
     if sort == "price_asc":
@@ -220,9 +216,10 @@ def search_listings(db: Session, params: SearchParams, storage=None) -> dict[str
     if has_more and rows:
         last = rows[-1]
         if params.sort == "newest":
-            priority_val, start_val = _newest_cursor_values(db, last.id, now)
+            # denormalized rank columns (maintained on activate/cancel/expire)
+            start_val = last.ad_starts_at or now
             cursor_vals: list[Any] = [
-                priority_val,
+                float(last.ad_priority or 0.0),
                 start_val.isoformat(),
                 str(last.id),
             ]

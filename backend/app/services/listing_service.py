@@ -324,6 +324,34 @@ def has_valid_ad(db: Session, listing_id: uuid.UUID, now=None) -> bool:
     return row is not None
 
 
+def refresh_ad_rank(db: Session, listing_id: uuid.UUID, now=None) -> None:
+    """Recompute the denormalized newest-sort rank (priority, ad start).
+
+    Called whenever ad periods start, are cancelled, refunded or expire so
+    `ORDER BY ad_priority, ad_starts_at` always matches BR-4 semantics.
+    """
+    from app.models.catalog import Plan
+    from app.models.commerce import AdPeriod
+
+    row = db.execute(
+        select(
+            func.max(AdPeriod.starts_at),
+            func.max(Plan.priority_weight),
+        )
+        .join(Plan, Plan.id == AdPeriod.plan_id)
+        .where(
+            AdPeriod.listing_id == listing_id,
+            AdPeriod.status == "active",
+        )
+    ).one()
+    listing = db.get(Listing, listing_id)
+    if listing is None:  # pragma: no cover - FK guarantees
+        return
+    listing.ad_starts_at = row[0]
+    listing.ad_priority = float(row[1] or 0.0)
+    db.flush()
+
+
 def activate_listing(
     db: Session,
     listing: Listing,
@@ -360,6 +388,7 @@ def activate_listing(
     if listing.published_at is None:
         listing.published_at = starts
     db.flush()
+    refresh_ad_rank(db, listing.id)
     return period
 
 

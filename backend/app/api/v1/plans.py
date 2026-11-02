@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from typing import Any
 from uuid import UUID
 
 from fastapi import APIRouter
@@ -32,22 +33,50 @@ router = APIRouter(tags=["plans & orders"])
 
 
 @router.get("/plans", response_model=list[PlanOut], summary="Active ad plans (Public)")
-def list_plans(db: DbDep) -> list[PlanOut]:
-    """BR-1: prices live in the plans table — never hard-coded in the client."""
+def list_plans(db: DbDep, settings: SettingsDep) -> list[PlanOut]:
+    """BR-1: prices live in the plans table — never hard-coded in the client.
+
+    Cached (Redis/in-process TTL) — plan prices change rarely.
+    """
+    from app.core.cache import cache_get, cache_set
+
+    cached = cache_get("plans:active", ttl_seconds=600, settings=settings)
+    if cached is not None:
+        return [
+            PlanOut(
+                id=row["id"],
+                name=row["name"],
+                price_egp=row["price_egp"],
+                duration_days=row["duration_days"],
+                priority_weight=row["priority_weight"],
+            )
+            for row in cached
+        ]
     rows = (
         db.execute(select(Plan).where(Plan.active.is_(True)).order_by(Plan.priority_weight, Plan.created_at))
         .scalars()
         .all()
     )
+    payload: list[dict[str, Any]] = [
+        {
+            "id": str(p.id),
+            "name": p.name,
+            "price_egp": float(p.price_egp),
+            "duration_days": p.duration_days,
+            "priority_weight": p.priority_weight,
+        }
+        for p in rows
+    ]
+    cache_set("plans:active", payload, ttl_seconds=600, settings=settings)
     return [
         PlanOut(
-            id=str(p.id),
-            name=p.name,
-            price_egp=float(p.price_egp),
-            duration_days=p.duration_days,
-            priority_weight=p.priority_weight,
+            id=row["id"],
+            name=row["name"],
+            price_egp=row["price_egp"],
+            duration_days=row["duration_days"],
+            priority_weight=row["priority_weight"],
         )
-        for p in rows
+        for row in payload
     ]
 
 

@@ -1,278 +1,213 @@
-# Aqar Rent — إيجار مباشر
+# Aqar Rent — عقار ربنا
 
-A broker-free rental marketplace for Egypt. Owners pay a **flat 500 EGP per 7 days per listing**
-to advertise — the platform takes **no commission**, never holds rent or deposits, and never
-mediates money between landlord and tenant. Arabic-first (RTL), English secondary.
+A broker-free rental marketplace for Egypt. Owners pay a **flat ad fee
+(500 EGP / 7 days per listing — price lives in the `plans` table)** — the
+platform takes **no commission**, never holds rent or deposits, and never
+mediates money between landlord and tenant. Arabic-first (RTL), English
+secondary.
 
-> **Status:** Phase 1 (backend core) + Phase 2 (payments: Paymob/Mock, orders, promo,
-> receipts, refunds, bank transfers) are implemented and tested (108 backend tests).
-> Phase 3A is implemented: `/web` (Next.js), `/admin` (React+Vite) and the Playwright
-> **owner-journey e2e** (`e2e/`, hermetic stack). Phase 3B (Flutter `/mobile` + notification
-> delivery) and Phase 4 (contracts) are next — see [Roadmap](#roadmap).
+> **Status — everything below is implemented and tested:**
+> - **Phase 1** backend core (OTP auth, locations, listings+media, verification,
+>   moderation, search, admin API) — 108 tests
+> - **Phase 2** payments (Paymob card/wallet/Fawry + MockProvider for dev,
+>   orders/promos/receipts/refunds/bank transfers) — 112 tests
+> - **Phase 3A** `/web` (Next.js), `/admin` (React+Vite), Playwright e2e
+> - **Phase 3B (mini)** Flutter `/mobile` — contract & handover screens
+> - **Phase 4A** standard lease contracts (templates, dual-OTP confirmation,
+>   SHA-256 immutability, Arabic PDF + QR, encrypted national IDs, optional
+>   contract fee, public `/verify/{ref}`) — web + Flutter clients
+> - **Phase 4B** handovers (check-in/check-out checklists, media, dual-OTP,
+>   side-by-side diff, Arabic PDFs) — web + Flutter clients
+> - **Phase 4C** hardening & launch readiness: security/privacy/reliability/
+>   performance/DevOps/launch-kit docs + code (see [/docs](#docs))
+>
+> Test totals: **backend141** (pytest) · **web15** (vitest) · **e2e7 specs**
+> (Playwright) · ruff + mypy clean · CI green.
 
 ---
 
 ## Repository layout
 
 ```
-/           backend/      FastAPI + SQLAlchemy 2 + Alembic (Python 3.12)
-            web/          Next.js public site + owner dashboard   (Phase 3)
-            mobile/       Flutter app (Android + iOS)             (Phase 3)
-            admin/        React + Vite admin panel                (Phase 3)
-            docs/         OpenAPI export + API collection
-            docker-compose.yml   api · worker · postgres+postgis · redis · minio
-            Makefile      make up / test / seed / lint …
+backend/    FastAPI + SQLAlchemy 2 + Alembic (Python 3.12) — API, worker, migrations0001…0006
+web/        Next.js 16 App Router (TS + Tailwind 4) — public site, tenant & owner flows, contracts
+admin/      React 19 + Vite 8 (Tailwind 4) — staff console (moderation/finance/super-admin)
+mobile/     Flutter mini app — contract + handover screens (see mobile/README.md)
+e2e/        Playwright suite (7 specs) on a hermetic stack (:8010/:3010/:5180)
+docs/       OpenAPI + Postman collection + architecture/runbooks/security/privacy/load-test/UAT
+scripts/    backup.sh / restore.sh (tested)
+loadtest/   Locust suite + checkout bench (100k-listing report in docs/load-test/)
+docker-compose.yml          dev stack: api · worker · postgres+postgis · redis · minio
+docker-compose.staging.yml  staging stack (production images)
+Makefile     make up / test / lint / e2e / web / admin …
 ```
+
+---
 
 ## Quick start
 
 ### 1) Docker (recommended — full stack)
 
 ```bash
-cp .env.example .env        # then change SECRET_KEY + staff passwords
-make up                     # builds & starts api, worker, postgres+postgis, redis, minio
-make migrate                # alembic upgrade head (full schema + PostGIS geo column)
-make seed                   # 27 governorates, cities/districts, default plan, super admin
+cp .env.example .env        # change SECRET_KEY + staff passwords
+make up                     # api, worker, postgres+postgis, redis, minio
+make migrate                # alembic upgrade head
+make seed                   # 27 governorates, plan (500 EGP/7d), super admin
+make seed-demo              # + demo owner/tenant/listings with media
 ```
 
-* API + Swagger UI: <http://localhost:8000/docs>
-* MinIO console: <http://localhost:9001> (minioadmin / minioadmin)
-* Worker runs the hourly jobs (ad expiry, Fawry 48h expiry, reminders, report threshold).
+* API + Swagger UI: <http://localhost:8000/docs> · health: `/health`,
+  readiness: `/ready`, metrics: `/metrics`
+* MinIO console: <http://localhost:9001> (minioadmin/minioadmin)
+* Web: `make web` → <http://localhost:3000/ar> · Admin: `make admin` →
+  <http://localhost:5173> (seeded login `admin@aqar-rent.dev` /
+  `ChangeMeAdmin!2026` + TOTP secret `JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP` — dev
+  defaults only; prod refuses to start without real `STAFF_SUPER_ADMIN_*`)
 
 ### 2) Local development (no Docker)
 
 ```bash
-cd backend
+# backend
 python3.12 -m venv .venv && source .venv/bin/activate
-pip install -r requirements-dev.txt
-export DATABASE_URL="postgresql+psycopg://aqar:aqar@localhost:5432/aqar"  # or sqlite:///./dev.db
-alembic upgrade head
-python -m app.scripts.seed --demo        # --demo adds owner/tenant/listings
+pip install -r backend/requirements-dev.txt
+export DATABASE_URL="sqlite:///./dev.db"   # or postgresql+psycopg://…
+cd backend && alembic upgrade head && python -m app.scripts.seed --demo
 uvicorn app.main:app --reload --port 8000
+
+# web (separate shell)
+cd web && npm install
+BACKEND_URL=http://localhost:8000 NEXT_PUBLIC_MOCK_PAY=true npm run dev   # :3000
+
+# admin (separate shell)
+cd admin && npm install
+BACKEND_URL=http://localhost:8000 npm run dev                            # :5173
 ```
 
 ### Tests & quality
 
 ```bash
-make test        # pytest + coverage (SQLite by default; ~78 tests, 93% coverage)
-make lint        # ruff check
+make test        # backend pytest (SQLite; TEST_DATABASE_URL for PostgreSQL)
+make lint        # ruff
 make typecheck   # mypy (mypy-lite config)
+cd web  && npx tsc --noEmit && npx vitest run   # types +15 unit tests
+cd admin && npx tsc --noEmit && npm run build
+make e2e         # Playwright: 7 specs on a hermetic stack (fresh SQLite)
 ```
 
-The same suite runs against **PostgreSQL + PostGIS** when `TEST_DATABASE_URL` is set
-(CI runs both variants — see `.github/workflows/ci.yml`).
+---
 
-## Architecture
+## Feature map (as built)
 
-```mermaid
-flowchart LR
-    subgraph Clients
-        W[Web — Next.js RTL<br/>public SEO + owner dashboard]
-        A[Android / iOS — Flutter]
-        AD[Admin panel — React + Vite]
-    end
+### Public site (`web/`)
 
-    subgraph Stack["docker-compose stack"]
-        API["API — FastAPI<br/>/api/v1 · Swagger /docs"]
-        WK["Worker — ARQ<br/>hourly jobs"]
-        DB[("PostgreSQL 16 + PostGIS<br/>listings.geo · GiST index")]
-        RD[("Redis")]
-        S3[("MinIO / S3<br/>media + private documents")]
-    end
+- Home (search bar + quick filters + latest), results **list + map sharing
+  one filter state** (price, type, rental type, furnished, bedrooms, baths,
+  area, floor, amenities, available-from, bbox; sort newest/price/area;
+  infinite scroll 20/page; “search this area”), listing detail, six static
+  pages (about, how-it-works, terms, privacy, content-rules, support).
+- SEO: `/{locale}/rent/{gov}/{city}/{uuid}-{slug}` permalinks, sitemap.xml,
+  robots.txt, canonical + hreflang, OG images (`/og`), JSON-LD
+  `Residence`+`Offer`, `next/image` thumbnails, bundled Amiri font.
+- MapLibre GL with **env-driven raster tiles** (no paid key), HTML price
+  pins, GeoJSON clustering; detail page shows an approximate 150 m circle with
+  login-gated exact reveal.
 
-    W --> API
-    A --> API
-    AD -->|/api/v1/admin · staff 2FA| API
-    API --> DB
-    API --> S3
-    API -->|rate-limits / future queues| RD
-    WK --> DB
-    WK --> RD
-    WK --> S3
-    API -.OTP console/SMS provider.-> API
-```
+### Authenticated (web)
 
-### Request flow (listing lifecycle)
+- OTP login (resend timer), profile/language/delete-account, favorites,
+  notifications center, **owner dashboard** (views/contacts/days-left, renew,
+  mark-rented), **6-step add/edit wizard** (draft autosave, photos 3–15
+  client-compressed ≤1.5 MB with progress/retry/reorder, Arabic validation),
+  verification upload, **checkout** (weeks 1–4, promo with live totals,
+  card/Fawry/Vodafone/bank + receipt upload, success/pending/failed screens,
+  receipts PDF).
 
-```mermaid
-stateDiagram-v2
-    [*] --> Draft: POST /listings
-    Draft --> Submitted: POST /listings/{id}/submit\n(3–15 photos, proof uploaded, no dup photo)
-    Submitted --> Approved: moderator approve\n(BR-6: verified owner)
-    Submitted --> Rejected: preset reason
-    Rejected --> Draft: owner edits & resubmits
-    Approved --> Active: paid ad period opens\n(Phase 2 gateway / bank approval)
-    Active --> Expired: hourly job past ends_at\n(hidden from search — BR-3)
-    Expired --> Active: owner renews order
-    Active --> Rented: owner marks rented
-    Active --> Submitted: 3 distinct reports\n(auto-moderation)
-    Active --> Removed: admin removes
-```
+### Contracts & handovers (Phase 4A/4B — web + API + mini Flutter)
 
-## Environment variables
+- Editable Arabic **template files** (`backend/contract_templates/*.txt`) —
+  residential unfurnished / furnished / commercial, each headed
+  “مسودة — تحتاج مراجعة محامي…”. UI and PDF state: *“This is a private
+  agreement template and does not replace official registration or
+  notarization.”*
+- Wizard: both parties’ names + national IDs (**Fernet-encrypted at rest**,
+  masked in the API, never logged), unit address prefilled from the listing,
+  dates, rent, yearly increase, deposit + refund deadline (default 30 days),
+  payment day, utilities, termination, notes.
+- API: `POST/GET/PATCH /contracts`, `POST /contracts/{id}/request-confirmation`,
+  `POST /contracts/{id}/confirm` (**fresh OTP per party**),
+  `GET /contracts/{id}/pdf`, `POST /contracts/{id}/fee-order`
+  (`orders.kind=contract_fee`, default0 EGP via `CONTRACT_FEE_EGP`,
+  suggested50), public `GET /verify/{reference_no}`.
+- On **both** confirmations the contract freezes: SHA-256 of the final terms,
+  timestamps + IPs + device info in `confirmations_log`, Arabic PDF
+  (Amiri + reshaper/bidi) with reference number, **QR → /verify/{ref}** and
+  the confirmation log.
+- Handovers: `POST /contracts/{id}/handovers` (check-in; check-out **from** a
+  confirmed check-in), `PATCH`, `POST /handovers/{id}/media` (photos/videos,
+  re-encoded), `POST /handovers/{id}/confirm` (dual OTP → immutable hash),
+  `GET /handovers/{id}/pdf`; web UI shows the **side-by-side** room/condition
+  diff + meter differences; clients: web + mini Flutter app.
 
-| Variable | Default | Description |
-|---|---|---|
-| `APP_ENV` | `dev` | `dev` \| `test` \| `prod` (prod refuses weak seeded admin) |
-| `DEBUG` | `false` | When true, OTP codes are returned in the response (dev only) |
-| `SECRET_KEY` | dev value | **Required in prod** — signs JWTs, OTP hashes, file tokens |
-| `CORS_ORIGINS` | `*` | Comma-separated allowed origins |
-| `DATABASE_URL` | `postgresql+psycopg://aqar:aqar@localhost:5432/aqar` | SQLAlchemy URL |
-| `REDIS_URL` | `redis://localhost:6379/0` | Worker + future queues |
-| `JWT_ACCESS_MINUTES` | `15` | Access token lifetime |
-| `JWT_REFRESH_DAYS` | `30` | Refresh token lifetime |
-| `BCRYPT_ROUNDS` | `12` | Staff password hashing cost |
-| `OTP_PROVIDER` | `console` | OTP provider interface impl (`console` in dev) |
-| `OTP_TTL_MINUTES` | `5` | OTP validity |
-| `OTP_MAX_ATTEMPTS` | `5` | Wrong-code attempts before burn |
-| `OTP_MAX_PER_HOUR` | `5` | Requests per phone number per hour |
-| `STORAGE_BACKEND` | `local` | `local` (dev) \| `s3` (MinIO in docker) |
-| `STORAGE_LOCAL_ROOT` | `./data/storage` | Local media root |
-| `S3_ENDPOINT_URL` / `S3_PUBLIC_ENDPOINT_URL` | `http://localhost:9000` | Internal vs browser-reachable MinIO |
-| `S3_ACCESS_KEY` / `S3_SECRET_KEY` | `minioadmin` | Object-storage credentials |
-| `S3_BUCKET_MEDIA` / `S3_BUCKET_DOCUMENTS` | `aqar-media` / `aqar-documents` | Buckets (documents = private) |
-| `STAFF_SUPER_ADMIN_EMAIL` | `admin@aqar-rent.dev` | Seeded super admin |
-| `STAFF_SUPER_ADMIN_PASSWORD` | — | **Required in prod** |
-| `STAFF_SUPER_ADMIN_TOTP_SECRET` | — | Base32 TOTP secret (2FA) |
-| `BANK_NAME` / `BANK_ACCOUNT_*` / `BANK_IBAN` / `BANK_SWIFT` | example values | Bank-transfer instructions |
-| `PAYMENT_PROVIDER` | `mock` | `mock` (offline dev/tests) \| `paymob` (production) |
-| `WEBHOOK_SECRET` | empty | HMAC secret for **mock** webfalls (falls back to `SECRET_KEY`) |
-| `WEBHOOK_IP_ALLOWLIST` | empty | Comma-separated IPs/CIDRs allowed to `POST /payments/webhook` (empty = all) |
-| `ORDER_RATE_LIMIT_PER_HOUR` | `30` | `POST /orders` per-user rate limit |
-| `BANK_RECEIPT_MAX_MB` | `5` | Bank-transfer receipt upload cap |
-| `PAYMOB_API_KEY` | empty | Paymob Accept API key (auth token) |
-| `PAYMOB_INTEGRATION_ID_CARD` / `_WALLET` / `_FAWRY` | empty | Integration ids: card iframe, Vodafone Cash, Fawry kiosk |
-| `PAYMOB_HMAC_SECRET` | empty | Callback HMAC-SHA512 secret (dashboard → Settings → Webhooks) |
-| `PAYMOB_IFRAME_ID` | empty | Card iframe id |
-| `PAYMOB_BASE_URL` | `https://accept.paymob.com` | Gateway base; `PAYMOB_*_URL` / `PAYMOB_IFRAME_URL_TEMPLATE` override individual endpoints |
-| `FAWRY_EXPIRY_HOURS` | `48` | Pending Fawry/Vodafone-Cash orders auto-expire (hourly job) |
-| `LOG_LEVEL` | `INFO` | Logging level |
+### Staff console (`admin/`)
 
-## API overview
+Dashboard KPIs + conversion funnel · moderation (approve / reject presets) ·
+verification queue (signed-URL viewer) · reports (4 API actions) · users
+(ban/unban, caps) · payments + revenue + refunds + CSV · bank approvals ·
+plans/promos CRUD · staff role matrix + audit activity · audit log with
+before/after diffs · read-only settings presets. Login = email + password +
+**TOTP 2FA**.
 
-Base: `/api/v1` · Bearer auth for logged-in users · standard error body
-`{code, message, details}` · cursor pagination (`cursor` + `next_cursor`).
+### Backend hardening (Phase 4C — code)
 
-| Area | Endpoints |
+- `CommitBeforeSendMiddleware` — commits before the response hits the wire
+  (kills keep-alive read-your-writes races).
+- **Retention jobs**: verification docs purged 90 days after a final decision
+  (unless an open report), contact events after 12 months.
+- **`GET /me/export`** — full JSON data export; delete-account endpoint.
+- **Log redaction** — phones/NIDs/tokens masked (`[PHONE]`, `[NID]`, `[TOKEN]`).
+- **Prometheus** `/metrics` (request latency, webhook/payment/job failure
+  counters) · `/ready` readiness (DB) · optional **Sentry** via `SENTRY_DSN`.
+- **Security headers + prod CSP** · in-process/Redis **cache** for locations
+  & plans (`REDIS_URL`, disabled under test) · funnel
+  `GET /admin/analytics/funnel`.
+- **Search at scale**: denormalized `ad_priority`/`ad_starts_at` sort keys +
+  composite indexes — p95 **5 ms** sequential at 100k listings
+  (report: `docs/load-test/report.md`).
+
+---
+
+## Documentation (/docs)
+
+| Doc | Contents |
 |---|---|
-| Auth (public) | `POST /auth/otp/request`, `/auth/otp/verify`, `/auth/refresh`, `/auth/logout` |
-| Me | `GET/PATCH/DELETE /me`, `POST /me/devices`, `POST/GET /me/verification`, `GET /me/listings`, `GET /me/orders` |
-| Locations (public) | `GET /locations?parent_id=` |
-| Listings | `POST /listings`, `PATCH /listings/{id}`, `POST/DELETE /listings/{id}/media[...]`, `POST /listings/{id}/submit`, `POST /listings/{id}/mark-rented` |
-| Search (public) | `GET /listings` (q, governorate/city/district, price, type, furnished, beds/baths, area, floor, amenities, available_from, bbox, sort, cursor, limit≤50), `GET /listings/{id}` (`exact=true` for the precise pin), `GET /listings/{id}/contact` |
-| Favorites / Reports | `PUT/DELETE /favorites/{id}`, `GET /favorites`, `POST /listings/{id}/report` |
-| Plans / Orders | `GET /plans`, `POST /orders` (BR-5: only after approval; returns `checkout_url`), `GET /orders/{id}`, `POST /orders/{id}/checkout` (re-mint), `POST /promo/validate` |
-| Payments | `POST /payments/webhook` (public, HMAC + idempotent), `POST /orders/{id}/bank-receipt`, `GET /orders/{id}/bank-receipt`, `GET /orders/{id}/receipt` (PDF) |
-| Notifications | `GET /notifications`, `POST /notifications/read` |
-| Files | `GET /files/public/{path}` (media), `GET /files?…` (signed private docs) |
-| Admin | `POST /admin/auth/login` (+TOTP), dashboard, moderation approve/reject, verification decisions, reports actions, users ban/cap, payments (filters: date/status/method/owner) + revenue (daily/monthly/by method) + CSV + refunds, **bank transfers** (`GET /admin/bank-transfers`, approve/reject), plans & promo CRUD, audit logs |
+| `docs/openapi.json` / `docs/api-collection.json` | full API surface (74 paths) + Postman collection |
+| `docs/architecture.md` | system diagram, services, domain rules, hardening |
+| `docs/runbook.md` | moderation SLA24h, reports/bans, refunds, bank approvals, alert rules |
+| `docs/deploy.md` | env separation, staging compose, CI/CD, migrations, rollback, CDN |
+| `docs/backup-restore.md` | pg_dump/restore procedure — **covered by an automated roundtrip test** |
+| `docs/security/owasp-checklist.md` | OWASP Top 10 with evidence |
+| `docs/security/threat-model.md` | broker-impersonation & fake-listing abuse |
+| `docs/security/dependency-report.md` | pip-audit + npm audit results (0 vulns) + CI gates |
+| `docs/privacy/pdpl-note.md` | data inventory, retention, user rights — **flagged for legal review** |
+| `docs/load-test/report.md` | 100k-listing load test, p95 vs targets, fixes found |
+| `docs/uat/plan.md` | acceptance-criteria checklist mapped to automated evidence + manual script |
+| `docs/launch-checklist.md` | pilot plan (1–2 districts), FIRSTAD promo, go-live blockers, store submission |
+| `ASSUMPTIONS.md` | every decision/deviation (items 1–70) |
 
-Interactive docs: **<http://localhost:8000/docs>** · Exported spec: [`docs/openapi.json`](docs/openapi.json) ·
-Collection: [`docs/api-collection.json`](docs/api-collection.json) (Postman **and** Bruno import).
+## Operations cheatsheet
 
-## Payments (Phase 2)
-
-The platform's **only revenue is the ad fee** (500 EGP / 7 days from `plans`, BR-1) —
-never rent, never deposits, never commission (BR-10). Cards, Fawry and Vodafone Cash run
-through **Paymob**; bank transfers are manual (owner uploads a receipt → Finance approves →
-the ad starts). 100 %-discount promo orders skip the gateway and go live immediately.
-
-### Card / wallet / Fawry checkout + webhook
-
-```mermaid
-sequenceDiagram
-    participant O as Owner (mobile/web)
-    participant A as Aqar API
-    participant G as Gateway (Paymob / Mock)
-    participant W as Webhook POST /payments/webhook
-
-    O->>A: POST /orders {listing_id, weeks, method, promo?}
-    A->>A: BR-1 price · BR-2 weeks · BR-5 approved? · BR-7 cap · atomic promo
-    A->>G: create_payment (Paymob: auth → order → payment key / invoice)
-    A-->>O: 201 {id, checkout_url, payment_reference, expires_at}
-    O->>G: pays (card iframe / wallet invoice / Fawry code)
-    G->>W: callback (?hmac= for Paymob, ?sig= for mock)
-    W->>W: verify signature → SELECT … FOR UPDATE order → idempotent on gateway_txn_id
-    W->>A: payment row + ad_period (stacks after current period) + notification
-    W-->>G: 200 fast (receipt PDF pre-generated by the worker)
-    A-->>O: listing Active, visible in search (BR-3)
+```bash
+make test && make lint && make typecheck   # backend gates
+make e2e                                    # full Playwright suite
+DATABASE_URL=… ./scripts/backup.sh          # daily backup (docs/backup-restore.md)
+curl :8000/ready  :8000/metrics             # probes
 ```
-
-### Bank transfer (manual)
-
-```mermaid
-sequenceDiagram
-    participant O as Owner
-    participant A as Aqar API
-    participant F as Finance (admin)
-    O->>A: POST /orders {method: bank_transfer}
-    A-->>O: bank instructions + unique reference AQR-…
-    O->>A: POST /orders/{id}/bank-receipt (image)
-    A->>F: bank_transfers queue (pending)
-    F->>A: POST /admin/bank-transfers/{id}/approve | reject {reason}
-    alt approved
-        A->>A: payment paid + ad period opens + notification bank_transfer_approved
-    else rejected
-        A->>O: notification bank_transfer_rejected → owner re-uploads
-    end
-```
-
-**Refunds (BR-8):** `POST /admin/payments/{id}/refund` (Finance) calls `provider.refund`,
-records the `refunds` row, then **cancels** the order's ad period on a full refund or
-**shortens it proportionally** on a partial one — the listing leaves search as soon as no
-period is running. Every action is audit-logged and notifies the owner.
-
-**Receipts:** `GET /orders/{id}/receipt` streams an Arabic-capable PDF (embedded Amiri
-font, OFL) with receipt no., owner, listing, weeks, period dates, subtotal, discount,
-total, method and date; stored under `receipts/` in object storage. The worker sweep
-(`receipt_sweep`, every 10 min) pre-generates them so the webhook stays fast.
-
-### Going live with Paymob — checklist
-
-1. Create the Accept integration(s) in the Paymob dashboard → card, **Vodafone Cash**
-   wallet, **Fawry/kiosk**; copy their integration ids.
-2. `PAYMOB_API_KEY`, `PAYMOB_INTEGRATION_ID_CARD/_WALLET/_FAWRY`, `PAYMOB_IFRAME_ID` set.
-3. Set the webhook URL in the dashboard (Settings → Webhooks) to
-   `https://<your-host>/api/v1/payments/webhook` and copy the **HMAC secret** into
-   `PAYMOB_HMAC_SECRET` (verification is HMAC-SHA512 over the 20 ordered callback fields,
-   passed as `?hmac=` — implemented in `PaymobProvider.verify_webhook`).
-4. `PAYMENT_PROVIDER=paymob`, `WEBHOOK_IP_ALLOWLIST` = Paymob egress ranges if known.
-5. `DEBUG=false`, real `SECRET_KEY`, prod admin secrets (no fallbacks), HTTPS only.
-6. Sandbox end-to-end: card test payment → webhook → ad active → receipt downloadable →
-   refund → ad stops; repeat for Fawry reference and Vodafone Cash invoice.
-7. Enable the `worker` container (hourly expiry jobs + receipt sweep) and watch the first
-   `ad_expired` / `payment_confirmed` notifications land.
-
-## Business rules (enforced in code + tests)
-
-| # | Rule | Where |
-|---|---|---|
-| BR-1 | 500 EGP / 7 days stored in `plans`, never hard-coded | `order_service.get_default_plan`, `GET /plans`, tests |
-| BR-2 | 1–4 weeks per purchase; total = weeks × plan price | `OrderCreateIn(weeks 1..4)`, `compute_totals` |
-| BR-3 | Visible only during an active paid ad period; expiry → hidden ≤1h | search `EXISTS ad_period`, `jobs.end_expired_ad_periods` |
-| BR-4 | Default ranking = newest ad start; `priority_weight` for future tiers | `search_service._sort_columns` |
-| BR-5 | Payment only after moderator approval | `order_service.create_order` → `ORDER_NOT_APPROVED` |
-| BR-6 | Ownership proof uploaded before submit, approved before first approval | `listing_service.submit_listing`, `moderation_service.approve_listing` |
-| BR-7 | Max 5 active listings/user (Super Admin can raise) | `listing_service.check_listing_cap`, `PATCH /admin/users/{id}` |
-| BR-8 | Refunds full/partial by Finance | `POST /admin/payments/{id}/refund` |
-| BR-9 | Promo codes: percent/free weeks, max uses, expiry | `order_service.validate_promo`, promo CRUD |
-| BR-11 | Owner phone only for logged-in users; every reveal logged | `GET /listings/{id}/contact` → `contact_events` |
-| BR-12 | Real photos (3–15), monthly EGP price, no phone numbers in text/photos | submit checks + perceptual-hash duplicate detection |
 
 ## Roadmap
 
-* **Phase 2 — Payments:** ✅ done — `PaymentProvider` (Mock + Paymob for card/Fawry/
-  Vodafone Cash), HMAC-verified idempotent webhook with row locks, bank-transfer receipt +
-  Finance approval, ad activation & stacked renewals, hourly 48 h order expiry, Arabic PDF
-  receipts, refunds that shorten/cancel ad periods, revenue breakdowns + CSV.
-* **Phase 3 — Clients:** Next.js public site + owner dashboard, React admin panel, Flutter app,
-  notifications, favorites, reports UI.
-* **Phase 4 — Contracts:** lease PDF generator (private agreement template — not a substitute
-  for official registration), handover checklists, hardening & load-testing notes.
-
-See [ASSUMPTIONS.md](ASSUMPTIONS.md) for every decision made where the spec left room.
-
-## License / legal notes
-
-Contract templates produced by the platform are **private agreements** and do **not** replace
-official lease registration with Egyptian authorities.
+- **Phase 4 remaining go-live items** (see `docs/launch-checklist.md`):
+  Paymob live keys, lawyer review of contract templates/terms, tax/commercial
+  registration, production map tiles, SMS/WhatsApp providers, store accounts.
+- **Phase 5 ideas**: contract-fee paid tier, image forensics at moderation,
+  pg_trigram full-text search, push/WhatsApp delivery channels (design in
+  notifications table already).

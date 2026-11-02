@@ -1,0 +1,66 @@
+name: Deploy staging
+
+# Builds production images on every push to main and deploys them to the
+# staging host when the STAGING_* secrets are configured (see docs/deploy.md).
+# Without secrets the build still runs (image build = deploy readiness check).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  REGISTRY: ghcr.io
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - name: api
+            context: ./backend
+          - name: web
+            context: ./web
+          - name: admin
+            context: ./admin
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}-${{ matrix.name }}
+          tags: type=sha,prefix=,type=raw,value=latest
+      - uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy-staging:
+    needs: build
+    runs-on: ubuntu-latest
+    # requires: STAGING_HOST, STAGING_SSH_KEY, STAGING_USER (repository secrets)
+    if: ${{ vars.STAGING_HOST != '' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ vars.STAGING_HOST }}
+          username: ${{ vars.STAGING_USER || 'deploy' }}
+          key: ${{ secrets.STAGING_SSH_KEY }}
+          script: |
+            cd /srv/aqar-rent
+            git pull --ff-only
+            docker compose -f docker-compose.staging.yml --env-file .env.staging pull || true
+            docker compose -f docker-compose.staging.yml --env-file .env.staging up -d --build
+            docker compose -f docker-compose.staging.yml --env-file .env.staging run --rm api alembic upgrade head

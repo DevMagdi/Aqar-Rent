@@ -1,0 +1,82 @@
+# Staging stack (Phase 4C #5): production images + staging env file.
+#   cp .env.staging.example .env.staging   # fill secrets
+#   docker compose -f docker-compose.staging.yml --env-file .env.staging up -d
+#   docker compose -f docker-compose.staging.yml --env-file .staging run api alembic upgrade head
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aqar}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set in .env.staging}
+      POSTGRES_DB: ${POSTGRES_DB:-aqar}
+    volumes:
+      - pgdata_staging:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-aqar} -d ${POSTGRES_DB:-aqar}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-aqar}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?set in .env.staging}
+    volumes:
+      - minio_staging:/data
+
+  api:
+    build:
+      context: ./backend
+    env_file: .env.staging
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_started
+      minio:
+        condition: service_started
+    ports:
+      - "${API_PORT:-8000}:8000"
+    command: sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+  worker:
+    build:
+      context: ./backend
+    env_file: .env.staging
+    depends_on:
+      - api
+    command: python -m app.worker
+
+  web:
+    build:
+      context: ./web
+      args:
+        BACKEND_URL: http://api:8000
+        NEXT_PUBLIC_SITE_URL: ${SITE_URL:-http://localhost:3000}
+        NEXT_PUBLIC_MAP_TILES_URL: ${MAP_TILES_URL:-https://tile.openstreetmap.org/{z}/{x}/{y}.png}
+    depends_on:
+      - api
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+
+  admin:
+    build:
+      context: ./admin
+    depends_on:
+      - api
+    ports:
+      - "${ADMIN_PORT:-5173}:80"
+
+volumes:
+  pgdata_staging:
+  minio_staging:

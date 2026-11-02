@@ -38,6 +38,16 @@ SETS = {
         ((30, 110, 200), [(240, 40, 760, 560)]),
         ((200, 220, 50), [(40, 40, 760, 160), (40, 220, 340, 560)]),
     ],
+    "apiE": [  # contract spec
+        ((110, 45, 160), [(90, 70, 700, 320)]),
+        ((45, 150, 120), [(30, 30, 380, 560), (430, 90, 770, 420)]),
+        ((230, 175, 60), [(70, 50, 740, 210), (90, 300, 560, 570)]),
+    ],
+    "apiF": [  # handover spec (same owner as contract spec → must differ)
+        ((85, 130, 210), [(50, 90, 730, 380), (50, 430, 300, 580)]),
+        ((190, 70, 110), [(120, 40, 640, 250)]),
+        ((60, 190, 90), [(30, 30, 770, 140), (30, 200, 500, 580)]),
+    ],
 }
 
 
@@ -47,15 +57,17 @@ def make(path: str, bg, rects, seed: int) -> None:
     d = ImageDraw.Draw(img)
     for i, r in enumerate(rects):
         d.rectangle(r, fill=(240 - i * 40, 230 - i * 30, 210))
+    # overwrite EVERY pixel with seeded noise → distinct average-hash per file
+    # (partial/strided noise keeps layout structure and collides at hamming<=6)
     px = img.load()
-    for _ in range(20000):
-        x, y = random.randrange(800), random.randrange(600)
-        c = px[x, y]
-        px[x, y] = (
-            max(0, min(255, c[0] + random.randint(-40, 40))),
-            max(0, min(255, c[1] + random.randint(-40, 40))),
-            max(0, min(255, c[2] + random.randint(-40, 40))),
-        )
+    w, h = img.size
+    for y in range(h):
+        for x in range(w):
+            px[x, y] = (
+                random.randrange(256),
+                random.randrange(256),
+                random.randrange(256),
+            )
     img.save(path, "JPEG", quality=85)
 
 
@@ -63,8 +75,9 @@ import os
 
 os.makedirs("fixtures", exist_ok=True)
 
-for set_name, blueprints in SETS.items():
+for set_idx, (set_name, blueprints) in enumerate(SETS.items()):
     for i, (bg, rects) in enumerate(blueprints, start=1):
         out = f"fixtures/{set_name}{i}.jpg"
-        make(out, bg, rects, SEED * 100 + i + hash(set_name) % 97)
+        # unique per run AND per set: phash must differ across every listing
+        make(out, bg, rects, SEED * 1000 + set_idx * 10 + i)
         print("wrote", out)

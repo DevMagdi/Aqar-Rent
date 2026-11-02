@@ -466,7 +466,17 @@ def upgrade() -> None:
     # by a trigger; search can use ST_DWithin/GiST while the ORM works with
     # portable lat/lon columns (tests run on SQLite without PostGIS).
     bind = op.get_bind()
+    postgis_available = False
     if bind.dialect.name == 'postgresql':
+        # PostGIS is optional: it powers the GiST `geo` column (a maintained
+        # copy of lat/lon). Without the extension files (vanilla PostgreSQL)
+        # we skip it — search/ORM use the portable lat/lon columns either way.
+        postgis_available = bool(
+            bind.execute(
+                sa.text("SELECT COUNT(*) FROM pg_available_extensions WHERE name = 'postgis'")
+            ).scalar()
+        )
+    if postgis_available:
         op.execute('CREATE EXTENSION IF NOT EXISTS postgis')
         op.execute('ALTER TABLE listings ADD COLUMN IF NOT EXISTS geo geography(Point, 4326)')
         op.execute(

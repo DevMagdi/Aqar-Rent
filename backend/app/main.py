@@ -11,6 +11,8 @@ from app.api.v1 import api_router
 from app.core.config import Settings, get_settings
 from app.core.errors import register_exception_handlers
 from app.core.logging import configure_logging
+from app.core.metrics import MetricsMiddleware, metrics_response
+from app.core.security_headers import SecurityHeadersMiddleware
 from app.db.session import CommitBeforeSendMiddleware, setup_app_db
 from app.integrations.otp import build_otp_provider
 from app.services.storage import build_storage
@@ -28,6 +30,15 @@ commission and never handles rent or deposits.
 def create_app(settings: Settings | None = None) -> FastAPI:
     settings = settings or get_settings()
     configure_logging(settings.log_level)
+
+    # Optional error tracking (real Sentry when SENTRY_DSN is set; no-op else).
+    if settings.sentry_dsn:
+        try:
+            import sentry_sdk
+
+            sentry_sdk.init(dsn=settings.sentry_dsn, traces_sample_rate=0.0, environment=settings.app_env)
+        except Exception:  # noqa: BLE001 — telemetry must never break boot
+            configure_logging(settings.log_level)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -57,6 +68,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     register_exception_handlers(app)
     app.add_middleware(CommitBeforeSendMiddleware)
+    app.add_middleware(SecurityHeadersMiddleware, settings=settings)
+    app.add_middleware(MetricsMiddleware)
     setup_app_db(app, settings)
     app.state.settings = settings
     app.state.storage = build_storage(settings)
@@ -67,6 +80,26 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @app.get("/health", tags=["system"], summary="Liveness probe")
     def health() -> dict:
         return {"status": "ok", "service": settings.app_name}
+
+    @app.get("/ready", tags=["system"], summary="Readiness probe (DB reachable)")
+    def ready() -> dict:
+        from sqlalchemy import text
+
+        try:
+            with app.state.engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+        except Exception as exc:  # noqa: BLE001
+            from fastapi import HTTPException
+
+            raise HTTPException(status_code=503, detail=f"database unavailable: {exc}") from exc
+        return {"status": "ready", "service": settings.app_name}
+
+    @app.get("/metrics", tags=["system"], summary="Prometheus metrics")
+    def metrics():
+        from fastapi.responses import Response as FastAPIResponse
+
+        payload, content_type = metrics_response()
+        return FastAPIResponse(content=payload, media_type=content_type)
 
     return app
 

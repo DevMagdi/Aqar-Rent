@@ -23,6 +23,9 @@ const backendEnv = {
   PAYMENT_PROVIDER: "mock",
   WEBHOOK_SECRET: process.env.WEBHOOK_SECRET,
   STORAGE_LOCAL_ROOT: "./data/storage-e2e",
+  // the full suite issues >30 OTP requests from 127.0.0.1 per run —
+  // the production per-IP guard (30/h) would lock the run out midway
+  OTP_MAX_REQUESTS_PER_IP_HOUR: "100000",
 };
 
 export default defineConfig({
@@ -55,7 +58,7 @@ export default defineConfig({
   webServer: [
     {
       command:
-        "rm -f data/e2e.db data/e2e.db-journal data/e2e.db-wal data/e2e.db-shm && alembic upgrade head && python -m app.scripts.seed && uvicorn app.main:app --host 0.0.0.0 --port 8010",
+        "mkdir -p data && rm -f data/e2e.db data/e2e.db-journal data/e2e.db-wal data/e2e.db-shm && alembic upgrade head && python -m app.scripts.seed && uvicorn app.main:app --host 0.0.0.0 --port 8010",
       cwd: "../backend",
       url: "http://localhost:8010/health",
       reuseExistingServer: false,

@@ -6,6 +6,20 @@ on:
   pull_request:
 
 jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - name: Install dependencies
+        run: pip install -r backend/requirements-dev.txt pip-audit
+      - name: pip-audit (backend requirements)
+        run: pip-audit -r backend/requirements.txt
+
   lint:
     runs-on: ubuntu-latest
     steps:
@@ -57,7 +71,10 @@ jobs:
       - name: Run tests (SQLite — fast default)
         if: matrix.database == 'sqlite'
         working-directory: backend
-        run: python -m pytest -q --cov=app --cov-report=term-missing
+        run: python -m pytest -q --cov=app --cov-report=term-missing 2>&1 | tee ../pytest-sqlite.log
+      - name: Dump failure tail (step summary)
+        if: failure()
+        run: tail -120 pytest-sqlite.log >> "$GITHUB_STEP_SUMMARY" || true
 
       - name: Migrate PostgreSQL + run tests (validates PostGIS path)
         if: matrix.database == 'postgres'
@@ -66,5 +83,86 @@ jobs:
           DATABASE_URL: postgresql+psycopg://aqar:aqar@localhost:5432/aqar
           TEST_DATABASE_URL: postgresql+psycopg://aqar:aqar@localhost:5432/aqar
         run: |
-          alembic upgrade head
-          python -m pytest -q
+          set -o pipefail
+          alembic upgrade head 2>&1 | tee ../alembic-pg.log
+          python -m pytest -q 2>&1 | tee ../pytest-pg.log
+      - name: Dump failure tail (step summary)
+        if: failure()
+        run: |
+          echo '## alembic' >> "$GITHUB_STEP_SUMMARY"; tail -40 alembic-pg.log >> "$GITHUB_STEP_SUMMARY" || true
+          echo '## pytest' >> "$GITHUB_STEP_SUMMARY"; tail -120 pytest-pg.log >> "$GITHUB_STEP_SUMMARY" || true
+
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Install
+        working-directory: web
+        run: npm ci --no-audit --no-fund
+      - name: npm audit
+        working-directory: web
+        run: npm audit --audit-level=high
+      - name: Typecheck
+        working-directory: web
+        run: npx tsc --noEmit
+      - name: Unit tests
+        working-directory: web
+        run: npx vitest run
+      - name: Build
+        working-directory: web
+        env:
+          BACKEND_URL: http://localhost:8000
+        run: npx next build
+
+  admin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+      - name: Install
+        working-directory: admin
+        run: npm ci --no-audit --no-fund
+      - name: npm audit
+        working-directory: admin
+        run: npm audit --audit-level=high
+      - name: Typecheck + build
+        working-directory: admin
+        run: |
+          npx tsc --noEmit
+          npm run build
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: e2e/package-lock.json
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: backend/requirements-dev.txt
+      - name: Install backend + e2e deps
+        run: |
+          pip install -r backend/requirements-dev.txt
+          cd e2e && npm ci --no-audit --no-fund
+      - name: Playwright owner journey + contracts
+        working-directory: e2e
+        env:
+          E2E_PYTHON: python
+        run: npx playwright test --reporter=line 2>&1 | tee ../playwright-e2e.log
+      - name: Dump failure tail (step summary)
+        if: failure()
+        run: tail -150 playwright-e2e.log >> "$GITHUB_STEP_SUMMARY" || true

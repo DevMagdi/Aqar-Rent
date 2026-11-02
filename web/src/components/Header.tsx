@@ -34,6 +34,7 @@ export function Header() {
         { href: `/${locale}/owner`, label: t("nav_dashboard") },
         { href: `/${locale}/favorites`, label: t("nav_favorites") },
         { href: `/${locale}/notifications`, label: unread ? `${t("nav_notifications")} (${unread})` : t("nav_notifications") },
+        { href: `/${locale}/contracts`, label: t("contracts") },
         { href: `/${locale}/account`, label: t("nav_account") },
       ]
     : [];
