@@ -5,6 +5,15 @@ import { Link } from "react-router-dom";
 import { api } from "@/lib/api";
 import { BarChart, Card, Empty, Spinner, Stat } from "@/components/ui";
 
+interface Funnel {
+  users_registered: number;
+  listings_submitted_or_beyond: number;
+  listings_approved_or_beyond: number;
+  orders_paid: number;
+  contact_events: number;
+  conversion_pct: number;
+}
+
 interface Dash {
   users_total: number;
   users_banned: number;
@@ -27,6 +36,7 @@ interface QueueRow {
 
 export function Dashboard() {
   const [d, setD] = useState<Dash | null>(null);
+  const [funnel, setFunnel] = useState<Funnel | null>(null);
   const [active, setActive] = useState<QueueRow[]>([]);
   const [err, setErr] = useState<string | null>(null);
 
@@ -34,10 +44,12 @@ export function Dashboard() {
     Promise.all([
       api<Dash>("/admin/dashboard"),
       api<QueueRow[]>("/admin/listings?status=active&limit=200").catch(() => [] as QueueRow[]),
+      api<Funnel>("/admin/analytics/funnel").catch(() => null),
     ])
-      .then(([dash, rows]) => {
+      .then(([dash, rows, f]) => {
         setD(dash);
         setActive(rows);
+        setFunnel(f);
       })
       .catch((e) => setErr(e.message));
   }, []);
@@ -77,6 +89,23 @@ export function Dashboard() {
         </Card>
         <Card title="Top areas (active listings)">
           {byGov.length ? <BarChart data={byGov} testId="chart-top-areas" /> : <Empty text="No active listings yet" />}
+        </Card>
+        <Card title="Conversion funnel (registered → paid)">
+          {funnel ? (
+            <BarChart
+              testId="chart-funnel"
+              data={[
+                ["registered", funnel.users_registered],
+                ["submitted+", funnel.listings_submitted_or_beyond],
+                ["approved+", funnel.listings_approved_or_beyond],
+                ["paid orders", funnel.orders_paid],
+                ["contacts", funnel.contact_events],
+              ]}
+            />
+          ) : (
+            <Empty text="—" />
+          )}
+          <p className="mt-2 text-xs text-stone-400">conversion: {funnel?.conversion_pct ?? 0}%</p>
         </Card>
         <Card title="Quick actions">
           <div className="flex flex-wrap gap-2">
