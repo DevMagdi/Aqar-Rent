@@ -141,8 +141,10 @@ def test_twilio_send_posts_to_twilio_and_maps_errors():
 def test_build_otp_provider_selects_twilio_and_console():
     from app.integrations.otp import ConsoleOTPProvider, TwilioOTPProvider, build_otp_provider
 
-    assert isinstance(build_otp_provider(_base()), TwilioOTPProvider)
-    assert isinstance(build_otp_provider(Settings(_env_file=None, otp_provider="console")), ConsoleOTPProvider)
+    twilio = build_otp_provider(_base())
+    assert isinstance(twilio, TwilioOTPProvider)
+    console = build_otp_provider(Settings(_env_file=None, otp_provider="console"))
+    assert isinstance(console, ConsoleOTPProvider)
     with pytest.raises(ValueError):
         build_otp_provider(Settings(_env_file=None, otp_provider="carrier-pigeon"))
 
@@ -151,7 +153,7 @@ def test_build_otp_provider_selects_twilio_and_console():
 
 
 class FakePipeline:
-    def __init__(self, client: "FakeRedis"):
+    def __init__(self, client: FakeRedis):
         self.client = client
         self.ops = []
 
@@ -201,11 +203,13 @@ def test_redis_limiter_allows_under_limit():
 
 
 def test_in_process_fallback_still_enforces(monkeypatch):
-    import app.core.rate_limit as rl
 
     reset_rate_limits()
     # force the redis lookup to fail → in-process path
-    monkeypatch.setattr("app.core.cache.get_redis_client", lambda: (_ for _ in ()).throw(RuntimeError("no redis")))
+    def _boom():
+        raise RuntimeError("no redis")
+
+    monkeypatch.setattr("app.core.cache.get_redis_client", _boom)
     for _ in range(3):
         check_rate_limit("test:unit:window", 3, 60)
     with pytest.raises(AppError) as exc:
