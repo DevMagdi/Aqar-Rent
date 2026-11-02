@@ -56,3 +56,7 @@ admin/tsconfig.tsbuildinfo
 
 # Generated per e2e run (backend photo-dedupe requires unique images)
 e2e/fixtures/*.jpg
+
+# Staging env (secrets)
+.env.staging
+backups/
