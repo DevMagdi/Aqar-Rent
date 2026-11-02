@@ -503,8 +503,6 @@ class _MiniMap extends StatefulWidget {
 }
 
 class _MiniMapState extends State<_MiniMap> {
-  MapLibreMapController? _c;
-
   static const _style = {
     'version': 8,
     'sources': {
@@ -526,7 +524,6 @@ class _MiniMapState extends State<_MiniMap> {
       child: MapLibreMap(
         styleString: jsonEncode(_style),
         initialCameraPosition: CameraPosition(target: LatLng(widget.lat, widget.lng), zoom: 13),
-        onMapCreated: (c) => _c = c,
         onMapClick: (_, coordinates) {
           widget.onPick(coordinates.latitude, coordinates.longitude);
         },
