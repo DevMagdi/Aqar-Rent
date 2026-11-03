@@ -182,7 +182,7 @@ function CheckoutInner({ locale }: { locale: Locale }) {
             data-testid="btn-create-order"
             disabled={busy}
             onClick={createOrder}
-            className="w-full rounded-xl bg-gold py-3.5 font-bold text-brand-deep hover:bg-gold-dark disabled:opacity-60"
+            className="w-full rounded-xl bg-gold py-3.5 font-bold text-gold-text hover:bg-gold-dark disabled:opacity-60"
           >
             {busy ? t("loading") : `${t("continue_pay")} · ${formatMoney(total, locale)}`}
           </button>

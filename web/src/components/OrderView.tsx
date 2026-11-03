@@ -228,7 +228,7 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
               target="_blank"
               rel="noreferrer"
               data-testid="link-gateway"
-              className="block w-full rounded-xl bg-gold py-3 text-center font-bold text-brand-deep hover:bg-gold-dark"
+              className="block w-full rounded-xl bg-gold py-3 text-center font-bold text-gold-text hover:bg-gold-dark"
             >
               {t("pay_now")}
             </a>
@@ -313,7 +313,7 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
                     type="button"
                     data-testid="btn-copy-reference"
                     onClick={() => copy(order.bank_instructions!.reference, t("bank_reference"))}
-                    className="rounded bg-gold px-2 py-1 text-[10px] font-bold text-brand-deep"
+                    className="rounded bg-gold px-2 py-1 text-[10px] font-bold text-gold-text"
                   >
                     {t("copy")}
                   </button>

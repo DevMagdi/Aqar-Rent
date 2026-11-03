@@ -11,7 +11,7 @@ import '../core/i18n.dart';
 import '../core/widgets.dart';
 import '../features/legal/legal_notice.dart';
 import 'favorites_screen.dart';
-import 'notifications_screen.dart';
+import 'contracts/contracts_home_screen.dart';
 import 'search_screen.dart';
 import '../core/theme.dart';
 
@@ -23,7 +23,8 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
-  List<String> get _titles => [s('nav_search'), s('nav_favorites'), s('nav_notifications'), s('nav_profile')];
+  final _searchKey = GlobalKey<SearchScreenState>();
+  List<String> get _titles => [s('nav_home'), s('nav_search'), s('nav_favorites'), s('nav_contracts'), s('nav_profile')];
 
   @override
   Widget build(BuildContext context) {
@@ -55,23 +56,114 @@ class _HomeShellState extends State<HomeShell> {
       ),
       body: IndexedStack(
         index: _index,
-        children: const [
-          SearchScreen(),
-          FavoritesScreen(),
-          NotificationsScreen(),
-          ProfileScreen(),
+        children: [
+          _HomeLanding(
+            onSearch: () => setState(() => _index = 1),
+            onFilter: (type) {
+              setState(() => _index = 1);
+              WidgetsBinding.instance.addPostFrameCallback((_) => _searchKey.currentState?.applyQuickFilter(type));
+            },
+          ),
+          SearchScreen(key: _searchKey),
+          const FavoritesScreen(),
+          const ContractsHomeScreen(),
+          const ProfileScreen(),
         ],
       ),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _index,
         onDestinationSelected: (i) => setState(() => _index = i),
         destinations: [
+          NavigationDestination(icon: const Icon(Icons.home_outlined), selectedIcon: const Icon(Icons.home_rounded), label: s('nav_home')),
           NavigationDestination(icon: const Icon(Icons.search_outlined), selectedIcon: const Icon(Icons.search), label: s('nav_search')),
           NavigationDestination(icon: const Icon(Icons.favorite_border), selectedIcon: const Icon(Icons.favorite), label: s('nav_favorites')),
-          NavigationDestination(icon: const Icon(Icons.notifications_outlined), selectedIcon: const Icon(Icons.notifications), label: s('nav_notifications')),
+          NavigationDestination(icon: const Icon(Icons.description_outlined), selectedIcon: const Icon(Icons.description), label: s('nav_contracts')),
           NavigationDestination(icon: const Icon(Icons.person_outline), selectedIcon: const Icon(Icons.person), label: s('nav_profile')),
         ],
       ),
+    );
+  }
+}
+
+class _HomeLanding extends StatelessWidget {
+  const _HomeLanding({required this.onSearch, required this.onFilter});
+  final VoidCallback onSearch;
+  final ValueChanged<String> onFilter;
+
+  @override
+  Widget build(BuildContext context) {
+    final dark = Theme.of(context).brightness == Brightness.dark;
+    final types = <MapEntry<String, String>>[
+      MapEntry('apartment', s('spec_apartment')),
+      MapEntry('studio', s('spec_studio')),
+      MapEntry('villa', s('spec_villa')),
+      MapEntry('room', s('spec_room')),
+    ];
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 18, 16, 28),
+      children: [
+        Container(
+          padding: const EdgeInsets.all(22),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(28),
+            gradient: LinearGradient(
+              begin: AlignmentDirectional.topStart,
+              end: AlignmentDirectional.bottomEnd,
+              colors: [AppColors.network, AppColors.brandDeep],
+            ),
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: dark ? .28 : .12), blurRadius: 24, offset: const Offset(0, 12))],
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(s('brand'), style: TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w700, fontSize: 13)),
+              const SizedBox(height: 12),
+              Text(s('welcome'), style: const TextStyle(color: AppColors.onDark, fontFamily: 'ElMessiriArabic', fontWeight: FontWeight.w700, fontSize: 27, height: 1.25)),
+              const SizedBox(height: 8),
+              Text(s('tagline'), style: const TextStyle(color: AppColors.onDark, fontSize: 13, height: 1.65)),
+              const SizedBox(height: 20),
+              Material(
+                color: Theme.of(context).colorScheme.surface,
+                borderRadius: BorderRadius.circular(999),
+                child: InkWell(
+                  onTap: onSearch,
+                  borderRadius: BorderRadius.circular(999),
+                  child: Padding(
+                    padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 10, 10),
+                    child: Row(children: [
+                      Expanded(child: Text(s('nav_search'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .68), fontSize: 12))),
+                      const SizedBox(width: 8),
+                      const CircleAvatar(radius: 21, backgroundColor: AppColors.gold, child: Icon(Icons.search, color: AppColors.brand, size: 20)),
+                    ]),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 22),
+        Text(s('quick_filters'), style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
+        const SizedBox(height: 10),
+        Wrap(spacing: 8, runSpacing: 8, children: [
+          for (final entry in types)
+            ActionChip(
+              avatar: const Icon(Icons.home_work_outlined, size: 16),
+              label: Text(entry.value),
+              onPressed: () => onFilter(entry.key),
+            ),
+        ]),
+        const SizedBox(height: 22),
+        Card(
+          child: ListTile(
+            contentPadding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
+            leading: const CircleAvatar(backgroundColor: AppColors.tealBg, child: Icon(Icons.verified_user_outlined, color: AppColors.tealInk)),
+            title: Text(s('trust_title'), style: const TextStyle(fontWeight: FontWeight.w700)),
+            subtitle: Text(s('trust_note'), maxLines: 2, overflow: TextOverflow.ellipsis),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: onSearch,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -169,6 +261,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               _tile(Icons.dashboard_outlined, AppStrings.isArabic ? 'لوحة المالك' : 'Owner dashboard', AppStrings.isArabic ? 'إعلاناتك وحالتها' : 'Your listings & status', '/owner'),
               _tile(Icons.payments_outlined, s('pricing'), AppStrings.isArabic ? 'باقات واشتراكات' : 'Packages & plans', '/pricing'),
               _tile(Icons.business_outlined, s('office_workspace'), s('office_tagline'), '/office'),
+              _tile(Icons.notifications_outlined, s('nav_notifications'), '', '/notifications'),
               _tile(Icons.description_outlined, s('contracts'), AppStrings.isArabic ? 'اتفاقات خاصة ومحاضر تسليم' : 'Private agreements & handovers', '/contracts'),
               _tile(Icons.receipt_long_outlined, AppStrings.isArabic ? 'طلباتي وإيصالاتي' : 'My orders & receipts', '', '/orders'),
               _tile(Icons.gavel_outlined, s('legal_title'), s('legal_private_only'), '/legal'),

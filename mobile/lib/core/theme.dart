@@ -24,6 +24,7 @@ class AppColors {
   /* ── Surfaces (light) ── */
   static const bg = Color(0xFFF8F7F4);
   static const surface = Color(0xFFFFFFFF);
+  static const surface2 = Color(0xFFF2F0EA);
   static const ink = brand;
   static const muted = Color(0xFF5C6570);
   static const border = Color(0xFFE3E6EB); // derived rgba(15,28,46,.10)
@@ -52,14 +53,15 @@ class AppColors {
 
   /* ── Dark mode (spec: bg #0B1220, surface #141C2B) ── */
   static const darkBg = Color(0xFF0B1220);
-  static const darkSurface = Color(0xFF141C2B);
-  static const darkInk = Color(0xFFE9EDF5); //14.5:1
+  static const darkSurface = Color(0xFF111B2D);
+  static const darkSurface2 = Color(0xFF16233A);
+  static const darkInk = Color(0xFFEAE7E0); // AA on dark surfaces
   static const darkInkStrong = Color(0xFFF5F8FC);
-  static const darkMuted = Color(0xFF9AA4B4); //6.8:1
-  static const darkBorder = Color(0xFF242C3D); // derived
+  static const darkMuted = Color(0xFF9AA4B2); //6.8:1
+  static const darkBorder = Color(0x17EAE7E0); // rgba(234,231,224,.09)
   static const darkTrack = Color(0xFF1E2738); // derived
   static const darkSidebar = Color(0xFF101A2C);
-  static const darkGoldText = Color(0xFFD9BE87); // price/focus on dark9.5:1
+  static const darkGoldText = Color(0xFFC9A86C); // aligned gold accent
   static const darkGoldTint = Color(0xFF2B2A25); // gold14% on dark surface
   static const darkSuccess = Color(0xFF5CD6A0);
   static const darkSuccessBg = Color(0xFF17352B);
@@ -128,7 +130,7 @@ class AppTheme {
         brightness: brightness,
         primary: accent,
         onPrimary: onAccent,
-        secondary: isDark ? AppColors.darkTeal : AppColors.teal,
+        secondary: isDark ? AppColors.darkTeal : AppColors.tealInk,
         onSecondary: Colors.white,
         error: danger,
         onError: isDark ? AppColors.brandDeep : Colors.white,
@@ -143,7 +145,7 @@ class AppTheme {
         scrolledUnderElevation: 0,
         centerTitle: false,
         titleTextStyle: TextStyle(
-          fontFamily: "IBMPlexSansArabic",
+          fontFamily: "ElMessiriArabic",
           fontSize: 17,
           fontWeight: FontWeight.w700,
           color: ink,
@@ -155,7 +157,7 @@ class AppTheme {
         shadowColor: Colors.transparent,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22), // spec: cards20–24
+          borderRadius: BorderRadius.circular(18),
           side: BorderSide(color: outline),
         ),
       ),
@@ -164,7 +166,7 @@ class AppTheme {
           backgroundColor: accent,
           foregroundColor: onAccent, // gold + deep navy (never white)
           minimumSize: const Size(0, 46),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)), // spec: buttons14–16
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
         ),
       ),
@@ -173,7 +175,7 @@ class AppTheme {
           foregroundColor: ink,
           side: BorderSide(color: outline),
           minimumSize: const Size(0, 46),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
         ),
       ),
@@ -181,22 +183,22 @@ class AppTheme {
         filled: true,
         fillColor: surface,
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: outline),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: outline),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.goldDark, width: 2),
         ),
         labelStyle: TextStyle(color: muted, fontSize: 14),
         hintStyle: TextStyle(color: muted, fontSize: 14),
       ),
       chipTheme: ChipThemeData(
-        backgroundColor: isDark ? AppColors.darkTrack : AppColors.track,
+        backgroundColor: isDark ? AppColors.darkSurface2 : AppColors.surface2,
         selectedColor: isDark ? AppColors.darkGoldTint : AppColors.goldTint14,
         labelStyle: TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: ink),
         side: BorderSide(color: outline),
@@ -217,11 +219,7 @@ class AppTheme {
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       ),
       dividerTheme: DividerThemeData(color: outline, space: 1),
-      textTheme: Typography.englishLike2021.apply(
-        bodyColor: ink,
-        displayColor: ink,
-        fontFamily: "IBMPlexSansArabic",
-      ),
+      textTheme: _textTheme(ink),
       splashFactory: InkSparkle.splashFactory,
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
@@ -232,6 +230,26 @@ class AppTheme {
           TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
         },
       ),
+    );
+  }
+
+  static TextTheme _textTheme(Color ink) {
+    final base = Typography.englishLike2021.apply(
+      bodyColor: ink,
+      displayColor: ink,
+      fontFamily: "IBMPlexSansArabic",
+    );
+    TextStyle display(TextStyle? s) => (s ?? const TextStyle()).copyWith(fontFamily: "ElMessiriArabic", height: 1.25);
+    return base.copyWith(
+      displayLarge: display(base.displayLarge),
+      displayMedium: display(base.displayMedium),
+      displaySmall: display(base.displaySmall),
+      headlineLarge: display(base.headlineLarge),
+      headlineMedium: display(base.headlineMedium),
+      headlineSmall: display(base.headlineSmall),
+      titleLarge: display(base.titleLarge),
+      titleMedium: display(base.titleMedium),
+      titleSmall: display(base.titleSmall),
     );
   }
 

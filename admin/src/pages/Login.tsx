@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api, saveSession } from "@/lib/api";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { BrandMark } from "@/components/BrandMark";
 
 export function Login() {
   const [email, setEmail] = useState("admin@aqar-rent.dev");
@@ -36,11 +37,11 @@ export function Login() {
         <ThemeToggle />
       </div>
       <form onSubmit={submit} className="w-full max-w-md rounded-[22px] bg-surface p-7 shadow-pop" data-testid="login-form">
-        <div className="mb-5 flex items-center gap-3">
-          <span className="grid h-11 w-11 place-items-center rounded-xl bg-gold text-lg font-bold text-brand-deep">A</span>
+        <div className="mb-5 flex flex-col items-start gap-3">
+          <BrandMark />
           <div>
-            <h1 className="text-lg font-extrabold text-stone-900">Aqar Rent Admin</h1>
-            <p className="text-xs text-stone-500">Email + password + authenticator code</p>
+            <h1 className="text-lg font-extrabold text-ink-strong">Admin</h1>
+            <p className="text-xs text-muted">Email + password + authenticator code</p>
           </div>
         </div>
 
@@ -102,7 +103,7 @@ export function Login() {
           type="submit"
           data-testid="btn-login"
           disabled={busy}
-          className="mt-6 w-full rounded-xl bg-gold py-3 text-sm font-bold text-brand-deep hover:bg-gold-dark disabled:opacity-60"
+          className="mt-6 w-full rounded-xl bg-gold py-3 text-sm font-bold text-gold-text hover:bg-gold-dark disabled:opacity-60"
         >
           {busy ? "Signing in…" : "Sign in"}
         </button>

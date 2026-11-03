@@ -11,10 +11,10 @@ import '../widgets/listing_card.dart';
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
   @override
-  State<SearchScreen> createState() => _SearchScreenState();
+  SearchScreenState createState() => SearchScreenState();
 }
 
-class _SearchScreenState extends State<SearchScreen> {
+class SearchScreenState extends State<SearchScreen> {
   final api = ApiClient();
   final _q = TextEditingController();
   final Map<String, dynamic> _filters = {}; // backend query params
@@ -23,6 +23,15 @@ class _SearchScreenState extends State<SearchScreen> {
   bool _loading = false;
   bool _mapMode = false;
   String? _error;
+  bool _searchAfterCurrent = false;
+
+  void applyQuickFilter(String type) {
+    setState(() {
+      _filters['property_type'] = type;
+      _cursor = null;
+    });
+    _search(reset: true);
+  }
 
   @override
   void initState() {
@@ -41,7 +50,10 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   Future<void> _search({bool reset = false}) async {
-    if (_loading) return;
+    if (_loading) {
+      if (reset) _searchAfterCurrent = true;
+      return;
+    }
     setState(() { _loading = true; if (reset) _error = null; });
     try {
       final res = await api.get('/listings?$_query') as Map<String, dynamic>;
@@ -52,8 +64,16 @@ class _SearchScreenState extends State<SearchScreen> {
         _cursor = res['next_cursor'] as String?;
         _loading = false;
       });
+      if (_searchAfterCurrent) {
+        _searchAfterCurrent = false;
+        await _search(reset: true);
+      }
     } catch (e) {
       if (mounted) setState(() { _error = '$e'; _loading = false; });
+      if (mounted && _searchAfterCurrent) {
+        _searchAfterCurrent = false;
+        await _search(reset: true);
+      }
     }
   }
 

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "@/lib/api";
-import { BarChart, Card, Empty, Spinner, Stat } from "@/components/ui";
+import { AreaChart, BarChart, Card, Empty, Spinner, Stat } from "@/components/ui";
 
 interface Funnel {
   users_registered: number;
@@ -71,18 +71,27 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6" data-testid="dashboard">
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <p className="eyebrow">Platform overview</p>
+          <h1 className="font-display text-2xl font-bold text-ink-strong sm:text-3xl">Dashboard</h1>
+        </div>
+        <span className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-muted">Live operational data</span>
+      </div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Users" value={d.users_total} hint={`${d.users_banned} banned`} />
         <Stat label="Active ad periods" value={d.active_ad_periods} hint={`${listingsTotal} listings total`} />
-        <Stat label="Revenue (EGP)" value={d.revenue_egp.toLocaleString()} hint="paid − refunded" data-testid="revenue" />
+        <Stat label="Revenue (EGP)" value={d.revenue_egp.toLocaleString()} hint="paid − refunded" testid="revenue" />
         <Stat label="Contact events" value={d.contact_events_total} hint="call / whatsapp reveals" />
+      </div>
+      <div className="grid grid-cols-2 gap-3">
         <Stat label="Reports open" value={d.reports_open} />
         <Stat label="Verifications pending" value={d.verifications_pending} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card title="New / active listings by status">
-          <BarChart data={Object.entries(d.listings_by_status)} testId="chart-listings" />
+          <AreaChart data={Object.entries(d.listings_by_status)} testId="chart-listings" />
         </Card>
         <Card title="Orders by status (ads sold)">
           <BarChart data={Object.entries(d.orders_by_status)} testId="chart-orders" />
@@ -109,7 +118,7 @@ export function Dashboard() {
         </Card>
         <Card title="Quick actions">
           <div className="flex flex-wrap gap-2">
-            <Link to="/moderation" className="rounded-xl bg-gold px-4 py-2 text-sm font-semibold text-brand-deep hover:bg-gold-dark">
+            <Link to="/moderation" className="rounded-xl bg-gold px-4 py-2 text-sm font-semibold text-gold-text hover:bg-gold-dark">
               Moderation queue
             </Link>
             <Link to="/verifications" className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-50">

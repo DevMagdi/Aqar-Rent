@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth, useI18n, useToast } from "./Providers";
 import { ThemeToggle } from "./ThemeToggle";
+import { BrandMark } from "./BrandMark";
 
 export function Header() {
   const { locale, t, otherLocale, otherHref } = useI18n();
@@ -26,31 +27,29 @@ export function Header() {
   }, [user, pathname]);
 
   const nav = [
-    { href: `/${locale}`, label: t("nav_home") },
     { href: `/${locale}/search`, label: t("nav_search") },
-    { href: `/${locale}/owner/new`, label: t("nav_add") },
+    { href: `/${locale}/office`, label: t("nav_agencies") },
     { href: `/${locale}/pricing`, label: t("nav_pricing") },
+    { href: `/${locale}/contracts`, label: t("contracts") },
   ];
   const authNav = user
     ? [
         { href: `/${locale}/owner`, label: t("nav_dashboard") },
         { href: `/${locale}/favorites`, label: t("nav_favorites") },
         { href: `/${locale}/notifications`, label: unread ? `${t("nav_notifications")} (${unread})` : t("nav_notifications") },
-        { href: `/${locale}/contracts`, label: t("contracts") },
         { href: `/${locale}/office`, label: t("nav_offices") },
         { href: `/${locale}/account`, label: t("nav_account") },
       ]
     : [];
 
   return (
-    <header className="sticky top-0 z-50 border-b border-stone-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
-        <Link href={`/${locale}`} className="flex items-center gap-2 text-lg font-bold text-ink" data-testid="brand">
-          <span aria-hidden className="grid h-9 w-9 place-items-center rounded-xl bg-gold text-brand-deep">ع</span>
-          <span>{t("brand")}</span>
+    <header className="site-header sticky top-0 z-50 border-b border-border bg-surface/95 backdrop-blur">
+      <div className="mx-auto flex h-[72px] max-w-7xl items-center gap-4 px-4 sm:px-6">
+        <Link href={`/${locale}`} className="flex items-center gap-2 text-lg font-bold text-ink" data-testid="brand" aria-label={t("brand")}>
+          <BrandMark wordmark={t("brand")} />
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex" aria-label="main">
+        <nav className="hidden items-center gap-1 min-[900px]:flex" aria-label="main">
           {nav.map((n) => (
             <Link
               key={n.href}
@@ -90,7 +89,7 @@ export function Header() {
           <Link
             href={otherHref}
             hrefLang={otherLocale}
-            className="rounded-lg border border-stone-300 px-2.5 py-1.5 text-sm font-medium text-stone-700 hover:bg-stone-100"
+            className="btn-ghost px-3 py-2 text-sm"
             data-testid="lang-switch"
           >
             {t("lang_switch")}
@@ -104,7 +103,7 @@ export function Header() {
                   await logout();
                   toast.show(t("nav_logout"));
                 }}
-                className="hidden rounded-lg bg-stone-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-stone-700 sm:block"
+                className="btn-ghost hidden px-4 py-2 text-sm sm:inline-flex"
               >
                 {t("nav_logout")}
               </button>
@@ -112,14 +111,17 @@ export function Header() {
               <Link
                 href={`/${locale}/login`}
                 data-testid="login-link"
-                className="rounded-lg bg-gold px-3 py-1.5 text-sm font-medium text-brand-deep hover:bg-gold-dark"
+                className="btn-ghost px-4 py-2 text-sm"
               >
                 {t("nav_login")}
               </Link>
             ))}
+          <Link href={`/${locale}/owner/new`} className="btn-primary hidden px-4 py-2 text-sm sm:inline-flex" data-testid="add-listing-cta">
+            {t("nav_add")}
+          </Link>
           <button
             type="button"
-            className="rounded-lg border border-stone-300 p-2 md:hidden"
+            className="grid h-11 w-11 place-items-center rounded-lg border border-border-strong min-[900px]:hidden"
             aria-label="menu"
             onClick={() => setOpen((v) => !v)}
           >
@@ -130,9 +132,9 @@ export function Header() {
         </div>
       </div>
       {open && (
-        <nav className="border-t border-stone-200 bg-white px-4 py-2 md:hidden" aria-label="mobile">
+        <nav className="border-t border-border bg-surface px-4 py-2 min-[900px]:hidden" aria-label="mobile">
           {[...nav, ...authNav].map((n) => (
-            <Link key={n.href} href={n.href} className="block rounded-lg px-2 py-2.5 text-sm text-stone-800 hover:bg-stone-100">
+            <Link key={n.href} href={n.href} className="block min-h-11 rounded-xl px-3 py-2.5 text-sm text-ink hover:bg-track">
               {n.label}
             </Link>
           ))}

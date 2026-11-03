@@ -1,5 +1,5 @@
 import { ImageResponse } from "next/og";
-import { TOKENS } from "../../styles/tokenValues";
+import { serverTokenColor } from "@/lib/serverColor";
 
 export const runtime = "nodejs";
 export const alt = "Aqar Rent";
@@ -18,6 +18,14 @@ export async function GET(req: Request): Promise<Response> {
   const { searchParams } = new URL(req.url);
   const title = ascii(searchParams.get("title"), "Aqar Rent — direct rentals, no brokers");
   const sub = ascii(searchParams.get("sub"), "Egypt's broker-free rental marketplace · Search, compare, contact owners");
+  const palette = {
+    goldLight: serverTokenColor("gold-light"),
+    surface: serverTokenColor("surface"),
+    brand: serverTokenColor("brand"),
+    goldDark: serverTokenColor("gold-dark"),
+    onDark: serverTokenColor("on-dark"),
+    muted: serverTokenColor("muted"),
+  };
 
   return new ImageResponse(
     (
@@ -28,7 +36,7 @@ export async function GET(req: Request): Promise<Response> {
           display: "flex",
           flexDirection: "column",
           justifyContent: "center",
-          background: `linear-gradient(135deg, ${TOKENS.goldLight} 0%, ${TOKENS.surface} 100%)`,
+          background: `linear-gradient(135deg, ${palette.goldLight} 0%, ${palette.surface} 100%)`,
           padding: 80,
           fontFamily: "sans-serif",
         }}
@@ -39,8 +47,8 @@ export async function GET(req: Request): Promise<Response> {
               width: 96,
               height: 96,
               borderRadius: 24,
-              background: TOKENS.brand,
-              color: TOKENS.onDark,
+              background: palette.brand,
+              color: palette.onDark,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -50,10 +58,10 @@ export async function GET(req: Request): Promise<Response> {
           >
             AR
           </div>
-          <div style={{ fontSize: 44, color: TOKENS.goldDark, fontWeight: 700 }}>Aqar Rent</div>
+          <div style={{ fontSize: 44, color: palette.goldDark, fontWeight: 700 }}>Aqar Rent</div>
         </div>
-        <div style={{ marginTop: 44, fontSize: 58, color: TOKENS.brand, fontWeight: 700 }}>{title}</div>
-        <div style={{ marginTop: 20, fontSize: 32, color: TOKENS.muted }}>{sub}</div>
+        <div style={{ marginTop: 44, fontSize: 58, color: palette.brand, fontWeight: 700 }}>{title}</div>
+        <div style={{ marginTop: 20, fontSize: 32, color: palette.muted }}>{sub}</div>
       </div>
     ),
     { width: size.width, height: size.height },

@@ -3,6 +3,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { NavLink, useNavigate } from "react-router-dom";
 import { api, clearSession, getRole } from "@/lib/api";
 import { ThemeToggle } from "./ThemeToggle";
+import { BrandMark } from "./BrandMark";
 
 interface NavItem {
   to: string;
@@ -60,17 +61,11 @@ export function Shell({ children }: { children: ReactNode }) {
     <ShellCtx.Provider value={ctx}>
       <div className="flex min-h-screen bg-bg">
         <aside
-          className="fixed inset-y-0 start-0 z-40 flex w-56 flex-col border-e border-sidebar-hover bg-sidebar text-sidebar-text max-lg:hidden"
+          className="fixed inset-y-0 start-0 z-40 flex w-[250px] flex-col border-e border-sidebar-hover bg-sidebar text-sidebar-text max-lg:hidden"
           data-testid="admin-sidebar"
         >
-          <div className="flex h-14 items-center gap-2 border-b border-sidebar-hover px-4">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-to-br from-gold to-gold-light text-sm font-bold text-brand-deep">
-              A
-            </span>
-            <div>
-              <p className="text-sm font-bold text-sidebar-text">Aqar Rent</p>
-              <p className="text-[10px] uppercase tracking-widest text-sidebar-muted">Admin</p>
-            </div>
+          <div className="flex h-[72px] items-center border-b border-sidebar-hover px-5">
+            <BrandMark />
           </div>
           <nav className="flex-1 space-y-0.5 overflow-y-auto p-2" aria-label="admin">
             {NAV.filter((n) => n.roles.includes(role)).map((n) => (
@@ -102,13 +97,20 @@ export function Shell({ children }: { children: ReactNode }) {
               </NavLink>
             ))}
           </nav>
-          <div className="border-t border-sidebar-hover p-3">
+          <div className="mt-auto border-t border-sidebar-hover p-4">
+            <div className="mb-3 flex items-center gap-3 rounded-xl bg-sidebar-hover/60 p-3">
+              <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-to-br from-gold-light to-gold-dark font-display text-lg font-bold text-gold-text">
+                {(me?.email || role || "A").slice(0, 1).toUpperCase()}
+              </span>
+              <div className="min-w-0">
             <p className="truncate text-xs text-sidebar-muted" data-testid="admin-email">
               {me?.email || "…"}
             </p>
             <p className="text-[11px] font-bold uppercase text-sidebar-active" data-testid="admin-role">
               {role}
             </p>
+              </div>
+            </div>
             <button
               type="button"
               data-testid="btn-logout"
@@ -123,15 +125,18 @@ export function Shell({ children }: { children: ReactNode }) {
           </div>
         </aside>
 
-        <div className="flex-1 lg:ps-56">
-          <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-border bg-surface px-4">
-            <p className="text-sm font-bold text-ink-strong">Operations console</p>
+        <div className="flex-1 lg:ps-[250px]">
+          <header className="sticky top-0 z-30 flex min-h-[76px] items-center justify-between border-b border-border bg-surface px-5 sm:px-[30px]">
+            <div>
+              <h2 className="text-lg font-bold text-ink-strong">Operations console</h2>
+              <p className="text-xs text-muted">{new Intl.DateTimeFormat("en-GB", { dateStyle: "full" }).format(new Date())}</p>
+            </div>
             <div className="flex items-center gap-3">
               <ThemeToggle />
-              <span className="hidden rounded-full bg-gold-tint-12 px-2.5 py-1 text-xs font-bold uppercase text-ink sm:block">{role}</span>
+              <span className="hidden rounded-full bg-gold-tint-12 px-3 py-1.5 text-xs font-bold uppercase text-ink sm:block">{role}</span>
             </div>
           </header>
-          <main className="p-4 sm:p-6">{children}</main>
+          <main className="space-y-5 p-5 sm:p-[30px]">{children}</main>
         </div>
 
         {/* mobile nav */}

@@ -193,7 +193,7 @@ export function OfficeWorkspace() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-xl bg-gold px-5 py-3 text-sm font-bold text-brand-deep disabled:opacity-60"
+            className="w-full rounded-xl bg-gold px-5 py-3 text-sm font-bold text-gold-text disabled:opacity-60"
           >
             {busy ? "…" : ar ? "إنشاء المكتب" : "Create office"}
           </button>
@@ -352,7 +352,7 @@ export function OfficeWorkspace() {
             <button
               type="submit"
               disabled={busy}
-              className="rounded-xl bg-gold px-4 py-2 text-sm font-bold text-brand-deep sm:col-span-2 disabled:opacity-60"
+              className="rounded-xl bg-gold px-4 py-2 text-sm font-bold text-gold-text sm:col-span-2 disabled:opacity-60"
             >
               {ar ? "إضافة للمسار" : "Add to pipeline"}
             </button>

@@ -12,7 +12,7 @@ export function isValidEgPhone(raw: string): boolean {
 }
 
 export function formatMoney(n: number, locale: Locale): string {
-  return new Intl.NumberFormat(locale === "ar" ? "ar-EG-u-nu-latn" : "en-EG", {
+  return new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", {
     maximumFractionDigits: 0,
   }).format(n);
 }

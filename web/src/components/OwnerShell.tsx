@@ -30,7 +30,7 @@ export function OwnerShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex gap-6" data-testid="owner-shell">
       <aside
-        className="sticky top-20 hidden h-fit w-56 shrink-0 flex-col gap-1 self-start rounded-[18px] bg-sidebar p-3 text-sidebar-text shadow-[0_1px_2px_rgba(14,23,40,0.06)] lg:flex"
+        className="sticky top-20 hidden h-fit w-56 shrink-0 flex-col gap-1 self-start rounded-[var(--radius-card)] bg-sidebar p-3 text-sidebar-text shadow-card lg:flex"
         data-testid="owner-sidebar"
       >
         <p className="px-2 pb-2 text-[11px] font-bold uppercase tracking-widest text-sidebar-muted">{t("nav_dashboard")}</p>
@@ -58,7 +58,7 @@ export function OwnerShell({ children }: { children: ReactNode }) {
       </aside>
       {/* mobile: horizontal scroll strip with the same active treatment */}
       <div className="min-w-0 flex-1">
-        <nav className="mb-3 flex gap-1.5 overflow-x-auto rounded-[18px] bg-sidebar p-1.5 lg:hidden" aria-label="owner">
+        <nav className="mb-3 flex gap-1.5 overflow-x-auto rounded-[var(--radius-card)] bg-sidebar p-1.5 lg:hidden" aria-label="owner">
           {items.map((it) => {
             const active = it.active(pathname);
             return (

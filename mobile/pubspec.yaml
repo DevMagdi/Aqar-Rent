@@ -54,6 +54,12 @@ flutter:
   assets:
     - assets/brand/
   fonts:
+    - family: ElMessiriArabic
+      fonts:
+        - asset: assets/fonts/ElMessiriArabic-600.ttf
+          weight: 600
+        - asset: assets/fonts/ElMessiriArabic-700.ttf
+          weight: 700
     - family: IBMPlexSansArabic
       fonts:
         - asset: assets/fonts/IBMPlexSansArabic-Regular.ttf

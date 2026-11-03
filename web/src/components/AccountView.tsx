@@ -81,7 +81,7 @@ export function AccountView() {
               {err}
             </p>
           )}
-          <button type="submit" data-testid="btn-save-profile" disabled={busy} className="w-full rounded-xl bg-gold py-3 font-semibold text-brand-deep hover:bg-gold-dark disabled:opacity-60">
+          <button type="submit" data-testid="btn-save-profile" disabled={busy} className="w-full rounded-xl bg-gold py-3 font-semibold text-gold-text hover:bg-gold-dark disabled:opacity-60">
             {t("save")}
           </button>
         </form>
