@@ -39,9 +39,7 @@ jobs:
           cat "$RUNNER_TEMP/flutter-analyze.log"
           if [ "$status" -ne 0 ]; then
             while IFS= read -r diagnostic; do
-              case "$diagnostic" in
-                ERROR\|*|WARNING\|*|INFO\|*) echo "::error::$diagnostic" ;;
-              esac
+              [ -n "$diagnostic" ] && echo "::error::$diagnostic"
             done < "$RUNNER_TEMP/flutter-analyze.log"
           fi
           exit "$status"
