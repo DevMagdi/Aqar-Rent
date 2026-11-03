@@ -143,16 +143,16 @@ export function PlansPackages() {
 
   return (
     <div className="space-y-4" data-testid="growth-plans-page">
-      <h1 className="text-lg font-extrabold text-stone-900">Pricing · plans & packages</h1>
-      <p className="text-xs text-stone-500">All prices are stored in the database and served to web/mobile from one public endpoint.</p>
+      <h1 className="text-lg font-extrabold text-ink-strong">Pricing · plans & packages</h1>
+      <p className="text-xs text-muted">All prices are stored in the database and served to web/mobile from one public endpoint.</p>
       <Card title="Subscription tiers">
         {plans.busy || !plans.data ? <Spinner /> : plans.data.length === 0 ? <Empty /> : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-sm">
-              <thead className="text-xs text-stone-500"><tr><th>Code</th><th>Audience</th><th>Name</th><th>EGP/mo</th><th>Listings</th><th>Seats</th><th>Status</th></tr></thead>
+              <thead className="text-xs text-muted"><tr><th>Code</th><th>Audience</th><th>Name</th><th>EGP/mo</th><th>Listings</th><th>Seats</th><th>Status</th></tr></thead>
               <tbody>
                 {plans.data.map((p) => (
-                  <tr key={p.id} className="border-t border-stone-100">
+                  <tr key={p.id} className="border-t border-border">
                     <td className="font-mono text-xs">{p.code}</td><td>{p.audience}</td><td>{p.name_en}</td>
                     <td>{p.monthly_price_egp}</td><td>{p.listing_limit}</td><td>{p.seats}</td>
                     <td><Badge status={p.active ? "active" : "expired"}>{p.active ? "active" : "off"}</Badge></td>
@@ -179,10 +179,10 @@ export function PlansPackages() {
         {packages.busy || !packages.data ? <Spinner /> : packages.data.length === 0 ? <Empty /> : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[640px] text-sm">
-              <thead className="text-xs text-stone-500"><tr><th>Code</th><th>Weeks</th><th>Discount</th><th>Price</th><th>Priority</th><th>Featured</th></tr></thead>
+              <thead className="text-xs text-muted"><tr><th>Code</th><th>Weeks</th><th>Discount</th><th>Price</th><th>Priority</th><th>Featured</th></tr></thead>
               <tbody>
                 {packages.data.map((p) => (
-                  <tr key={p.id} className="border-t border-stone-100">
+                  <tr key={p.id} className="border-t border-border">
                     <td className="font-mono text-xs">{p.code}</td><td>{p.weeks}</td><td>{p.discount_pct}%</td>
                     <td>{p.total} EGP</td><td>{p.priority_weight}</td><td>{p.is_featured ? "★" : "—"}</td>
                   </tr>
@@ -221,13 +221,13 @@ export function OfficesAdmin() {
   }
   return (
     <div className="space-y-4" data-testid="growth-offices-page">
-      <h1 className="text-lg font-extrabold text-stone-900">Office verification queue</h1>
+      <h1 className="text-lg font-extrabold text-ink-strong">Office verification queue</h1>
       <input className={`${inputCls} max-w-sm`} placeholder="Rejection / info request note" value={note} onChange={(e) => setNote(e.target.value)} />
       {busy || !data ? <Spinner /> : data.length === 0 ? <Empty text="No offices yet" /> : (
         <div className="space-y-2">
           {data.map((o) => (
             <Card key={o.id} title={`${o.name_en} · /${o.slug}`}>
-              <div className="flex flex-wrap items-center gap-3 text-xs text-stone-600">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-muted">
                 <Badge status={o.verification_status}>{o.verification_status}</Badge>
                 <span>CR: {o.commercial_register || "—"}</span><span>Licence: {o.license_no || "—"}</span>
                 <span>Tax ID: {o.tax_id || "—"}</span>
@@ -260,15 +260,15 @@ export function AppealsAdmin() {
   }
   return (
     <div className="space-y-4" data-testid="growth-appeals-page">
-      <h1 className="text-lg font-extrabold text-stone-900">Verification appeals</h1>
-      <p className="text-xs text-stone-500">One appeal per rejected document. Accepting reopens the document in the verification queue.</p>
+      <h1 className="text-lg font-extrabold text-ink-strong">Verification appeals</h1>
+      <p className="text-xs text-muted">One appeal per rejected document. Accepting reopens the document in the verification queue.</p>
       <input className={`${inputCls} max-w-sm`} placeholder="Decision note" value={note} onChange={(e) => setNote(e.target.value)} />
       {busy || !data ? <Spinner /> : data.length === 0 ? <Empty text="No pending appeals" /> : (
         <div className="space-y-2">
           {data.map((a) => (
             <Card key={a.doc_id} title={`${a.doc_type} · ${a.reject_reason_code || "reason"} `}>
-              <p className="text-xs text-stone-600">Rejection: {a.reject_reason || "—"}</p>
-              <p className="mt-1 text-xs font-semibold text-stone-800">Appeal: {a.appeal_note || "—"}</p>
+              <p className="text-xs text-muted">Rejection: {a.reject_reason || "—"}</p>
+              <p className="mt-1 text-xs font-semibold text-ink">Appeal: {a.appeal_note || "—"}</p>
               <div className="mt-3 flex gap-2">
                 <button className={btnPrimary} type="button" onClick={() => void decide(a.doc_id, "approve")}>Reopen review</button>
                 <button className={btnGhost} type="button" onClick={() => void decide(a.doc_id, "reject")}>Uphold rejection</button>
@@ -286,16 +286,16 @@ export function Reconciliation() {
   const recon = useLoad<Recon>("/admin/growth/reconciliation");
   return (
     <div className="space-y-4" data-testid="growth-reconciliation-page">
-      <h1 className="text-lg font-extrabold text-stone-900">Payment audit & reconciliation</h1>
+      <h1 className="text-lg font-extrabold text-ink-strong">Payment audit & reconciliation</h1>
       <Card title="Daily reconciliation">
         {recon.busy || !recon.data ? <Spinner /> : (
           <div className="grid gap-3 sm:grid-cols-3">
-            <div><p className="text-xs text-stone-500">Consistent</p><p className="text-lg font-bold">{recon.data.consistent ? "✓ yes" : "✗ NO"}</p></div>
-            <div><p className="text-xs text-stone-500">Paid orders</p><p className="text-lg font-bold">{recon.data.paid_orders}</p></div>
-            <div><p className="text-xs text-stone-500">Total paid</p><p className="text-lg font-bold">{recon.data.total_paid_egp} EGP</p></div>
-            <div className="sm:col-span-3"><p className="text-xs text-stone-500">Captured payments / webhooks / refunds</p><p className="text-sm font-semibold">{recon.data.captured_payments} / {recon.data.gateway_webhooks} / {recon.data.refunded_orders}</p></div>
+            <div><p className="text-xs text-muted">Consistent</p><p className="text-lg font-bold">{recon.data.consistent ? "✓ yes" : "✗ NO"}</p></div>
+            <div><p className="text-xs text-muted">Paid orders</p><p className="text-lg font-bold">{recon.data.paid_orders}</p></div>
+            <div><p className="text-xs text-muted">Total paid</p><p className="text-lg font-bold">{recon.data.total_paid_egp} EGP</p></div>
+            <div className="sm:col-span-3"><p className="text-xs text-muted">Captured payments / webhooks / refunds</p><p className="text-sm font-semibold">{recon.data.captured_payments} / {recon.data.gateway_webhooks} / {recon.data.refunded_orders}</p></div>
             {recon.data.mismatches.length > 0 && (
-              <div className="rounded-lg bg-red-50 p-3 text-xs text-red-700 sm:col-span-3">
+              <div className="rounded-lg bg-danger-bg p-3 text-xs text-danger sm:col-span-3">
                 {recon.data.mismatches.map((m) => <p key={m}>⚠ {m}</p>)}
               </div>
             )}
@@ -306,10 +306,10 @@ export function Reconciliation() {
         {events.busy || !events.data ? <Spinner /> : events.data.length === 0 ? <Empty /> : (
           <div className="overflow-x-auto">
             <table className="w-full min-w-[720px] text-sm">
-              <thead className="text-xs text-stone-500"><tr><th>Time (UTC)</th><th>Event</th><th>Provider</th><th>Gateway txn</th><th>Amount</th></tr></thead>
+              <thead className="text-xs text-muted"><tr><th>Time (UTC)</th><th>Event</th><th>Provider</th><th>Gateway txn</th><th>Amount</th></tr></thead>
               <tbody>
                 {events.data.map((e) => (
-                  <tr key={e.id} className="border-t border-stone-100">
+                  <tr key={e.id} className="border-t border-border">
                     <td className="text-xs">{e.created_at?.slice(0, 19).replace("T", " ")}</td>
                     <td><Badge status={e.event.includes("fail") || e.event.includes("invalid") ? "rejected" : "paid"}>{e.event}</Badge></td>
                     <td>{e.provider || "—"}</td><td className="font-mono text-xs">{e.gateway_txn_id || "—"}</td><td>{e.amount ?? "—"}</td>

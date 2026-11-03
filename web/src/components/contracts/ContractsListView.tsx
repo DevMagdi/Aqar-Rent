@@ -20,12 +20,12 @@ export function ContractsListView() {
   }, []);
 
   if (err) return <ErrorState message={err} />;
-  if (!items) return <div className="space-y-3">{[1, 2].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-stone-200" />)}</div>;
+  if (!items) return <div className="space-y-3">{[1, 2].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-track" />)}</div>;
 
   return (
     <div className="mx-auto max-w-3xl space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold text-stone-900" data-testid="contracts-title">
+        <h1 className="text-xl font-bold text-ink-strong" data-testid="contracts-title">
           {t("contracts")}
         </h1>
         <Link href={`/${locale}/contracts/new`} data-testid="btn-new-contract" className="rounded-xl bg-gold px-4 py-2.5 text-sm font-bold text-gold-text hover:bg-gold-dark">
@@ -48,23 +48,23 @@ export function ContractsListView() {
             <li key={c.id} data-testid="contract-row" data-status={c.status}>
               <Link
                 href={`/${locale}/contracts/${c.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-stone-200 bg-white p-4 hover:shadow-sm"
+                className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface p-4 hover:shadow-sm"
               >
                 <div>
-                  <p className="font-bold text-stone-900" dir="ltr">
+                  <p className="font-bold text-ink-strong" dir="ltr">
                     {c.reference_no}
                   </p>
-                  <p className="text-sm text-stone-500">
+                  <p className="text-sm text-muted">
                     {c.listing_title || "—"} · {t(`tpl.${c.template}`)}
                   </p>
                 </div>
                 <span
                   className={`rounded-full px-3 py-1 text-xs font-bold ${
                     c.status === "confirmed"
-                      ? "bg-emerald-100 text-emerald-800"
+                      ? "bg-success-bg text-success"
                       : c.status === "pending_confirmation"
-                        ? "bg-amber-100 text-amber-800"
-                        : "bg-stone-100 text-stone-700"
+                        ? "bg-warn-bg text-warn"
+                        : "bg-surface-2 text-ink"
                   }`}
                 >
                   {t(`cstatus.${c.status}`)}

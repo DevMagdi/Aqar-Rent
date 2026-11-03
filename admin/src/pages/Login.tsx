@@ -32,11 +32,16 @@ export function Login() {
   }
 
   return (
-    <div className="relative grid min-h-screen place-items-center bg-sidebar p-4">
-      <div className="absolute end-4 top-4">
-        <ThemeToggle />
-      </div>
-      <form onSubmit={submit} className="w-full max-w-md rounded-[22px] bg-surface p-7 shadow-pop" data-testid="login-form">
+    <div className="admin-login relative grid min-h-screen bg-bg lg:grid-cols-2">
+      <aside className="admin-login-art relative hidden overflow-hidden bg-sidebar lg:flex" aria-hidden>
+        <span className="admin-login-glow" />
+        <div className="admin-login-art-mark"><BrandMark compact /></div>
+      </aside>
+      <main className="admin-login-stage relative grid min-h-screen place-items-center p-4">
+        <div className="absolute end-4 top-4">
+          <ThemeToggle />
+        </div>
+      <form onSubmit={submit} className="admin-login-card w-full max-w-md rounded-[22px] bg-surface p-7 shadow-pop" data-testid="login-form">
         <div className="mb-5 flex flex-col items-start gap-3">
           <BrandMark />
           <div>
@@ -45,7 +50,7 @@ export function Login() {
           </div>
         </div>
 
-        <label className="block text-sm font-semibold text-stone-700" htmlFor="email">
+        <label className="block text-sm font-semibold text-ink" htmlFor="email">
           Email
         </label>
         <input
@@ -54,13 +59,13 @@ export function Login() {
           type="email"
           dir="ltr"
           autoComplete="username"
-          className="mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-gold"
+          className="mt-1 w-full rounded-xl border border-border-strong px-3.5 py-2.5 text-sm outline-none focus:border-gold"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
         />
 
-        <label className="mt-4 block text-sm font-semibold text-stone-700" htmlFor="password">
+        <label className="mt-4 block text-sm font-semibold text-ink" htmlFor="password">
           Password
         </label>
         <input
@@ -69,24 +74,25 @@ export function Login() {
           type="password"
           dir="ltr"
           autoComplete="current-password"
-          className="mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-gold"
+          className="mt-1 w-full rounded-xl border border-border-strong px-3.5 py-2.5 text-sm outline-none focus:border-gold"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
           minLength={8}
         />
 
-        <label className="mt-4 block text-sm font-semibold text-stone-700" htmlFor="totp">
+        <label className="mt-4 block text-sm font-semibold text-ink" htmlFor="totp">
           2FA code
         </label>
         <input
           id="totp"
           data-testid="input-totp"
           dir="ltr"
+          autoComplete="one-time-code"
           inputMode="numeric"
           maxLength={6}
           placeholder="123456"
-          className="mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-center text-lg tracking-[0.4em] outline-none focus:border-gold"
+          className="mt-1 w-full rounded-xl border border-border-strong px-3.5 py-2.5 text-center text-lg tracking-[0.4em] outline-none focus:border-gold"
           value={code}
           onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
           required
@@ -94,7 +100,7 @@ export function Login() {
         />
 
         {err && (
-          <p role="alert" className="mt-3 text-sm font-semibold text-red-600" data-testid="login-error">
+          <p key={err} role="alert" className="login-error mt-3 text-sm font-semibold text-danger" data-testid="login-error">
             {err}
           </p>
         )}
@@ -105,9 +111,10 @@ export function Login() {
           disabled={busy}
           className="mt-6 w-full rounded-xl bg-gold py-3 text-sm font-bold text-gold-text hover:bg-gold-dark disabled:opacity-60"
         >
-          {busy ? "Signing in…" : "Sign in"}
+          {busy ? <span className="inline-flex items-center justify-center gap-2"><span className="login-spinner" aria-hidden />Signing in…</span> : "Sign in"}
         </button>
       </form>
+      </main>
     </div>
   );
 }

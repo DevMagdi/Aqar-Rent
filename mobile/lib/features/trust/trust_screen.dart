@@ -57,12 +57,12 @@ class _TrustScreenState extends State<TrustScreen> {
                         const SizedBox(height: 12),
                         Text(
                           (AppStrings.isArabic ? trust['label_ar'] : trust['label_en'] ?? trust['label_ar'] ?? '') as String,
-                          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppTheme.teal),
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkTeal : AppColors.tealInk),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           (AppStrings.isArabic ? trust['note_ar'] : trust['note_en'] ?? s('trust_note')) as String,
-                          style: const TextStyle(fontSize: 12, height: 1.6, color: Colors.black54),
+                          style: TextStyle(fontSize: 12, height: 1.6, color: appMutedColor(context)),
                         ),
                       ],
                     ),
@@ -76,7 +76,7 @@ class _TrustScreenState extends State<TrustScreen> {
                   Card(
                     margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
-                      leading: const Icon(Icons.verified, color: AppTheme.teal),
+                      leading: Icon(Icons.verified, color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkTeal : AppColors.tealInk),
                       title: Text((AppStrings.isArabic ? b['label_ar'] : b['label_en'] ?? b['label_ar'] ?? '') as String,
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                       subtitle: Text(b['code'] as String? ?? '', style: const TextStyle(fontSize: 10)),
@@ -103,7 +103,7 @@ class _TrustScreenState extends State<TrustScreen> {
                               AppStrings.isArabic
                                   ? 'لا يوجد اشتراك نشط — يمكنك شراء باقة من صفحة الأسعار.'
                                   : 'No active subscription — see the pricing page for plans.',
-                              style: const TextStyle(fontSize: 11, color: Colors.black54),
+                              style: TextStyle(fontSize: 11, color: appMutedColor(context)),
                             ),
                           ),
                       ],

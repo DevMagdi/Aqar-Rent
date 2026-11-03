@@ -83,7 +83,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
 
   if (err) {
     return (
-      <div className="mx-auto max-w-2xl rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700" role="alert" data-testid="contract-error">
+      <div className="mx-auto max-w-2xl rounded-2xl border border-danger/20 bg-danger-bg p-6 text-center text-sm text-danger" role="alert" data-testid="contract-error">
         {err}
         <div className="mt-3">
           <Link href={`/${locale}/contracts`} className="font-semibold text-ink">
@@ -93,7 +93,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
       </div>
     );
   }
-  if (!contract) return <div className="mx-auto h-80 max-w-2xl animate-pulse rounded-3xl bg-stone-200" />;
+  if (!contract) return <div className="mx-auto h-80 max-w-2xl animate-pulse rounded-3xl bg-track" />;
 
   const myRole = user ? contract.parties.find((p) => p.id === user.id)?.role : undefined;
   const checkIns = handovers.filter((h) => h.kind === "check_in");
@@ -104,14 +104,14 @@ export function ContractDetail({ contractId }: { contractId: string }) {
   return (
     <div className="mx-auto max-w-3xl space-y-5" data-testid="contract-detail" data-status={contract.status}>
       {/* header */}
-      <div className="rounded-3xl border border-stone-200 bg-white p-5">
+      <div className="rounded-3xl border border-border bg-surface p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">{t("contract_ref")}</p>
-            <h1 className="text-xl font-extrabold text-stone-900" data-testid="contract-ref">
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">{t("contract_ref")}</p>
+            <h1 className="text-xl font-extrabold text-ink-strong" data-testid="contract-ref">
               {contract.reference_no}
             </h1>
-            <p className="mt-0.5 text-sm text-stone-500">
+            <p className="mt-0.5 text-sm text-muted">
               {t(`tpl.${contract.template}`)} · {contract.listing_title || contract.listing_id.slice(0, 8)}
             </p>
           </div>
@@ -119,10 +119,10 @@ export function ContractDetail({ contractId }: { contractId: string }) {
             data-testid="contract-status"
             className={`rounded-full px-3 py-1 text-xs font-bold ${
               contract.status === "confirmed"
-                ? "bg-emerald-100 text-emerald-800"
+                ? "bg-success-bg text-success"
                 : contract.status === "pending_confirmation"
-                  ? "bg-amber-100 text-amber-800"
-                  : "bg-stone-100 text-stone-700"
+                  ? "bg-warn-bg text-warn"
+                  : "bg-surface-2 text-ink"
             }`}
           >
             {t(`cstatus.${contract.status}`)}
@@ -130,7 +130,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
         </div>
 
         {contract.status === "confirmed" && (
-          <div className="mt-4 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-800" data-testid="confirmed-banner">
+          <div className="mt-4 rounded-xl bg-success-bg p-3 text-sm font-semibold text-success" data-testid="confirmed-banner">
             ✓ {t("contract_confirmed_banner")}
             <p className="mt-1 break-all font-mono text-[11px] font-normal" data-testid="terms-hash">
               {t("terms_hash")}: {contract.terms_hash}
@@ -140,18 +140,18 @@ export function ContractDetail({ contractId }: { contractId: string }) {
 
         <div className="mt-4 grid gap-3 sm:grid-cols-2">
           {contract.parties.map((p) => (
-            <div key={p.id} className="rounded-xl bg-stone-50 p-3 text-sm">
-              <p className="font-bold text-stone-800">
+            <div key={p.id} className="rounded-xl bg-bg p-3 text-sm">
+              <p className="font-bold text-ink">
                 {p.role === "owner" ? `👤 ${t("party_owner")}` : `🏠 ${t("party_tenant")}`}{" "}
-                <span className="font-normal text-stone-500">
+                <span className="font-normal text-muted">
                   {(contract.confirmations_log || []).some((e) => e.user_id === p.id) ? "✓✓" : "…"}
                 </span>
               </p>
-              <p className="mt-1 text-stone-600">{p.full_name}</p>
-              <p className="text-xs text-stone-400" dir="ltr">
+              <p className="mt-1 text-muted">{p.full_name}</p>
+              <p className="text-xs text-muted" dir="ltr">
                 {p.phone}
               </p>
-              <p className="text-xs text-stone-400">
+              <p className="text-xs text-muted">
                 {t("masked_nid")}: <span dir="ltr">{p.national_id_masked}</span>
               </p>
             </div>
@@ -164,7 +164,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
             <Link
               href={`/${locale}/contracts/${contract.id}/edit`}
               data-testid="btn-edit-contract"
-              className="rounded-xl border border-stone-300 px-4 py-2.5 text-sm font-semibold text-stone-700"
+              className="rounded-xl border border-border-strong px-4 py-2.5 text-sm font-semibold text-ink"
             >
               {t("edit")}
             </Link>
@@ -185,7 +185,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
               type="button"
               data-testid="btn-confirm-contract"
               onClick={() => setOtpFor("contract")}
-              className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700"
+              className="rounded-xl bg-success-fill px-4 py-2.5 text-sm font-bold text-on-dark hover:bg-success-fill"
             >
               🔑 {t("confirm_with_otp")}
             </button>
@@ -205,12 +205,12 @@ export function ContractDetail({ contractId }: { contractId: string }) {
         {/* confirmation log */}
         {contract.confirmations_log.length > 0 && (
           <div className="mt-4">
-            <h2 className="text-sm font-bold text-stone-700">{t("confirmation_log")}</h2>
+            <h2 className="text-sm font-bold text-ink">{t("confirmation_log")}</h2>
             <ul className="mt-1 space-y-1" data-testid="confirmation-log">
               {contract.confirmations_log.map((e, i) => (
-                <li key={i} className="rounded-lg bg-stone-50 px-3 py-1.5 text-xs text-stone-600">
+                <li key={i} className="rounded-lg bg-bg px-3 py-1.5 text-xs text-muted">
                   <b>{e.party === "owner" ? t("party_owner") : t("party_tenant")}</b> · {e.at.slice(0, 19).replace("T", " ")} · {e.ip || "-"} ·{" "}
-                  <span className="text-stone-400">{(e.device || "-").slice(0, 40)}</span> · OTP ✓
+                  <span className="text-muted">{(e.device || "-").slice(0, 40)}</span> · OTP ✓
                 </li>
               ))}
             </ul>
@@ -220,12 +220,12 @@ export function ContractDetail({ contractId }: { contractId: string }) {
 
       {/* fee */}
       {contract.fee_required && contract.fee_order_status !== "paid" && (
-        <div className="rounded-3xl border border-stone-200 bg-white p-5" data-testid="fee-panel">
-          <h2 className="text-sm font-bold text-stone-800">
+        <div className="rounded-3xl border border-border bg-surface p-5" data-testid="fee-panel">
+          <h2 className="text-sm font-bold text-ink">
             {t("fee_title")} — {contract.fee_amount} EGP
           </h2>
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <select aria-label={t("fee_title")} className="rounded-xl border border-stone-300 px-3 py-2 text-sm" value={feeMethod} onChange={(e) => setFeeMethod(e.target.value)}>
+            <select aria-label={t("fee_title")} className="rounded-xl border border-border-strong px-3 py-2 text-sm" value={feeMethod} onChange={(e) => setFeeMethod(e.target.value)}>
               {METHODS.map((m) => (
                 <option key={m} value={m}>
                   {t(`method_${m}`)}
@@ -239,17 +239,17 @@ export function ContractDetail({ contractId }: { contractId: string }) {
         </div>
       )}
       {contract.fee_required && contract.fee_order_status === "paid" && (
-        <p className="rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-700" data-testid="fee-paid">
+        <p className="rounded-xl bg-success-bg p-3 text-sm font-semibold text-success" data-testid="fee-paid">
           ✓ {t("fee_title")} — {t("paid")}
         </p>
       )}
       {!contract.fee_required && (
-        <p className="rounded-xl bg-stone-100 p-3 text-xs text-stone-500">{t("fee_free")}</p>
+        <p className="rounded-xl bg-surface-2 p-3 text-xs text-muted">{t("fee_free")}</p>
       )}
 
       {/* terms */}
-      <div className="rounded-3xl border border-stone-200 bg-white p-5">
-        <h2 className="text-base font-bold text-stone-900">{t("details")}</h2>
+      <div className="rounded-3xl border border-border bg-surface p-5">
+        <h2 className="text-base font-bold text-ink-strong">{t("details")}</h2>
         <dl className="mt-3 grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
           {[
             [t("unit_address_f"), contract.terms.unit_address],
@@ -266,19 +266,19 @@ export function ContractDetail({ contractId }: { contractId: string }) {
           ]
             .filter(([, v]) => v && v !== "—")
             .map(([k, v]) => (
-              <div key={k} className="flex justify-between gap-3 border-b border-stone-100 py-1">
-                <dt className="text-stone-500">{k}</dt>
-                <dd className="max-w-[60%] text-end font-semibold text-stone-800">{v}</dd>
+              <div key={k} className="flex justify-between gap-3 border-b border-border py-1">
+                <dt className="text-muted">{k}</dt>
+                <dd className="max-w-[60%] text-end font-semibold text-ink">{v}</dd>
               </div>
             ))}
         </dl>
-        <p className="mt-3 rounded-xl bg-amber-50 p-3 text-[11px] text-amber-800">⚖️ {t("tpl_draft_notice")}</p>
+        <p className="mt-3 rounded-xl bg-warn-bg p-3 text-[11px] text-warn">⚖️ {t("tpl_draft_notice")}</p>
       </div>
 
       {/* handovers */}
-      <div className="rounded-3xl border border-stone-200 bg-white p-5" data-testid="handover-section">
+      <div className="rounded-3xl border border-border bg-surface p-5" data-testid="handover-section">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-base font-bold text-stone-900">{t("handovers")}</h2>
+          <h2 className="text-base font-bold text-ink-strong">{t("handovers")}</h2>
           <div className="flex gap-2">
             {contract.status === "confirmed" && canCreateCheckIn && myRole && (
               <button
@@ -304,26 +304,26 @@ export function ContractDetail({ contractId }: { contractId: string }) {
         </div>
 
         {handovers.length === 0 ? (
-          <p className="mt-3 text-sm text-stone-400">{t("empty")}</p>
+          <p className="mt-3 text-sm text-muted">{t("empty")}</p>
         ) : (
           <ul className="mt-3 space-y-2">
             {handovers.map((h) => (
-              <li key={h.id} data-testid="handover-row" data-kind={h.kind} data-status={h.status} className="rounded-xl border border-stone-100 bg-stone-50 p-3">
+              <li key={h.id} data-testid="handover-row" data-kind={h.kind} data-status={h.status} className="rounded-xl border border-border bg-bg p-3">
                 <div className="flex flex-wrap items-center justify-between gap-2 text-sm">
-                  <span className="font-bold text-stone-800">
+                  <span className="font-bold text-ink">
                     {t(`hkind.${h.kind}`)} · {h.data.occurred_at || h.created_at?.slice(0, 10)}
                   </span>
-                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${h.status === "confirmed" ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}`}>
+                  <span className={`rounded-full px-2 py-0.5 text-[11px] font-bold ${h.status === "confirmed" ? "bg-success-bg text-success" : "bg-warn-bg text-warn"}`}>
                     {t(`hstatus.${h.status}`)}
                   </span>
                 </div>
-                {h.hash && <p className="mt-1 break-all font-mono text-[10px] text-stone-400">SHA-256: {h.hash.slice(0, 24)}…</p>}
+                {h.hash && <p className="mt-1 break-all font-mono text-[10px] text-muted">SHA-256: {h.hash.slice(0, 24)}…</p>}
                 <div className="mt-2 flex flex-wrap gap-2">
                   <button
                     type="button"
                     data-testid="btn-open-handover"
                     onClick={() => (h.status === "confirmed" && h.kind === "check_out" ? setCompare(h) : setEditor({ kind: h.kind, existing: h }))}
-                    className="rounded-lg border border-stone-300 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700"
+                    className="rounded-lg border border-border-strong bg-surface px-3 py-1.5 text-xs font-semibold text-ink"
                   >
                     {h.status === "confirmed" && h.kind === "check_out" ? t("side_by_side") : t("edit")}
                   </button>
@@ -332,7 +332,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
                       type="button"
                       data-testid="btn-confirm-existing"
                       onClick={() => setEditor({ kind: h.kind, existing: h })}
-                      className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white"
+                      className="rounded-lg bg-success-fill px-3 py-1.5 text-xs font-bold text-on-dark"
                     >
                       🔑 {t("confirm_with_otp")}
                     </button>
@@ -383,11 +383,11 @@ function ComparisonModal({ pair, handovers, onClose }: { pair: Handover; handove
   const cond = (c: string | null | undefined) => (c ? t(`cond.${c}`) : "—");
 
   return (
-    <div className="fixed inset-0 z-[800] overflow-y-auto bg-black/50 p-3 sm:p-6" role="dialog" aria-modal="true" onClick={onClose}>
-      <div className="mx-auto max-w-4xl rounded-3xl bg-white p-5" onClick={(e) => e.stopPropagation()} data-testid="comparison-modal">
+    <div className="fixed inset-0 z-[800] overflow-y-auto bg-brand-deep/50 p-3 sm:p-6" role="dialog" aria-modal="true" onClick={onClose}>
+      <div className="mx-auto max-w-4xl rounded-3xl bg-surface p-5" onClick={(e) => e.stopPropagation()} data-testid="comparison-modal">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-stone-900">{t("side_by_side")}</h2>
-          <button type="button" onClick={onClose} aria-label="close" className="rounded-lg p-2 text-stone-400 hover:bg-stone-100">
+          <h2 className="text-lg font-bold text-ink-strong">{t("side_by_side")}</h2>
+          <button type="button" onClick={onClose} aria-label="close" className="rounded-lg p-2 text-muted hover:bg-surface-2">
             ✕
           </button>
         </div>
@@ -396,7 +396,7 @@ function ComparisonModal({ pair, handovers, onClose }: { pair: Handover; handove
         <div className="mt-3 overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-200 text-start text-xs uppercase text-stone-400">
+              <tr className="border-b border-border text-start text-xs uppercase text-muted">
                 <th className="p-2 text-start">{t("item_label")}</th>
                 <th className="p-2 text-start">{t("before")}</th>
                 <th className="p-2 text-start">{t("current")}</th>
@@ -407,12 +407,12 @@ function ComparisonModal({ pair, handovers, onClose }: { pair: Handover; handove
                 room.items.map((item, ii) => {
                   const before = source?.data.rooms.find((r) => r.name === room.name)?.items.find((i) => i.label === item.label);
                   return (
-                    <tr key={`${room.name}-${ii}`} className="border-b border-stone-100">
-                      <td className="p-2 text-stone-600">
-                        <span className="text-[11px] text-stone-400">{room.name.replace(/_/g, " ")}</span> · {item.label}
+                    <tr key={`${room.name}-${ii}`} className="border-b border-border">
+                      <td className="p-2 text-muted">
+                        <span className="text-[11px] text-muted">{room.name.replace(/_/g, " ")}</span> · {item.label}
                       </td>
                       <td className="p-2">{cond(before?.condition)}</td>
-                      <td className={`p-2 font-semibold ${before && before.condition !== item.condition ? "text-red-600" : "text-stone-700"}`}>{cond(item.condition)}</td>
+                      <td className={`p-2 font-semibold ${before && before.condition !== item.condition ? "text-danger" : "text-ink"}`}>{cond(item.condition)}</td>
                     </tr>
                   );
                 }),
@@ -422,10 +422,10 @@ function ComparisonModal({ pair, handovers, onClose }: { pair: Handover; handove
         </div>
 
         {/* meters diff */}
-        <h3 className="mt-4 text-sm font-bold text-stone-800">{t("meters")}</h3>
+        <h3 className="mt-4 text-sm font-bold text-ink">{t("meters")}</h3>
         <table className="mt-1 w-full text-sm">
           <thead>
-            <tr className="border-b border-stone-200 text-xs uppercase text-stone-400">
+            <tr className="border-b border-border text-xs uppercase text-muted">
               <th className="p-2 text-start">{t("meters")}</th>
               <th className="p-2 text-start">{t("before")}</th>
               <th className="p-2 text-start">{t("current")}</th>
@@ -437,8 +437,8 @@ function ComparisonModal({ pair, handovers, onClose }: { pair: Handover; handove
               const before = Number(source?.data.meters?.[m]?.value || 0);
               const now = Number(pair.data.meters?.[m]?.value || 0);
               return (
-                <tr key={m} className="border-b border-stone-100">
-                  <td className="p-2 text-stone-600">{t(`meter_${m}`)}</td>
+                <tr key={m} className="border-b border-border">
+                  <td className="p-2 text-muted">{t(`meter_${m}`)}</td>
                   <td className="p-2">{source?.data.meters?.[m]?.value || "—"}</td>
                   <td className="p-2">{pair.data.meters?.[m]?.value || "—"}</td>
                   <td className="p-2 font-bold text-ink" data-testid={`meter-diff-${m}`}>
@@ -447,8 +447,8 @@ function ComparisonModal({ pair, handovers, onClose }: { pair: Handover; handove
                 </tr>
               );
             })}
-            <tr className="border-b border-stone-100">
-              <td className="p-2 text-stone-600">{t("keys_count")}</td>
+            <tr className="border-b border-border">
+              <td className="p-2 text-muted">{t("keys_count")}</td>
               <td className="p-2">{source?.data.keys_count ?? "—"}</td>
               <td className="p-2">{pair.data.keys_count ?? "—"}</td>
               <td className="p-2">—</td>
@@ -457,7 +457,7 @@ function ComparisonModal({ pair, handovers, onClose }: { pair: Handover; handove
         </table>
 
         <div className="mt-4 flex justify-end">
-          <button type="button" onClick={onClose} className="rounded-xl border border-stone-300 px-4 py-2 text-sm font-semibold text-stone-600">
+          <button type="button" onClick={onClose} className="rounded-xl border border-border-strong px-4 py-2 text-sm font-semibold text-muted">
             {t("cancel")}
           </button>
         </div>

@@ -12,7 +12,7 @@ export function BadgeFeatured({ label, tone = "gold" }: { label: string; tone?: 
   return (
     <span
       data-testid="badge-premium"
-      className={`inline-flex items-center gap-1 rounded-full border border-white/20 bg-brand-deep/70 px-2.5 py-1 text-[11px] font-bold text-gold-light shadow backdrop-blur ${
+      className={`inline-flex items-center gap-1 rounded-full border border-on-dark/20 bg-brand-deep/70 px-2.5 py-1 text-[11px] font-bold text-gold-light shadow backdrop-blur ${
         tone === "gold" ? "" : "text-on-dark"
       }`}
     >
@@ -56,7 +56,8 @@ export function ListingCard({
               fill
               priority={eager}
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.06]"
+              className="image-loaded object-cover transition-transform duration-500 ease-out group-hover:scale-[1.05]"
+              style={{ viewTransitionName: `listing-${item.id.replace(/[^a-zA-Z0-9_-]/g, "-")}` }}
             />
           ) : (
             <div className="grid h-full place-items-center text-4xl text-muted/50">🏙</div>
@@ -68,9 +69,9 @@ export function ListingCard({
           />
           {/* dominant price, ON the image */}
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-3">
-            <p className="font-display text-2xl font-extrabold leading-none text-white listing-price-text">
+            <p className="font-display text-2xl font-extrabold leading-none text-on-dark listing-price-text">
               {formatMoney(item.rent_monthly, locale)}
-              <span className="ms-1 text-xs font-semibold text-white/85">{t("per_month")}</span>
+              <span className="ms-1 text-xs font-semibold text-on-dark/85">{t("per_month")}</span>
             </p>
             {availableNow && <BadgeFeatured label={t("available_now")} />}
           </div>
@@ -78,7 +79,7 @@ export function ListingCard({
             <span
               data-testid="trust-badge"
               title={locale === "ar" ? item.trust_label_ar || "" : "Verified owner"}
-              className="absolute top-2 start-2 inline-flex items-center gap-1 rounded-full border border-white/20 bg-brand-deep/70 px-2.5 py-1 text-[11px] font-bold text-gold-light shadow backdrop-blur"
+              className="absolute top-2 start-2 inline-flex items-center gap-1 rounded-full border border-on-dark/20 bg-brand-deep/70 px-2.5 py-1 text-[11px] font-bold text-gold-light shadow backdrop-blur"
             >
               ✓ {t("trust_verified")}
             </span>

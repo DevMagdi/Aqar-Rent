@@ -8,7 +8,8 @@ export function BrandMark({ compact = false }: { compact?: boolean }) {
             <stop offset="1" stopColor="var(--color-gold-dark)" />
           </linearGradient>
         </defs>
-        <polygon points="24,2 43,13 43,35 24,46 5,35 5,13" fill="url(#admin-gold-mark)" />
+        <polygon className="brand-mark-fill" points="24,2 43,13 43,35 24,46 5,35 5,13" fill="url(#admin-gold-mark)" />
+        <polygon className="brand-mark-outline" points="24,2 43,13 43,35 24,46 5,35 5,13" fill="none" stroke="var(--color-gold-light)" strokeWidth="1.5" strokeDasharray="128" strokeDashoffset="128" />
         <text x="24" y="32" textAnchor="middle" fontFamily="var(--font-display)" fontSize="23" fontWeight="700" fill="var(--color-brand-deep)">ع</text>
       </svg>
       {!compact && <span className="brand-wordmark">Aqar Rent</span>}

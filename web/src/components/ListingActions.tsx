@@ -55,7 +55,7 @@ export function FavoriteButton({ listingId }: { listingId: string }) {
       disabled={busy}
       onClick={toggle}
       className={`flex items-center justify-center gap-2 rounded-xl border px-4 py-3 text-sm font-semibold transition ${
-        fav ? "border-red-300 bg-red-50 text-red-600" : "border-stone-300 bg-white text-stone-700 hover:border-brand-400"
+        fav ? "border-danger/20 bg-danger-bg text-danger" : "border-border-strong bg-surface text-ink hover:border-brand-400"
       }`}
     >
       {fav ? "♥" : "♡"} {fav ? t("favorite_remove") : t("favorite_add")}
@@ -90,7 +90,7 @@ export function ShareButton({ title }: { title: string }) {
           toast.show(url);
         }
       }}
-      className="flex items-center justify-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm font-semibold text-stone-700 hover:border-brand-400"
+      className="flex items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface px-4 py-3 text-sm font-semibold text-ink hover:border-brand-400"
       // eslint-disable-next-line react/no-unknown-property
       data-href={href || undefined}
     >
@@ -133,21 +133,21 @@ export function ReportButton({ listingId }: { listingId: string }) {
         type="button"
         data-testid="btn-report"
         onClick={() => setOpen(true)}
-        className="flex items-center justify-center gap-2 rounded-xl border border-stone-300 bg-white px-4 py-3 text-sm font-semibold text-stone-500 hover:border-red-300 hover:text-red-600"
+        className="flex items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface px-4 py-3 text-sm font-semibold text-muted hover:border-danger/20 hover:text-danger"
       >
         ⚑ {t("report")}
       </button>
       {open && (
-        <div role="dialog" aria-modal="true" aria-label={t("report_title")} className="fixed inset-0 z-[900] grid place-items-center bg-black/50 p-4" onClick={() => setOpen(false)}>
-          <div className="w-full max-w-md rounded-2xl bg-white p-5" onClick={(e) => e.stopPropagation()} data-testid="report-modal">
-            <h2 className="text-lg font-bold text-stone-900">{t("report_title")}</h2>
-            <label className="mt-4 block text-sm font-medium text-stone-700" htmlFor="rep-reason">
+        <div role="dialog" aria-modal="true" aria-label={t("report_title")} className="fixed inset-0 z-[900] grid place-items-center bg-brand-deep/50 p-4" onClick={() => setOpen(false)}>
+          <div className="w-full max-w-md rounded-2xl bg-surface p-5" onClick={(e) => e.stopPropagation()} data-testid="report-modal">
+            <h2 className="text-lg font-bold text-ink-strong">{t("report_title")}</h2>
+            <label className="mt-4 block text-sm font-medium text-ink" htmlFor="rep-reason">
               {t("report")}
             </label>
             <select
               id="rep-reason"
               data-testid="report-reason"
-              className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm"
+              className="mt-1 w-full rounded-xl border border-border-strong px-3 py-2.5 text-sm"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
             >
@@ -157,7 +157,7 @@ export function ReportButton({ listingId }: { listingId: string }) {
                 </option>
               ))}
             </select>
-            <label className="mt-3 block text-sm font-medium text-stone-700" htmlFor="rep-note">
+            <label className="mt-3 block text-sm font-medium text-ink" htmlFor="rep-note">
               {t("report_note")}
             </label>
             <textarea
@@ -165,12 +165,12 @@ export function ReportButton({ listingId }: { listingId: string }) {
               data-testid="report-note"
               rows={3}
               maxLength={1000}
-              className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm"
+              className="mt-1 w-full rounded-xl border border-border-strong px-3 py-2.5 text-sm"
               value={note}
               onChange={(e) => setNote(e.target.value)}
             />
             <div className="mt-4 flex justify-end gap-2">
-              <button type="button" onClick={() => setOpen(false)} className="rounded-xl px-4 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-100">
+              <button type="button" onClick={() => setOpen(false)} className="rounded-xl px-4 py-2 text-sm font-semibold text-muted hover:bg-surface-2">
                 {t("cancel")}
               </button>
               <button
@@ -178,7 +178,7 @@ export function ReportButton({ listingId }: { listingId: string }) {
                 data-testid="report-submit"
                 disabled={busy}
                 onClick={submit}
-                className="rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60"
+                className="rounded-xl bg-danger-fill px-4 py-2 text-sm font-semibold text-on-dark hover:bg-danger-fill disabled:opacity-60"
               >
                 {t("send")}
               </button>

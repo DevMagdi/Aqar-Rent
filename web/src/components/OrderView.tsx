@@ -116,23 +116,23 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
   }
 
   if (err) return <ErrorState message={err} onRetry={load} />;
-  if (!order) return <div className="mx-auto h-80 max-w-2xl animate-pulse rounded-3xl bg-stone-200" />;
+  if (!order) return <div className="mx-auto h-80 max-w-2xl animate-pulse rounded-3xl bg-track" />;
 
   // ── result screens ──────────────────────────────────────────────────
   if (order.status === "paid") {
     return (
-      <div className="mx-auto max-w-lg rounded-3xl border border-emerald-200 bg-emerald-50 p-8 text-center" data-testid="payment-success">
+      <div className="mx-auto max-w-lg rounded-3xl border border-success/20 bg-success-bg p-8 text-center" data-testid="payment-success">
         <p className="text-4xl">🎉</p>
-        <h1 className="mt-3 text-2xl font-bold text-emerald-900">{t("checkout_success")}</h1>
-        <p className="mt-2 text-sm text-emerald-700">{t("checkout_success_sub")}</p>
-        <p className="mt-3 text-xs text-emerald-600">
+        <h1 className="mt-3 text-2xl font-bold text-success">{t("checkout_success")}</h1>
+        <p className="mt-2 text-sm text-success">{t("checkout_success_sub")}</p>
+        <p className="mt-3 text-xs text-success">
           {t("order_ref")}: <b data-testid="order-total">{formatMoney(order.total, locale)}</b>
         </p>
         <div className="mt-6 flex justify-center gap-3">
-          <Link href={`/${locale}/owner`} className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
+          <Link href={`/${locale}/owner`} className="rounded-xl bg-success-fill px-5 py-2.5 text-sm font-semibold text-on-dark hover:bg-success-fill">
             {t("dashboard_title")}
           </Link>
-          <Link href={`/${locale}/owner/orders`} className="rounded-xl border border-emerald-300 bg-white px-5 py-2.5 text-sm font-semibold text-emerald-700">
+          <Link href={`/${locale}/owner/orders`} className="rounded-xl border border-success/20 bg-surface px-5 py-2.5 text-sm font-semibold text-success">
             {t("view_orders")}
           </Link>
         </div>
@@ -142,14 +142,14 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
 
   if (order.status === "failed") {
     return (
-      <div className="mx-auto max-w-lg rounded-3xl border border-red-200 bg-red-50 p-8 text-center" data-testid="payment-failed">
+      <div className="mx-auto max-w-lg rounded-3xl border border-danger/20 bg-danger-bg p-8 text-center" data-testid="payment-failed">
         <p className="text-4xl">⚠️</p>
-        <h1 className="mt-3 text-2xl font-bold text-red-900">{t("checkout_failed")}</h1>
-        <p className="mt-2 text-sm text-red-700">{t("checkout_failed_sub")}</p>
+        <h1 className="mt-3 text-2xl font-bold text-danger">{t("checkout_failed")}</h1>
+        <p className="mt-2 text-sm text-danger">{t("checkout_failed_sub")}</p>
         <Link
           href={`/${locale}/owner/checkout?listing=${order.listing_id}`}
           data-testid="btn-retry-payment"
-          className="mt-6 inline-block rounded-xl bg-red-600 px-6 py-2.5 text-sm font-semibold text-white hover:bg-red-700"
+          className="mt-6 inline-block rounded-xl bg-danger-fill px-6 py-2.5 text-sm font-semibold text-on-dark hover:bg-danger-fill"
         >
           {t("try_again")}
         </Link>
@@ -159,7 +159,7 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
 
   if (order.status === "expired" || order.status === "refunded") {
     return (
-      <div className="mx-auto max-w-lg rounded-3xl border border-stone-200 bg-white p-8 text-center">
+      <div className="mx-auto max-w-lg rounded-3xl border border-border bg-surface p-8 text-center">
         <StatusBadge status={order.status} label={t(`ostatus.${order.status}`) !== `ostatus.${order.status}` ? t(`ostatus.${order.status}`) : order.status} />
         <Link href={`/${locale}/owner/orders`} className="mt-6 block text-sm font-semibold text-ink">
           ← {t("orders_title")}
@@ -183,28 +183,28 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
     <div className="mx-auto max-w-2xl space-y-5" data-testid="order-pending">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-bold text-stone-900">{t("checkout_pending")}</h1>
-          <p className="text-sm text-stone-500">{t("checkout_pending_sub")}</p>
+          <h1 className="text-xl font-bold text-ink-strong">{t("checkout_pending")}</h1>
+          <p className="text-sm text-muted">{t("checkout_pending_sub")}</p>
         </div>
         <StatusBadge status="pending" label={t("ostatus.pending")} />
       </div>
 
-      <section className="rounded-2xl border border-stone-200 bg-white p-5">
+      <section className="rounded-2xl border border-border bg-surface p-5">
         <dl className="space-y-2 text-sm">
           <div className="flex justify-between">
-            <dt className="text-stone-500">{t("order_ref")}</dt>
+            <dt className="text-muted">{t("order_ref")}</dt>
             <dd className="font-mono text-xs" data-testid="order-id">
               {order.id.slice(0, 8)}
             </dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-stone-500">{t("weeks")}</dt>
+            <dt className="text-muted">{t("weeks")}</dt>
             <dd>
               {order.weeks} {t("week")}
             </dd>
           </div>
           <div className="flex justify-between">
-            <dt className="text-stone-500">{t("method_card")}</dt>
+            <dt className="text-muted">{t("method_card")}</dt>
             <dd data-testid="order-method">{t(`method_${order.method}`)}</dd>
           </div>
           <div className="flex justify-between text-base font-bold">
@@ -213,7 +213,7 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
           </div>
           {order.expires_at && (
             <div className="flex justify-between">
-              <dt className="text-stone-500">{t("expires")}</dt>
+              <dt className="text-muted">{t("expires")}</dt>
               <dd>{formatDateTime(order.expires_at, locale)}</dd>
             </div>
           )}
@@ -221,7 +221,7 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
       </section>
 
       {!isBank ? (
-        <section className="rounded-2xl border border-stone-200 bg-white p-5" data-testid="gateway-panel">
+        <section className="rounded-2xl border border-border bg-surface p-5" data-testid="gateway-panel">
           {order.method === "card" && checkoutUrl && !checkoutUrl.startsWith("mock://") && (
             <a
               href={checkoutUrl}
@@ -234,16 +234,16 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
             </a>
           )}
           {order.method === "fawry" && order.payment_reference && (
-            <div className="rounded-xl bg-amber-50 p-4 text-sm">
-              <p className="font-semibold text-amber-800">{t("fawry_ref")}</p>
-              <p className="mt-1 font-mono text-lg font-bold text-amber-900" data-testid="fawry-ref">
+            <div className="rounded-xl bg-warn-bg p-4 text-sm">
+              <p className="font-semibold text-warn">{t("fawry_ref")}</p>
+              <p className="mt-1 font-mono text-lg font-bold text-warn" data-testid="fawry-ref">
                 {order.payment_reference}
               </p>
             </div>
           )}
           {order.method === "vodafone_cash" && order.payment_reference && (
-            <div className="rounded-xl bg-red-50 p-4 text-sm">
-              <p className="font-semibold text-red-800">{t("method_vodafone_cash")}</p>
+            <div className="rounded-xl bg-danger-bg p-4 text-sm">
+              <p className="font-semibold text-danger">{t("method_vodafone_cash")}</p>
               <p className="mt-1 font-mono text-lg font-bold" data-testid="vcash-ref">
                 {order.payment_reference}
               </p>
@@ -251,14 +251,14 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
           )}
 
           {MOCK_PAY && mockRef && (
-            <div className="mt-4 space-y-2 rounded-xl border border-dashed border-stone-300 p-4" data-testid="mock-panel">
-              <p className="text-xs font-semibold uppercase tracking-wide text-stone-400">MockProvider</p>
+            <div className="mt-4 space-y-2 rounded-xl border border-dashed border-border-strong p-4" data-testid="mock-panel">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted">MockProvider</p>
               <button
                 type="button"
                 data-testid="btn-simulate-success"
                 disabled={busy}
                 onClick={() => simulate("success")}
-                className="w-full rounded-xl bg-emerald-600 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-60"
+                className="w-full rounded-xl bg-success-fill py-2.5 text-sm font-bold text-on-dark hover:bg-success-fill disabled:opacity-60"
               >
                 {t("simulate_pay")}
               </button>
@@ -267,19 +267,19 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
                 data-testid="btn-simulate-failure"
                 disabled={busy}
                 onClick={() => simulate("failure")}
-                className="w-full rounded-xl border border-red-300 py-2.5 text-sm font-bold text-red-600 hover:bg-red-50 disabled:opacity-60"
+                className="w-full rounded-xl border border-danger/20 py-2.5 text-sm font-bold text-danger hover:bg-danger-bg disabled:opacity-60"
               >
                 {t("simulate_fail")}
               </button>
             </div>
           )}
-          <button type="button" data-testid="btn-refresh-order" onClick={load} className="mt-4 w-full rounded-xl border border-stone-300 py-2.5 text-sm font-semibold text-stone-600 hover:bg-stone-50">
+          <button type="button" data-testid="btn-refresh-order" onClick={load} className="mt-4 w-full rounded-xl border border-border-strong py-2.5 text-sm font-semibold text-muted hover:bg-bg">
             ↻
           </button>
         </section>
       ) : (
-        <section className="rounded-2xl border border-stone-200 bg-white p-5" data-testid="bank-panel">
-          <h2 className="text-sm font-bold text-stone-800">{t("bank_details")}</h2>
+        <section className="rounded-2xl border border-border bg-surface p-5" data-testid="bank-panel">
+          <h2 className="text-sm font-bold text-ink">{t("bank_details")}</h2>
           {order.bank_instructions ? (
             <dl className="mt-3 space-y-2 text-sm">
               {(
@@ -291,13 +291,13 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
                   ["swift", t("swift"), order.bank_instructions.swift],
                 ] as [string, string, string][]
               ).map(([key, label, value]) => (
-                <div key={key} className="flex items-center justify-between gap-3 border-b border-stone-100 py-1.5">
-                  <dt className="text-stone-500">{label}</dt>
+                <div key={key} className="flex items-center justify-between gap-3 border-b border-border py-1.5">
+                  <dt className="text-muted">{label}</dt>
                   <dd className="flex items-center gap-2">
                     <span className="font-mono text-xs" dir="ltr">
                       {value}
                     </span>
-                    <button type="button" aria-label={t("copy")} onClick={() => copy(value, label)} className="rounded border border-stone-200 px-1.5 py-0.5 text-[10px] text-stone-500">
+                    <button type="button" aria-label={t("copy")} onClick={() => copy(value, label)} className="rounded border border-border px-1.5 py-0.5 text-[10px] text-muted">
                       {t("copy")}
                     </button>
                   </dd>
@@ -321,7 +321,7 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
               </div>
             </dl>
           ) : (
-            <p className="mt-2 text-sm text-stone-500">{t("loading")}</p>
+            <p className="mt-2 text-sm text-muted">{t("loading")}</p>
           )}
 
           <div className="mt-4">
@@ -330,19 +330,19 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
               type="file"
               accept="image/*,application/pdf"
               data-testid="input-receipt"
-              className="block w-full text-sm text-stone-600 file:me-3 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink"
+              className="block w-full text-sm text-muted file:me-3 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink"
               onChange={(e) => {
                 const f = e.target.files?.[0];
                 if (f) void uploadReceipt(f);
               }}
             />
             {progress !== null && (
-              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-stone-200">
+              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-track">
                 <div className="h-full bg-gold transition-all" style={{ width: `${progress}%` }} />
               </div>
             )}
             {(bankStatus || null) && (
-              <p className="mt-2 text-xs font-semibold text-amber-700" data-testid="receipt-status">
+              <p className="mt-2 text-xs font-semibold text-warn" data-testid="receipt-status">
                 {t("receipt_uploaded")} ({bankStatus})
               </p>
             )}
@@ -350,7 +350,7 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
         </section>
       )}
 
-      <p className="text-center text-xs text-stone-400">
+      <p className="text-center text-xs text-muted">
         <Link href={`/${locale}/owner/orders`} className="hover:underline">
           ← {t("orders_title")}
         </Link>

@@ -17,18 +17,18 @@ const LIMITS: [string, string][] = [
 export function Settings() {
   return (
     <div className="space-y-5" data-testid="settings-page">
-      <h1 className="text-lg font-extrabold text-stone-900">Settings (read-only)</h1>
+      <h1 className="text-lg font-extrabold text-ink-strong">Settings (read-only)</h1>
 
       <Card title="Platform limits & presets (sourced from backend enums)">
-        <dl className="divide-y divide-stone-100 text-sm">
+        <dl className="divide-y divide-border text-sm">
           {LIMITS.map(([k, v]) => (
             <div key={k} className="flex flex-wrap justify-between gap-2 py-2">
-              <dt className="font-semibold text-stone-700">{k}</dt>
-              <dd className="text-stone-500">{v}</dd>
+              <dt className="font-semibold text-ink">{k}</dt>
+              <dd className="text-muted">{v}</dd>
             </div>
           ))}
         </dl>
-        <p className="mt-3 text-xs text-stone-400">
+        <p className="mt-3 text-xs text-muted">
           These are authoritative in the backend (<code>app/models/enums.py</code>, migrations and the plans table). No settings-write API
           exists, so this page documents them instead of inventing endpoints.
         </p>
@@ -37,9 +37,9 @@ export function Settings() {
       <Card title="Rejection preset reasons (admin reject modal)">
         <ul className="grid gap-2 text-sm sm:grid-cols-2">
           {REJECT_REASONS.map(([k, v]) => (
-            <li key={k} className="rounded-xl bg-stone-50 px-3 py-2">
+            <li key={k} className="rounded-xl bg-bg px-3 py-2">
               <code className="text-xs font-bold text-ink">{k}</code>
-              <p className="text-stone-600">{v}</p>
+              <p className="text-muted">{v}</p>
             </li>
           ))}
         </ul>

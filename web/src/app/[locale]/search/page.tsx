@@ -64,7 +64,7 @@ export default async function SearchPage({
 
   return (
     <div>
-      <h1 className="mb-4 text-xl font-bold text-stone-900">{makeT(l)("nav_search")}</h1>
+      <h1 className="mb-4 text-xl font-bold text-ink-strong">{makeT(l)("nav_search")}</h1>
       <SearchExperience locale={l} places={places} initial={initial} initialFilters={filters} />
     </div>
   );

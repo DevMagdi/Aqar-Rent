@@ -12,8 +12,11 @@ export function ThemeToggle() {
 
   function toggle() {
     const next: Mode = mode === "dark" ? "light" : "dark";
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!reduced) document.documentElement.classList.add("theme-switching");
     document.documentElement.classList.toggle("dark", next === "dark");
     document.documentElement.dataset.theme = next;
+    if (!reduced) window.setTimeout(() => document.documentElement.classList.remove("theme-switching"), 160);
     try {
       localStorage.setItem("aqar.theme", next);
     } catch {

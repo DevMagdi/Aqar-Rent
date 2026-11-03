@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../core/widgets.dart';
+
 import '../api/api_client.dart';
 import '../models/models.dart';
 import '../widgets/listing_card.dart';
@@ -36,11 +38,9 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_error != null) return Center(child: Text('$_error'));
-    if (_items.isEmpty) {
-      return const Center(child: Padding(padding: EdgeInsets.all(24), child: Text('لم تضف أي إعلان للمفضلة بعد')));
-    }
+    if (_loading) return const CardSkeleton();
+    if (_error != null) return ErrorView(message: _error!, onRetry: _load);
+    if (_items.isEmpty) return const EmptyView(title: 'لم تضف أي إعلان للمفضلة بعد');
     return RefreshIndicator(
       onRefresh: _load,
       child: ListView.separated(
@@ -50,10 +50,11 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
         itemBuilder: (context, i) {
           final item = _items[i];
           return ListingCard(
+            staggerIndex: i,
             item: item,
             onTap: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => ListingDetailScreen(listingId: item.id)),
+              AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations, builder: (_) => ListingDetailScreen(listingId: item.id)),
             ),
           );
         },

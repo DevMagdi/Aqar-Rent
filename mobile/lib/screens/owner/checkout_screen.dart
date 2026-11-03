@@ -2,6 +2,8 @@
 // pick → POST /orders → gateway/bank panel (real backend, no mock UI paths).
 import 'package:flutter/material.dart';
 
+import '../../core/widgets.dart';
+
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../api/api_client.dart';
@@ -98,7 +100,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       if (!mounted) return;
       await Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => OrderPayScreen(order: Order.fromJson(order))),
+        AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations, builder: (_) => OrderPayScreen(order: Order.fromJson(order))),
       );
     } catch (e) {
       if (mounted) {
@@ -319,7 +321,7 @@ class _OrderPayScreenState extends State<OrderPayScreen> {
           ),
           const SizedBox(height: 8),
           TextButton(
-            onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const OrdersScreen())),
+            onPressed: () => Navigator.push(context, AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations, builder: (_) => const OrdersScreen())),
             child: const Text('طلباتي وإيصالاتي'),
           ),
         ],

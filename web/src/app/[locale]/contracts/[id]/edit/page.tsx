@@ -29,11 +29,11 @@ function EditInner({ id }: { id: string }) {
 
   if (err)
     return (
-      <div className="mx-auto max-w-xl rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700" role="alert">
+      <div className="mx-auto max-w-xl rounded-2xl border border-danger/20 bg-danger-bg p-6 text-center text-sm text-danger" role="alert">
         {err}
       </div>
     );
-  if (!contract) return <div className="mx-auto h-96 max-w-3xl animate-pulse rounded-3xl bg-stone-200" />;
+  if (!contract) return <div className="mx-auto h-96 max-w-3xl animate-pulse rounded-3xl bg-track" />;
   return <ContractWizard editContract={contract} />;
 }
 

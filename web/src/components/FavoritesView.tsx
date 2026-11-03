@@ -28,7 +28,7 @@ export function FavoritesView({ locale, places }: { locale: Locale; places: Reco
 
   return (
     <div className="mx-auto max-w-5xl">
-      <h1 className="mb-5 text-xl font-bold text-stone-900">{t("favorites_title")}</h1>
+      <h1 className="mb-5 text-xl font-bold text-ink-strong">{t("favorites_title")}</h1>
       {loading ? (
         <CardSkeleton n={4} />
       ) : err ? (
@@ -59,15 +59,15 @@ export function FavoritesView({ locale, places }: { locale: Locale; places: Reco
               <li key={item.id}>
                 <Link
                   href={href}
-                  className={`flex items-center gap-4 rounded-2xl border border-stone-200 bg-white p-3 hover:shadow-sm ${dead ? "opacity-60" : ""}`}
+                  className={`flex items-center gap-4 rounded-2xl border border-border bg-surface p-3 hover:shadow-sm ${dead ? "opacity-60" : ""}`}
                   data-testid="favorite-item"
                 >
-                  <div className="h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-stone-100">
+                  <div className="h-16 w-20 shrink-0 overflow-hidden rounded-xl bg-surface-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     {item.thumb_url && <img src={item.thumb_url} alt="" className="h-full w-full object-cover" />}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-semibold text-stone-900">{item.title}</p>
+                    <p className="truncate text-sm font-semibold text-ink-strong">{item.title}</p>
                     <p className="text-sm font-bold text-ink">
                       {formatMoney(item.rent_monthly, locale)} {t("per_month")}
                     </p>

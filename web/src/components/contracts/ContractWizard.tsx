@@ -136,8 +136,8 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
     }
   }
 
-  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-gold";
-  const labelCls = "block text-sm font-semibold text-stone-700";
+  const inputCls = "mt-1 w-full rounded-xl border border-border-strong px-3.5 py-2.5 text-sm outline-none focus:border-gold";
+  const labelCls = "block text-sm font-semibold text-ink";
   const steps = [t("choose_template"), t("owner_name_f"), t("monthly_rent_f"), t("review_submit")];
 
   return (
@@ -145,13 +145,13 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
       <ol className="mb-5 flex gap-1">
         {steps.map((s, i) => (
           <li key={s} className="flex-1">
-            <div data-testid={`cstep-${i}`} className={`h-1.5 rounded-full ${i <= step ? "bg-gold" : "bg-stone-200"}`} />
-            <p className={`mt-1 hidden text-[11px] sm:block ${i === step ? "font-bold text-ink" : "text-stone-400"}`}>{s}</p>
+            <div data-testid={`cstep-${i}`} className={`h-1.5 rounded-full ${i <= step ? "bg-gold" : "bg-track"}`} />
+            <p className={`mt-1 hidden text-[11px] sm:block ${i === step ? "font-bold text-ink" : "text-muted"}`}>{s}</p>
           </li>
         ))}
       </ol>
 
-      <div className="rounded-3xl border border-stone-200 bg-white p-5 sm:p-6">
+      <div className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
         {step === 0 && (
           <div className="space-y-4" data-testid="cstep-listing">
             {!editContract && (
@@ -177,7 +177,7 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
                     </option>
                   ))}
                 </select>
-                {listings.length === 0 && <p className="mt-2 text-xs text-stone-500">{t("listings_empty")}</p>}
+                {listings.length === 0 && <p className="mt-2 text-xs text-muted">{t("listings_empty")}</p>}
               </div>
             )}
             <div>
@@ -199,7 +199,7 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
                 ))}
               </select>
             </div>
-            <p className="rounded-xl bg-amber-50 p-3 text-xs text-amber-800" data-testid="tpl-notice">
+            <p className="rounded-xl bg-warn-bg p-3 text-xs text-warn" data-testid="tpl-notice">
               ⚖️ {t("tpl_draft_notice")}
             </p>
           </div>
@@ -247,7 +247,7 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
                     onChange={(e) => setTenantPhone(e.target.value)}
                     placeholder="01xxxxxxxxx"
                   />
-                  <p className="mt-1 text-[11px] text-stone-400">{t("login_sub")}</p>
+                  <p className="mt-1 text-[11px] text-muted">{t("login_sub")}</p>
                 </div>
                 <div className="sm:col-span-2 grid gap-4 sm:grid-cols-2">
                   <div>
@@ -281,7 +281,7 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
                 </div>
               </>
             )}
-            <p className="sm:col-span-2 rounded-xl bg-stone-50 p-3 text-[11px] text-stone-500">
+            <p className="sm:col-span-2 rounded-xl bg-bg p-3 text-[11px] text-muted">
               🔒 {locale === "ar" ? "تُخزَّن الأرقام الوطنية مشفَّرة ولا تظهر إلا للطرفين." : "National IDs are stored encrypted and visible only to the two parties."}
             </p>
           </div>
@@ -360,7 +360,7 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
 
         {step === 3 && (
           <div className="space-y-3 text-sm" data-testid="cstep-review">
-            <h2 className="text-lg font-bold text-stone-900">{t("review_submit")}</h2>
+            <h2 className="text-lg font-bold text-ink-strong">{t("review_submit")}</h2>
             <dl className="grid gap-x-6 gap-y-1.5 sm:grid-cols-2">
               {[
                 [t("choose_listing"), listings.find((l) => l.id === listingId)?.title || editContract?.listing_title || "—"],
@@ -375,21 +375,21 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
                 [t("deposit_f"), String(terms.deposit_amount)],
                 [t("payment_day_f"), String(terms.payment_day)],
               ].map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-3 border-b border-stone-100 py-1">
-                  <dt className="text-stone-500">{k}</dt>
-                  <dd className="truncate font-semibold text-stone-800">{v || "—"}</dd>
+                <div key={k} className="flex justify-between gap-3 border-b border-border py-1">
+                  <dt className="text-muted">{k}</dt>
+                  <dd className="truncate font-semibold text-ink">{v || "—"}</dd>
                 </div>
               ))}
             </dl>
-            <p className="rounded-xl bg-amber-50 p-3 text-xs text-amber-800">⚖️ {t("tpl_draft_notice")}</p>
-            <p className="rounded-xl bg-stone-50 p-3 text-xs text-stone-600">
+            <p className="rounded-xl bg-warn-bg p-3 text-xs text-warn">⚖️ {t("tpl_draft_notice")}</p>
+            <p className="rounded-xl bg-bg p-3 text-xs text-muted">
               {locale === "ar" ? "بعد الحفظ سيُطلب تأكيد الطرفين برمز تحقق، وبعدها يصبح العقد نهائياً." : "After saving, both parties confirm with an OTP — then the contract becomes final."}
             </p>
           </div>
         )}
 
         {err && (
-          <p role="alert" className="mt-3 text-sm font-semibold text-red-600" data-testid="wizard-error">
+          <p role="alert" className="mt-3 text-sm font-semibold text-danger" data-testid="wizard-error">
             {err}
           </p>
         )}
@@ -401,7 +401,7 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
           data-testid="btn-cprev"
           onClick={() => setStep((s) => Math.max(0, s - 1))}
           disabled={step === 0}
-          className="rounded-xl border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-stone-700 disabled:opacity-40"
+          className="rounded-xl border border-border-strong bg-surface px-5 py-2.5 text-sm font-semibold text-ink disabled:opacity-40"
         >
           → {t("prev")}
         </button>
@@ -424,7 +424,7 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
           </button>
         ) : (
           <div className="flex flex-wrap justify-end gap-2">
-            <button type="button" data-testid="btn-save-draft" disabled={busy} onClick={() => save(false)} className="rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-700 disabled:opacity-60">
+            <button type="button" data-testid="btn-save-draft" disabled={busy} onClick={() => save(false)} className="rounded-xl border border-border-strong bg-surface px-4 py-2.5 text-sm font-semibold text-ink disabled:opacity-60">
               {t("draft_contract")}
             </button>
             <button type="button" data-testid="btn-save-request" disabled={busy} onClick={() => save(true)} className="rounded-xl bg-gold px-4 py-2.5 text-sm font-bold text-gold-text hover:bg-gold-dark disabled:opacity-60">
@@ -435,7 +435,7 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
       </div>
 
       <p className="mt-4 text-center">
-        <Link href={`/${locale}/contracts`} className="text-sm text-stone-500 hover:underline">
+        <Link href={`/${locale}/contracts`} className="text-sm text-muted hover:underline">
           ← {t("contracts")}
         </Link>
       </p>

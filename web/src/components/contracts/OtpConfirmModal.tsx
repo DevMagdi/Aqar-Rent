@@ -75,12 +75,12 @@ export function OtpConfirmModal({
       aria-modal="true"
       aria-label={title}
       data-testid="otp-confirm-modal"
-      className="fixed inset-0 z-[900] grid place-items-center bg-black/50 p-4"
+      className="fixed inset-0 z-[900] grid place-items-center bg-brand-deep/50 p-4"
       onClick={onClose}
     >
-      <div className="w-full max-w-md rounded-2xl bg-white p-5" onClick={(e) => e.stopPropagation()}>
-        <h2 className="text-lg font-bold text-stone-900">{title}</h2>
-        <p className="mt-1 text-sm text-stone-500">{t("otp_modal_sub")}</p>
+      <div className="w-full max-w-md rounded-2xl bg-surface p-5" onClick={(e) => e.stopPropagation()}>
+        <h2 className="text-lg font-bold text-ink-strong">{title}</h2>
+        <p className="mt-1 text-sm text-muted">{t("otp_modal_sub")}</p>
 
         {!sent ? (
           <button
@@ -93,7 +93,7 @@ export function OtpConfirmModal({
           </button>
         ) : (
           <>
-            <label className="mt-4 block text-sm font-semibold text-stone-700" htmlFor="otp-code">
+            <label className="mt-4 block text-sm font-semibold text-ink" htmlFor="otp-code">
               {t("code_label")}
             </label>
             <input
@@ -103,7 +103,7 @@ export function OtpConfirmModal({
               inputMode="numeric"
               maxLength={6}
               autoFocus
-              className="mt-1 w-full rounded-xl border border-stone-300 px-3 py-3 text-center text-xl tracking-[0.4em] outline-none focus:border-gold"
+              className="mt-1 w-full rounded-xl border border-border-strong px-3 py-3 text-center text-xl tracking-[0.4em] outline-none focus:border-gold"
               value={code}
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
             />
@@ -120,13 +120,13 @@ export function OtpConfirmModal({
         )}
 
         {err && (
-          <p role="alert" className="mt-2 text-sm font-semibold text-red-600" data-testid="otp-modal-error">
+          <p role="alert" className="mt-2 text-sm font-semibold text-danger" data-testid="otp-modal-error">
             {err}
           </p>
         )}
 
         <div className="mt-5 flex justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-xl px-4 py-2 text-sm font-semibold text-stone-600 hover:bg-stone-100">
+          <button type="button" onClick={onClose} className="rounded-xl px-4 py-2 text-sm font-semibold text-muted hover:bg-surface-2">
             {t("cancel")}
           </button>
           <button
@@ -134,7 +134,7 @@ export function OtpConfirmModal({
             data-testid="otp-submit"
             disabled={busy || !sent}
             onClick={submit}
-            className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-50"
+            className="rounded-xl bg-success-fill px-4 py-2 text-sm font-bold text-on-dark hover:bg-success-fill disabled:opacity-50"
           >
             {submitLabel}
           </button>

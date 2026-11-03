@@ -75,8 +75,8 @@ class _PricingScreenState extends State<PricingScreen> {
         child: ListTile(
           contentPadding: const EdgeInsets.all(14),
           leading: CircleAvatar(
-            backgroundColor: AppTheme.brand.withValues(alpha: 0.1),
-            child: Text('${p['weeks']}', style: const TextStyle(fontWeight: FontWeight.w900, color: AppTheme.brand)),
+            backgroundColor: Theme.of(context).brightness == Brightness.dark ? AppColors.darkGoldTint : AppColors.goldTint14,
+            child: Text('${p['weeks']}', style: TextStyle(fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.onSurface)),
           ),
           title: Text(_name(p), style: const TextStyle(fontWeight: FontWeight.w800)),
           subtitle: Text('${p['weeks']} ${s('per_week')} · ${s('discount')} ${p['discount_pct']}%'),
@@ -84,11 +84,11 @@ class _PricingScreenState extends State<PricingScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text('${p['total']} ${s('egp')}', style: const TextStyle(fontWeight: FontWeight.w900, color: AppTheme.brand)),
+              Text('${p['total']} ${s('egp')}', style: TextStyle(fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.onSurface)),
               if ((p['discount'] as num? ?? 0) > 0)
-                Text('${p['subtotal']}', style: const TextStyle(fontSize: 11, decoration: TextDecoration.lineThrough, color: Colors.grey)),
+                Text('${p['subtotal']}', style: TextStyle(fontSize: 11, decoration: TextDecoration.lineThrough, color: appMutedColor(context))),
               if (p['is_featured'] == true)
-                Text('★ ${s('featured_plan')}', style: const TextStyle(fontSize: 10, color: AppTheme.amber)),
+                Text('★ ${s('featured_plan')}', style: TextStyle(fontSize: 10, color: AppTheme.statusColor('warn', dark: Theme.of(context).brightness == Brightness.dark))),
             ],
           ),
         ),
@@ -106,14 +106,14 @@ class _PricingScreenState extends State<PricingScreen> {
                 children: [
                   Expanded(child: Text(_name(p), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 15))),
                   Text('${p['monthly_price_egp']} ${s('egp')} / ${s('per_month')}',
-                      style: const TextStyle(fontWeight: FontWeight.w900, color: AppTheme.brand)),
+                      style: TextStyle(fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.onSurface)),
                 ],
               ),
               const SizedBox(height: 8),
               Text(
                 '${AppStrings.isArabic ? 'حتى' : 'Up to'} ${p['listing_limit']} ${AppStrings.isArabic ? 'إعلان' : 'listings'} · '
                 '${p['seats']} ${AppStrings.isArabic ? 'مستخدم' : 'seat(s)'}',
-                style: const TextStyle(fontSize: 12, color: Colors.black54),
+                style: TextStyle(fontSize: 12, color: appMutedColor(context)),
               ),
               const SizedBox(height: 8),
               Wrap(
@@ -140,7 +140,11 @@ class _Hero extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22),
-          gradient: LinearGradient(colors: [AppTheme.brand.withValues(alpha: 0.10), AppColors.tealBg]),
+          gradient: LinearGradient(
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? [AppColors.darkGoldTint, AppColors.darkSurface]
+                : [AppColors.goldTint12, AppColors.tealBg],
+          ),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -150,17 +154,20 @@ class _Hero extends StatelessWidget {
             Text(s('no_rent_money'), style: const TextStyle(fontSize: 12.5, height: 1.6)),
             const SizedBox(height: 12),
             Wrap(spacing: 6, runSpacing: 6, children: [
-              _pill(AppStrings.isArabic ? 'بدون عمولة' : 'No commission'),
-              _pill(AppStrings.isArabic ? 'لا تأمين' : 'No deposits held'),
-              _pill(AppStrings.isArabic ? 'الوسيط اختياري' : 'Broker-optional'),
+              _pill(AppStrings.isArabic ? 'بدون عمولة' : 'No commission', context),
+              _pill(AppStrings.isArabic ? 'لا تأمين' : 'No deposits held', context),
+              _pill(AppStrings.isArabic ? 'الوسيط اختياري' : 'Broker-optional', context),
             ]),
           ],
         ),
       );
 
-  Widget _pill(String text) => Container(
+  Widget _pill(String text, BuildContext context) => Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+        decoration: BoxDecoration(
+          color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSurface2 : AppColors.surface,
+          borderRadius: BorderRadius.circular(20),
+        ),
         child: Text('✓ $text', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700)),
       );
 }
@@ -190,10 +197,10 @@ class _WeeklyCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('${weekly['price_egp']} ${s('egp')}', style: const TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: AppTheme.brand)),
+              Text('${weekly['price_egp']} ${s('egp')}', style: TextStyle(fontSize: 30, fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.onSurface)),
               const SizedBox(height: 4),
               Text('${AppStrings.isArabic ? 'إعلان واحد ·' : 'One listing ·'} ${weekly['duration_days']} ${AppStrings.isArabic ? 'أيام' : 'days'}',
-                  style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                  style: TextStyle(fontSize: 12, color: appMutedColor(context))),
             ],
           ),
         ),
@@ -206,6 +213,6 @@ class _AudienceLabel extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Padding(
         padding: const EdgeInsets.fromLTRB(2, 14, 2, 8),
-        child: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: Colors.black54)),
+        child: Text(label, style: TextStyle(fontSize: 12, fontWeight: FontWeight.w900, color: appMutedColor(context))),
       );
 }

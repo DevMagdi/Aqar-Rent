@@ -124,8 +124,8 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             key={i.id}
             role="status"
             data-testid="toast"
-            className={`toast-in pointer-events-auto max-w-md rounded-2xl px-5 py-3 text-sm font-semibold text-white shadow-pop ${
-              i.kind === "ok" ? "bg-emerald-600" : "bg-red-600"
+            className={`toast-in pointer-events-auto max-w-md rounded-2xl px-5 py-3 text-sm font-semibold text-on-dark shadow-pop ${
+              i.kind === "ok" ? "bg-success-fill" : "bg-danger-fill"
             }`}
           >
             {i.text}

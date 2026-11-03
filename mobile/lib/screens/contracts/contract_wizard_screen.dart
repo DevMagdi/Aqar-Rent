@@ -2,6 +2,8 @@
 // Mirrors the web wizard; saves draft then optionally sends for confirmation.
 import 'package:flutter/material.dart';
 
+import '../../core/widgets.dart';
+
 import '../../api/api_client.dart';
 import 'contract_detail_screen.dart';
 import '../../core/theme.dart';
@@ -129,7 +131,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
       );
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => ContractDetailScreen(contractId: contract['id'] as String)),
+        AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations, builder: (_) => ContractDetailScreen(contractId: contract['id'] as String)),
       );
     } catch (e) {
       if (mounted) setState(() { _error = '$e'; _busy = false; });
@@ -174,9 +176,9 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
                   onChanged: (v) => setState(() => _template = v ?? _template),
                 ),
                 const SizedBox(height: 8),
-                const Card(
-                  color: AppColors.warnBg,
-                  child: Padding(
+                Card(
+                  color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkWarnBg : AppColors.warnBg,
+                  child: const Padding(
                     padding: EdgeInsets.all(8),
                     child: Text('⚖️ اتفاق خاص بين الطرفين: ليس موثّقاً ولا مسجّلاً رسمياً ولا سنداً تنفيذياً، ولا يُغني عن التوثيق الرسمي.', style: TextStyle(fontSize: 12)),
                   ),
@@ -211,7 +213,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
                   decoration: const InputDecoration(labelText: 'البطاقة الوطنية للمستأجر *', border: OutlineInputBorder()),
                 ),
                 const SizedBox(height: 8),
-                const Text('تُخزَّن الأرقام الوطنية مشفَّرة ولا تظهر إلا للطرفين.', style: TextStyle(fontSize: 11, color: Colors.black54)),
+                Text('تُخزَّن الأرقام الوطنية مشفَّرة ولا تظهر إلا للطرفين.', style: TextStyle(fontSize: 11, color: appMutedColor(context))),
               ],
             ),
           ),
@@ -314,7 +316,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
                     child: Text('$_error', style: const TextStyle(color: AppColors.danger, fontSize: 13)),
                   ),
                 const SizedBox(height: 8),
-                const Text('بعد الحفظ يؤكد الطرفان برمز تحقق، وبعدها يصبح العقد نهائياً.', style: TextStyle(fontSize: 12, color: Colors.black54)),
+                Text('بعد الحفظ يؤكد الطرفان برمز تحقق، وبعدها يصبح العقد نهائياً.', style: TextStyle(fontSize: 12, color: appMutedColor(context))),
               ],
             ),
           ),

@@ -9,7 +9,7 @@ import type { Locale, SearchItem } from "@/lib/types";
 
 function Spinner() {
   return (
-    <div className="grid h-full min-h-64 place-items-center bg-stone-100 text-sm text-stone-500" data-testid="map-loading">
+    <div className="grid h-full min-h-64 place-items-center bg-surface-2 text-sm text-muted" data-testid="map-loading">
       …
     </div>
   );
@@ -33,7 +33,7 @@ export function MapSection({
   // Remount key: changing filters replaces markers without rebuilding the map.
   const key = items.map((i) => i.id).slice(0, 50).join(",");
   return (
-    <div className={`relative w-full overflow-hidden rounded-2xl border border-stone-200 ${heightClass}`} data-testid="map">
+    <div className={`relative w-full overflow-hidden rounded-2xl border border-border ${heightClass}`} data-testid="map">
       <MapInner items={items} onBbox={onBbox} focus={focus ?? null} locale={locale} mapKey={key} />
     </div>
   );

@@ -68,7 +68,7 @@ export function Verifications() {
 
   return (
     <div className="space-y-4" data-testid="verifications-page">
-      <h1 className="text-lg font-extrabold text-stone-900">Verification queue</h1>
+      <h1 className="text-lg font-extrabold text-ink-strong">Verification queue</h1>
       <div className="flex gap-1.5">
         {["pending", "approved", "rejected"].map((s) => (
           <button
@@ -76,7 +76,7 @@ export function Verifications() {
             type="button"
             data-testid={`tab-${s}`}
             onClick={() => setStatus(s)}
-            className={`rounded-full px-3 py-1.5 text-xs font-bold ${status === s ? "bg-stone-900 text-white" : "border border-stone-300 bg-white text-stone-600"}`}
+            className={`rounded-full px-3 py-1.5 text-xs font-bold ${status === s ? "bg-brand-deep text-on-dark" : "border border-border-strong bg-surface text-muted"}`}
           >
             {s}
           </button>
@@ -89,19 +89,19 @@ export function Verifications() {
         ) : rows.length === 0 ? (
           <Empty text="No documents in this queue" />
         ) : (
-          <ul className="divide-y divide-stone-100">
+          <ul className="divide-y divide-border">
             {rows.map((r) => (
               <li key={r.id} data-testid="verification-row" className="flex flex-wrap items-center gap-3 py-3">
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm font-bold text-stone-900">
-                    {r.full_name || "—"} <span className="font-mono text-xs text-stone-400" dir="ltr">{r.phone}</span>
+                  <p className="text-sm font-bold text-ink-strong">
+                    {r.full_name || "—"} <span className="font-mono text-xs text-muted" dir="ltr">{r.phone}</span>
                   </p>
-                  <p className="text-xs text-stone-500">
+                  <p className="text-xs text-muted">
                     {r.doc_type.replace(/_/g, " ")} · {r.created_at?.slice(0, 16).replace("T", " ")}
                   </p>
-                  {r.reject_reason && <p className="text-xs text-red-600">{r.reject_reason}</p>}
+                  {r.reject_reason && <p className="text-xs text-danger">{r.reject_reason}</p>}
                   {r.appeal_status && r.appeal_status !== "none" && (
-                    <p className="text-xs text-amber-700">Appeal: {r.appeal_status} — {r.appeal_note || ""}</p>
+                    <p className="text-xs text-warn">Appeal: {r.appeal_status} — {r.appeal_note || ""}</p>
                   )}
                 </div>
                 <Badge status={r.status}>{r.status}</Badge>
@@ -109,7 +109,7 @@ export function Verifications() {
                   type="button"
                   data-testid="btn-view-doc"
                   onClick={() => setViewer(r)}
-                  className="rounded-lg bg-stone-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-stone-700"
+                  className="rounded-lg bg-brand-deep px-3 py-1.5 text-xs font-bold text-on-dark hover:bg-brand-deep"
                 >
                   View document
                 </button>
@@ -153,15 +153,15 @@ export function Verifications() {
           <div data-testid="doc-viewer">
             {viewer.file_url ? (
               viewer.file_url.toLowerCase().endsWith(".pdf") ? (
-                <iframe title="document" src={viewer.file_url} sandbox="allow-same-origin" className="h-96 w-full rounded-xl border border-stone-200" />
+                <iframe title="document" src={viewer.file_url} sandbox="allow-same-origin" className="h-96 w-full rounded-xl border border-border" />
               ) : (
-                <img src={viewer.file_url} alt="verification document" className="max-h-96 w-full rounded-xl border border-stone-200 object-contain" />
+                <img src={viewer.file_url} alt="verification document" className="max-h-96 w-full rounded-xl border border-border object-contain" />
               )
             ) : (
               <Empty text="File URL unavailable (signed link expired)" />
             )}
           </div>
-          <label className="mt-3 block text-sm font-semibold text-stone-700" htmlFor="vreason">
+          <label className="mt-3 block text-sm font-semibold text-ink" htmlFor="vreason">
             Reject reason (required for reject)
           </label>
           <select
@@ -177,7 +177,7 @@ export function Verifications() {
             ))}
           </select>
           <input id="vreason" data-testid="input-reject-reason" className={inputCls} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={1000} />
-          <p className="mt-2 text-xs text-stone-400">Document opens via short-lived signed URL — never stored client-side.</p>
+          <p className="mt-2 text-xs text-muted">Document opens via short-lived signed URL — never stored client-side.</p>
         </Modal>
       )}
     </div>

@@ -83,16 +83,16 @@ export function LoginView() {
     }
   }
 
-  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-4 py-3 text-base outline-none focus:border-gold";
+  const inputCls = "mt-1 w-full rounded-xl border border-border-strong px-4 py-3 text-base outline-none focus:border-gold";
 
   return (
     <div className="mx-auto max-w-md">
-      <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+      <div className="rounded-3xl border border-border bg-surface p-6 shadow-sm">
         {step === "phone" ? (
           <form onSubmit={requestCode} data-testid="login-form">
-            <h1 className="text-xl font-bold text-stone-900">{t("login_title")}</h1>
-            <p className="mt-1 text-sm text-stone-500">{t("login_sub")}</p>
-            <label className="mt-5 block text-sm font-semibold text-stone-700" htmlFor="phone">
+            <h1 className="text-xl font-bold text-ink-strong">{t("login_title")}</h1>
+            <p className="mt-1 text-sm text-muted">{t("login_sub")}</p>
+            <label className="mt-5 block text-sm font-semibold text-ink" htmlFor="phone">
               {t("phone_label")}
             </label>
             <input
@@ -107,7 +107,7 @@ export function LoginView() {
               onChange={(e) => setPhone(e.target.value)}
             />
             {err && (
-              <p role="alert" className="mt-2 text-sm text-red-600" data-testid="login-error">
+              <p role="alert" className="mt-2 text-sm text-danger" data-testid="login-error">
                 {err}
               </p>
             )}
@@ -122,16 +122,16 @@ export function LoginView() {
           </form>
         ) : (
           <form onSubmit={verify} data-testid="otp-form">
-            <h1 className="text-xl font-bold text-stone-900">{t("otp_title")}</h1>
-            <p className="mt-1 text-sm text-stone-500">
+            <h1 className="text-xl font-bold text-ink-strong">{t("otp_title")}</h1>
+            <p className="mt-1 text-sm text-muted">
               {t("otp_sub")} <span dir="ltr" className="font-semibold">{phone}</span>
             </p>
             {devCode && (
-              <p className="mt-3 rounded-xl bg-amber-50 px-3 py-2 text-sm text-amber-800" data-testid="dev-code">
+              <p className="mt-3 rounded-xl bg-warn-bg px-3 py-2 text-sm text-warn" data-testid="dev-code">
                 {t("dev_code_hint")} <b data-testid="dev-code-value">{devCode}</b>
               </p>
             )}
-            <label className="mt-5 block text-sm font-semibold text-stone-700" htmlFor="code">
+            <label className="mt-5 block text-sm font-semibold text-ink" htmlFor="code">
               {t("code_label")}
             </label>
             <input
@@ -146,7 +146,7 @@ export function LoginView() {
               onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
             />
             {err && (
-              <p role="alert" className="mt-2 text-sm text-red-600" data-testid="otp-error">
+              <p role="alert" className="mt-2 text-sm text-danger" data-testid="otp-error">
                 {err}
               </p>
             )}
@@ -163,7 +163,7 @@ export function LoginView() {
                 type="button"
                 data-testid="btn-back-phone"
                 onClick={() => setStep("phone")}
-                className="text-stone-500 hover:text-stone-700"
+                className="text-muted hover:text-ink"
               >
                 ← {t("back")}
               </button>
@@ -180,7 +180,7 @@ export function LoginView() {
           </form>
         )}
       </div>
-      <p className="mt-4 text-center text-xs text-stone-400">
+      <p className="mt-4 text-center text-xs text-muted">
         <Link href={`/${locale}/support`} className="hover:underline">
           {t("support")}
         </Link>

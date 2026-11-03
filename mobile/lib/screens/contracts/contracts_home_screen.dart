@@ -1,6 +1,8 @@
 // My contracts list (owner + tenant roles) + entry to the wizard.
 import 'package:flutter/material.dart';
 
+import '../../core/widgets.dart';
+
 import '../../api/api_client.dart';
 import 'contract_detail_screen.dart';
 import 'contract_wizard_screen.dart';
@@ -54,7 +56,7 @@ class _ContractsHomeScreenState extends State<ContractsHomeScreen> {
       appBar: AppBar(title: const Text('العقود')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          await Navigator.push(context, MaterialPageRoute(builder: (_) => const ContractWizardScreen()));
+          await Navigator.push(context, AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations, builder: (_) => const ContractWizardScreen()));
           if (mounted) _load();
         },
         icon: const Icon(Icons.add),
@@ -84,7 +86,7 @@ class _ContractsHomeScreenState extends State<ContractsHomeScreen> {
                                 onTap: () async {
                                   await Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (_) => ContractDetailScreen(contractId: c['id'] as String)),
+                                    AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations, builder: (_) => ContractDetailScreen(contractId: c['id'] as String)),
                                   );
                                   if (mounted) _load();
                                 },

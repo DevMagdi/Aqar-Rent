@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ListingCard } from "./ListingCard";
+import { Stagger } from "./motion";
 import { MapSection } from "./MapSection";
 import { EmptyState, ErrorState, CardSkeleton } from "./ui";
 import { useI18n, useToast } from "./Providers";
@@ -196,14 +197,14 @@ export function SearchExperience({
     mapBbox.map((n) => n.toFixed(3)).join(",") !== filters.bbox.split(",").map((n) => Number(n).toFixed(3)).join(",");
   const showAreaBtn = Boolean(bboxChanged);
 
-  const inputCls = "w-full rounded-lg border border-stone-300 bg-white px-3 py-2 text-sm outline-none focus:border-gold";
-  const labelCls = "mb-1 block text-xs font-semibold text-stone-600";
+  const inputCls = "w-full rounded-lg border border-border-strong bg-surface px-3 py-2 text-sm outline-none focus:border-gold";
+  const labelCls = "mb-1 block text-xs font-semibold text-muted";
 
   return (
     <div className="space-y-4">
       {/* ── Filters ─────────────────────────────────────────────── */}
-      <details open className="group rounded-2xl border border-stone-200 bg-white p-4" data-testid="filters">
-        <summary className="cursor-pointer list-none text-sm font-bold text-stone-800">
+      <details open className="group rounded-2xl border border-border bg-surface p-4" data-testid="filters">
+        <summary className="cursor-pointer list-none text-sm font-bold text-ink">
           {t("filters")} <span className="text-ink">▾</span>
         </summary>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
@@ -363,9 +364,10 @@ export function SearchExperience({
                 <button
                   key={a}
                   type="button"
+                  aria-pressed={filters.amenities.includes(a)}
                   onClick={() => toggleAmenity(a)}
-                  className={`rounded-full border px-3 py-1 text-xs font-medium ${
-                    filters.amenities.includes(a) ? "border-gold bg-brand-50 text-ink" : "border-stone-300 text-stone-600"
+                  className={`filter-chip press rounded-full border px-3 py-1 text-xs font-medium transition-colors duration-150 ${
+                    filters.amenities.includes(a) ? "border-gold bg-brand-50 text-ink" : "border-border-strong text-muted"
                   }`}
                 >
                   {t(AMENITY_LABEL_KEY[a] || a)}
@@ -375,7 +377,7 @@ export function SearchExperience({
           </div>
         </div>
 
-        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-stone-100 pt-3">
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-3">
           <div className="flex items-center gap-2">
             <label className={labelCls + " mb-0"} htmlFor="f-sort">
               {t("sort")}
@@ -383,7 +385,7 @@ export function SearchExperience({
             <select
               id="f-sort"
               data-testid="filter-sort"
-              className="rounded-lg border border-stone-300 px-2 py-1.5 text-sm"
+              className="rounded-lg border border-border-strong px-2 py-1.5 text-sm"
               value={filters.sort}
               onChange={(e) => set({ sort: e.target.value })}
             >
@@ -398,7 +400,7 @@ export function SearchExperience({
               type="button"
               data-testid="clear-filters"
               onClick={() => applyFilters({ ...EMPTY_FILTERS })}
-              className="rounded-lg border border-stone-300 px-3 py-1.5 text-sm font-medium text-stone-600 hover:bg-stone-50"
+              className="rounded-lg border border-border-strong px-3 py-1.5 text-sm font-medium text-muted hover:bg-bg"
             >
               {t("clear_filters")}
             </button>
@@ -412,7 +414,7 @@ export function SearchExperience({
           type="button"
           data-testid="tab-list"
           onClick={() => setMobileMap(false)}
-          className={`flex-1 rounded-xl py-2.5 text-sm font-semibold ${!mobileMap ? "bg-stone-900 text-white" : "bg-white text-stone-700 border border-stone-300"}`}
+          className={`press flex-1 rounded-xl py-2.5 text-sm font-semibold transition-colors duration-150 ${!mobileMap ? "bg-brand-deep text-on-dark" : "bg-surface text-ink border border-border-strong"}`}
         >
           {t("list")}
         </button>
@@ -420,13 +422,13 @@ export function SearchExperience({
           type="button"
           data-testid="tab-map"
           onClick={() => setMobileMap(true)}
-          className={`flex-1 rounded-xl py-2.5 text-sm font-semibold ${mobileMap ? "bg-stone-900 text-white" : "bg-white text-stone-700 border border-stone-300"}`}
+          className={`press flex-1 rounded-xl py-2.5 text-sm font-semibold transition-colors duration-150 ${mobileMap ? "bg-brand-deep text-on-dark" : "bg-surface text-ink border border-border-strong"}`}
         >
           {t("map")}
         </button>
       </div>
 
-      <p className="text-sm text-stone-500" data-testid="results-count">
+      <p key={`${items.length}-${loading}`} className="results-crossfade text-sm text-muted" data-testid="results-count">
         {items.length}
         {cursor ? "+" : ""} {t("results_count")}
       </p>
@@ -441,7 +443,7 @@ export function SearchExperience({
           ) : items.length === 0 ? (
             <EmptyState title={t("no_results")} hint={t("no_results_hint")} />
           ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
+            <Stagger key={`search-results-${items.length}`} className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
               {items.map((item) => (
                 <ListingCard
                   key={item.id}
@@ -451,7 +453,7 @@ export function SearchExperience({
                   eager={false}
                 />
               ))}
-            </div>
+            </Stagger>
           )}
           {cursor && !loading && (
             <div ref={sentinelRef} className="py-6 text-center">
@@ -459,7 +461,7 @@ export function SearchExperience({
                 type="button"
                 data-testid="load-more"
                 onClick={() => runSearch(filters, true)}
-                className="rounded-xl border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-stone-700 hover:bg-stone-50"
+                className="rounded-xl border border-border-strong bg-surface px-5 py-2.5 text-sm font-semibold text-ink hover:bg-bg"
               >
                 {loadingMore ? t("loading") : "↓"}
               </button>
@@ -480,7 +482,7 @@ export function SearchExperience({
               type="button"
               data-testid="search-area"
               onClick={() => applyFilters({ ...filters, bbox: (mapBbox as [number, number, number, number]).map((n) => n.toFixed(5)).join(",") })}
-              className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-white px-4 py-2 text-sm font-semibold text-ink shadow-lg ring-1 ring-stone-200 hover:bg-brand-50"
+              className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-surface px-4 py-2 text-sm font-semibold text-ink shadow-lg ring-1 ring-gold-dark hover:bg-brand-50"
             >
               ↖ {t("search_this_area")}
             </button>
