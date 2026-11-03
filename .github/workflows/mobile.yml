@@ -38,13 +38,9 @@ jobs:
           status=$?
           cat "$RUNNER_TEMP/flutter-analyze.log"
           if [ "$status" -ne 0 ]; then
-            while IFS='|' read -r severity type code details path line column length message; do
-              case "$severity" in
-                ERROR|WARNING|INFO)
-                  path=${path#file://}
-                  path=${path#*/mobile/}
-                  echo "::error file=mobile/$path,line=$line,col=$column::$message [$code]"
-                  ;;
+            while IFS= read -r diagnostic; do
+              case "$diagnostic" in
+                ERROR\|*|WARNING\|*|INFO\|*) echo "::error::$diagnostic" ;;
               esac
             done < "$RUNNER_TEMP/flutter-analyze.log"
           fi
