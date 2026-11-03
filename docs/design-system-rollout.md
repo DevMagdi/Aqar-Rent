@@ -82,8 +82,10 @@ grep -RInE '(text|bg|border|ring|from|to|via|divide|fill|stroke)-(stone|emerald|
 | `cmp web/src/styles/tokens.css admin/src/styles/tokens.css` | متطابقان byte-for-byte |
 | `cmp web/src/components/motion/index.tsx admin/src/components/motion/index.tsx` | متطابقان byte-for-byte |
 | `scripts/check_mobile.py` | **37** ملف Dart، **0** أخطاء صياغة، **109** مفاتيح i18n (**83** مستخدمًا)، **14** مسار Flutter، **113** مسار API في الفحص |
-| `flutter analyze` / `flutter test` | **لم يُشغّلا**: Flutter SDK غير مثبت في البيئة؛ فحص Python أعلاه ثابت ولا يحل محلّهما |
-| `web: npm run lint` | غير مشغّل؛ script الحالي يستدعي `next lint` غير المدعوم في Next 16 بحسب الفحص السابق. لم يُغيّر script خارج النطاق |
+| `flutter analyze --fatal-infos` / `flutter test --coverage` | لا يمكن تشغيلهما محليًا لغياب Flutter SDK؛ **نجح كلاهما في GitHub Actions على أحدث commit**، ونجح كذلك فحص Dart الثابت أعلاه |
+| `web: npm run lint` | لم يُشغّل محليًا؛ script يستدعي `next lint` غير المدعوم في Next 16، ولم يتغير خارج النطاق. فحص `lint` المقابل في GitHub Actions **نجح** |
+
+في أول تشغيل CI كشف التحليل معلومتين `info` جُعلتا fatal: import زائد ومعامل `settings` قابلًا للتمرير كـsuper parameter. أُصلحتا مباشرةً في `mobile/lib/core/theme.dart` و`mobile/lib/core/widgets.dart` (commit `cf48acc`)، ثم نجح التحليل والاختبارات في إعادة التشغيل؛ لم تُعطّل الفحوص أو تُخفّف قواعدها. نجحت أيضًا checks الخاصة بـweb/admin/audit/e2e وقاعدتي بيانات SQLite وPostgreSQL. خطوة iOS release مُتخطّاة طبيعيًا لأنها مخصصة لـ`workflow_dispatch` وليست فحص PR.
 
 ظهرت تحذيرات Vite عن `configLoader: native` و`__dirname`/CommonJS، لكنها لم تمنع build أو tests.
 
@@ -122,4 +124,4 @@ grep -RInE '(text|bg|border|ring|from|to|via|divide|fill|stroke)-(stone|emerald|
 
 ## 10. PR والدمج
 
-سيُحدّث هذا القسم بعد فتح PR من فرع `arena/b8d85831-aqar-rent` ودمجه إلى `main` بعد نجاح checks. لا يُعدّ التقرير نفسه إثباتًا للدمج.
+فُتح [PR #10](https://github.com/DevMagdi/Aqar-Rent/pull/10) من الفرع `arena/b8d85831-aqar-rent` إلى `main`. بعد إصلاح ملاحظتي Flutter، نجحت checks المطلوبة: `admin`, `audit`, `e2e`, `lint`, `quality`, `test (postgres)`, `test (sqlite)`, و`web`. تحقق iOS release مُتخطّى حسب إعداد workflow ولا يلزم لطلب الدمج. سيُحدّث هذا القسم إلى حالة الدمج الفعلية بعد إتمامه.
