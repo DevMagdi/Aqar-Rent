@@ -51,7 +51,6 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
           final item = _items[i];
           return ListingCard(
             item: item,
-            badge: item.availableFrom == null ? 'متاح الآن' : null,
             onTap: () => Navigator.push(
               context,
               MaterialPageRoute(builder: (_) => ListingDetailScreen(listingId: item.id)),

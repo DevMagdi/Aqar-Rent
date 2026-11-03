@@ -149,7 +149,7 @@ class AppTheme {
           color: ink,
         ),
       ),
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         color: surface,
         elevation: 0,
         shadowColor: Colors.transparent,

@@ -46,13 +46,13 @@ class _ListingCardState extends State<ListingCard> {
             border: Border.all(color: dark ? AppColors.darkBorder : AppColors.border),
             boxShadow: [
               BoxShadow(
-                color: (dark ? Colors.black : AppColors.brand).withOpacity(dark ? 0.35 : 0.06),
+                color: (dark ? Colors.black : AppColors.brand).withValues(alpha: dark ? 0.35 : 0.06),
                 blurRadius: 24,
                 offset: const Offset(0, 10),
                 spreadRadius: -6,
               ),
               BoxShadow(
-                color: (dark ? Colors.black : AppColors.brand).withOpacity(0.05),
+                color: (dark ? Colors.black : AppColors.brand).withValues(alpha: 0.05),
                 blurRadius: 2,
                 offset: const Offset(0, 1),
               ),
@@ -114,13 +114,13 @@ class _ListingCardState extends State<ListingCard> {
                             ),
                           ),
                           Padding(
-                            padding: const EdgeInsets.only(bottom: 3, start: 4),
+                            padding: const EdgeInsetsDirectional.only(bottom: 3, start: 4),
                             child: Text(
                               "EGP/شهر",
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white.withOpacity(0.9),
+                                color: Colors.white.withValues(alpha: 0.9),
                               ),
                             ),
                           ),

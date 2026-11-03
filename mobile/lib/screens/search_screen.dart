@@ -1,12 +1,12 @@
 // Search: query bar, filter sheet (spec parity with web), results list,
 // and a map tab sharing the same filter state.
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
 import '../models/models.dart';
 import 'listing_detail_screen.dart';
 import 'map_screen.dart';
+import '../widgets/listing_card.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -146,7 +146,6 @@ class _SearchScreenState extends State<SearchScreen> {
                                 final item = _items[i];
                                 return ListingCard(
                                   item: item,
-                                  badge: item.availableFrom == null ? "متاح الآن" : null,
                                   onTap: () => Navigator.push(
                                     context,
                                     MaterialPageRoute(builder: (_) => ListingDetailScreen(listingId: item.id)),
