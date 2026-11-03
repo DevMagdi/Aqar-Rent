@@ -135,31 +135,42 @@ class _AqarAppState extends State<AqarApp> with WidgetsBindingObserver {
         theme: AppTheme.light(),
         darkTheme: AppTheme.dark(),
         themeMode: themeMode,
-        builder: (context, child) => Directionality(
-          textDirection: AppStrings.direction,
-          child: Stack(
-            children: [
-              Column(
+        builder: (context, child) {
+          final disableAnimations = MediaQuery.of(context).disableAnimations;
+          return Directionality(
+            textDirection: AppStrings.direction,
+            child: TickerMode(
+              enabled: !disableAnimations,
+              child: Stack(
                 children: [
-                  StreamBuilder<bool>(
-                    stream: ConnectivityService.instance.changes,
-                    initialData: ConnectivityService.instance.online,
-                    builder: (_, snap) => OfflineBanner(offline: !(snap.data ?? true)),
+                  Column(
+                    children: [
+                      StreamBuilder<bool>(
+                        stream: ConnectivityService.instance.changes,
+                        initialData: ConnectivityService.instance.online,
+                        builder: (_, snap) => OfflineBanner(offline: !(snap.data ?? true)),
+                      ),
+                      Expanded(
+                        child: HeroMode(
+                          enabled: !disableAnimations,
+                          child: child ?? const SizedBox.shrink(),
+                        ),
+                      ),
+                    ],
                   ),
-                  Expanded(child: child ?? const SizedBox.shrink()),
+                  if (_locked)
+                    BiometricLockScreen(
+                      onUnlocked: () => setState(() => _locked = false),
+                      onLogout: () {
+                        setState(() => _locked = false);
+                        _router.go('/login');
+                      },
+                    ),
                 ],
               ),
-              if (_locked)
-                BiometricLockScreen(
-                  onUnlocked: () => setState(() => _locked = false),
-                  onLogout: () {
-                    setState(() => _locked = false);
-                    _router.go('/login');
-                  },
-                ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       ),
       ),
     );
@@ -242,7 +253,7 @@ class BiometricLockScreen extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.fingerprint, size: 72, color: AppTheme.brand),
+                Icon(Icons.fingerprint, size: 72, color: Theme.of(context).colorScheme.primary),
                 const SizedBox(height: 18),
                 Text(s('biometric_title'), style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900)),
                 const SizedBox(height: 8),
@@ -282,7 +293,7 @@ class LegalScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(s('legal_body'), style: const TextStyle(fontSize: 13, height: 1.8)),
             const SizedBox(height: 16),
-            Text(s('no_rent_money'), style: const TextStyle(fontSize: 12, color: Colors.black54, height: 1.6)),
+            Text(s('no_rent_money'), style: TextStyle(fontSize: 12, color: appMutedColor(context), height: 1.6)),
           ],
         ),
       );
@@ -324,7 +335,9 @@ class _VerifyReferenceScreenState extends State<VerifyReferenceScreen> {
                   child: ListTile(
                     leading: Icon(
                       d['valid'] == true ? Icons.verified : Icons.error_outline,
-                      color: d['valid'] == true ? AppTheme.teal : Colors.red,
+                      color: d['valid'] == true
+                          ? AppTheme.statusColor('success', dark: Theme.of(context).brightness == Brightness.dark)
+                          : AppTheme.statusColor('danger', dark: Theme.of(context).brightness == Brightness.dark),
                     ),
                     title: Text(widget.reference, style: const TextStyle(fontWeight: FontWeight.w900)),
                     subtitle: Text(

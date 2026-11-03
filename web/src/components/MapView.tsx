@@ -141,7 +141,7 @@ export default function MapView({
       el.dataset.testid = "price-pin";
       el.dataset.listingId = i.id;
       el.className =
-        "-translate-y-1/2 rounded-full border border-white bg-gold px-2 py-1 text-[11px] font-bold text-gold-text shadow hover:bg-gold-dark";
+        "-translate-y-1/2 rounded-full border border-on-dark bg-gold px-2 py-1 text-[11px] font-bold text-gold-text shadow hover:bg-gold-dark";
       el.textContent = formatMoney(i.rent_monthly, locale);
       el.addEventListener("click", (ev) => {
         ev.stopPropagation();

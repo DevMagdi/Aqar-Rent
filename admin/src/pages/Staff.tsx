@@ -47,7 +47,7 @@ export function StaffPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-200 text-xs uppercase text-stone-400">
+              <tr className="border-b border-border text-xs uppercase text-muted">
                 <th className="p-2 text-start">Capability</th>
                 <th className="p-2 text-center">Super Admin</th>
                 <th className="p-2 text-center">Finance</th>
@@ -56,11 +56,11 @@ export function StaffPage() {
             </thead>
             <tbody>
               {MATRIX.map((m) => (
-                <tr key={m.capability} className="border-b border-stone-100">
-                  <td className="p-2 font-semibold text-stone-800">{m.capability}</td>
+                <tr key={m.capability} className="border-b border-border">
+                  <td className="p-2 font-semibold text-ink">{m.capability}</td>
                   {[m.super_admin, m.finance, m.moderator].map((v, i) => (
                     <td key={i} className="p-2 text-center">
-                      {v ? <span className="text-emerald-600">✓</span> : <span className="text-muted">—</span>}
+                      {v ? <span className="text-success">✓</span> : <span className="text-muted">—</span>}
                     </td>
                   ))}
                 </tr>
@@ -68,7 +68,7 @@ export function StaffPage() {
             </tbody>
           </table>
         </div>
-        <p className="mt-3 text-xs text-stone-400">
+        <p className="mt-3 text-xs text-muted">
           Staff provisioning runs through the backend seed/config (<code>STAFF_SUPER_ADMIN_*</code>) — the API exposes no staff CRUD, so
           accounts are managed there (documented gap, no invented endpoints).
         </p>
@@ -78,11 +78,11 @@ export function StaffPage() {
         {!logs ? (
           <Spinner />
         ) : staffIds.length === 0 ? (
-          <p className="text-sm text-stone-400">No staff activity recorded yet.</p>
+          <p className="text-sm text-muted">No staff activity recorded yet.</p>
         ) : (
           <ul className="space-y-2">
             {staffIds.map((sid) => (
-              <li key={sid} className="flex items-center justify-between rounded-xl bg-stone-50 px-3 py-2 text-sm">
+              <li key={sid} className="flex items-center justify-between rounded-xl bg-bg px-3 py-2 text-sm">
                 <span className="font-mono text-xs">{sid.slice(0, 8)}…</span>
                 <Badge status="active">{byStaff[sid]} actions</Badge>
               </li>

@@ -135,30 +135,30 @@ export function HandoverEditor({
     onSaved();
   }
 
-  const inputCls = "w-full rounded-lg border border-stone-300 px-3 py-2 text-sm outline-none focus:border-gold";
+  const inputCls = "w-full rounded-lg border border-border-strong px-3 py-2 text-sm outline-none focus:border-gold";
   const condLabel = (c: string | null) => (c ? t(`cond.${c}`) : "—");
   const isConfirmed = status === "confirmed";
 
   return (
-    <div className="fixed inset-0 z-[800] overflow-y-auto bg-black/40 p-3 sm:p-6" role="dialog" aria-modal="true" onClick={onClose}>
+    <div className="fixed inset-0 z-[800] overflow-y-auto bg-brand-deep/40 p-3 sm:p-6" role="dialog" aria-modal="true" onClick={onClose}>
       <div
-        className="mx-auto max-w-3xl rounded-3xl bg-white p-5"
+        className="mx-auto max-w-3xl rounded-3xl bg-surface p-5"
         onClick={(e) => e.stopPropagation()}
         data-testid="handover-editor"
         data-kind={kind}
       >
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold text-stone-900">
+          <h2 className="text-lg font-bold text-ink-strong">
             {kind === "check_in" ? t("new_checkin") : t("new_checkout")}
             {existing?.hash ? ` · ${existing.hash.slice(0, 12)}…` : ""}
           </h2>
-          <button type="button" onClick={onClose} aria-label="close" className="rounded-lg p-2 text-stone-400 hover:bg-stone-100">
+          <button type="button" onClick={onClose} aria-label="close" className="rounded-lg p-2 text-muted hover:bg-surface-2">
             ✕
           </button>
         </div>
 
         {isConfirmed && (
-          <p className="mt-3 rounded-xl bg-emerald-50 p-3 text-sm font-semibold text-emerald-800" data-testid="handover-confirmed-banner">
+          <p className="mt-3 rounded-xl bg-success-bg p-3 text-sm font-semibold text-success" data-testid="handover-confirmed-banner">
             ✓ {t("handover_confirmed_banner")}
           </p>
         )}
@@ -166,11 +166,11 @@ export function HandoverEditor({
         {/* rooms */}
         <section className="mt-4 space-y-4">
           {data.rooms.map((room, ri) => (
-            <div key={ri} className="rounded-2xl border border-stone-200 p-3" data-testid={`room-${room.name}`}>
+            <div key={ri} className="rounded-2xl border border-border p-3" data-testid={`room-${room.name}`}>
               <div className="flex items-center justify-between gap-2">
                 <select
                   aria-label={t("room_field")}
-                  className="text-sm font-bold text-stone-800"
+                  className="text-sm font-bold text-ink"
                   value={room.name}
                   disabled={isConfirmed}
                   onChange={(e) => patchRoom(ri, { name: e.target.value })}
@@ -186,7 +186,7 @@ export function HandoverEditor({
                     type="button"
                     data-testid={`add-item-${room.name}`}
                     onClick={() => patchRoom(ri, { items: [...room.items, { label: "", condition: "good", note: "" }] })}
-                    className="rounded-lg border border-stone-300 px-2.5 py-1 text-xs font-semibold text-stone-600"
+                    className="rounded-lg border border-border-strong px-2.5 py-1 text-xs font-semibold text-muted"
                   >
                     + {t("add_item")}
                   </button>
@@ -236,7 +236,7 @@ export function HandoverEditor({
         <section className="mt-4 grid gap-3 sm:grid-cols-3">
           {METER_KEYS.map((m) => (
             <div key={m}>
-              <label className="block text-xs font-semibold text-stone-600" htmlFor={`meter-${m}`}>
+              <label className="block text-xs font-semibold text-muted" htmlFor={`meter-${m}`}>
                 {t(`meter_${m}`)}
               </label>
               <input
@@ -250,7 +250,7 @@ export function HandoverEditor({
             </div>
           ))}
           <div>
-            <label className="block text-xs font-semibold text-stone-600" htmlFor="keys">
+            <label className="block text-xs font-semibold text-muted" htmlFor="keys">
               {t("keys_count")}
             </label>
             <input
@@ -265,7 +265,7 @@ export function HandoverEditor({
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-xs font-semibold text-stone-600" htmlFor="occurred">
+            <label className="block text-xs font-semibold text-muted" htmlFor="occurred">
               {t("available_from_l")}
             </label>
             <input
@@ -280,15 +280,15 @@ export function HandoverEditor({
         </section>
 
         {/* inventory */}
-        <section className="mt-4 rounded-2xl border border-stone-200 p-3">
+        <section className="mt-4 rounded-2xl border border-border p-3">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-stone-800">{t("inventory")}</h3>
+            <h3 className="text-sm font-bold text-ink">{t("inventory")}</h3>
             {!isConfirmed && (
               <button
                 type="button"
                 data-testid="add-inventory"
                 onClick={() => patchData({ inventory: [...(data.inventory || []), { label: "", condition: "good", note: "" }] })}
-                className="rounded-lg border border-stone-300 px-2.5 py-1 text-xs font-semibold text-stone-600"
+                className="rounded-lg border border-border-strong px-2.5 py-1 text-xs font-semibold text-muted"
               >
                 + {t("add_item")}
               </button>
@@ -345,10 +345,10 @@ export function HandoverEditor({
         </section>
 
         {/* media */}
-        <section className="mt-4 rounded-2xl border border-stone-200 p-3">
+        <section className="mt-4 rounded-2xl border border-border p-3">
           <div className="flex flex-wrap items-center gap-2">
-            <h3 className="text-sm font-bold text-stone-800">{t("upload_media")}</h3>
-            <select aria-label={t("room_field")} className="rounded-lg border border-stone-300 px-2 py-1 text-xs" value={mediaRoom} onChange={(e) => setMediaRoom(e.target.value)} disabled={isConfirmed}>
+            <h3 className="text-sm font-bold text-ink">{t("upload_media")}</h3>
+            <select aria-label={t("room_field")} className="rounded-lg border border-border-strong px-2 py-1 text-xs" value={mediaRoom} onChange={(e) => setMediaRoom(e.target.value)} disabled={isConfirmed}>
               {ROOM_NAMES.map((rn) => (
                 <option key={rn} value={rn}>
                   {roomLabel(rn)}
@@ -368,19 +368,19 @@ export function HandoverEditor({
           </div>
           <div className="mt-2 space-y-1.5" data-testid="upload-list">
             {uploads.map((u) => (
-              <div key={u.key} className="rounded-lg bg-stone-50 px-3 py-2 text-xs">
+              <div key={u.key} className="rounded-lg bg-bg px-3 py-2 text-xs">
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate">{u.name}</span>
                   {u.error ? (
-                    <button type="button" onClick={() => setUploads((p) => p.filter((x) => x.key !== u.key))} className="font-bold text-red-600">
+                    <button type="button" onClick={() => setUploads((p) => p.filter((x) => x.key !== u.key))} className="font-bold text-danger">
                       {u.error} ✕
                     </button>
                   ) : (
                     <span className="font-semibold text-ink">{u.pct}%</span>
                   )}
                 </div>
-                <div className="mt-1 h-1 overflow-hidden rounded bg-stone-200">
-                  <div className={`h-full ${u.error ? "bg-red-400" : "bg-gold"}`} style={{ width: `${u.error ? 100 : u.pct}%` }} />
+                <div className="mt-1 h-1 overflow-hidden rounded bg-track">
+                  <div className={`h-full ${u.error ? "bg-danger-fill" : "bg-gold"}`} style={{ width: `${u.error ? 100 : u.pct}%` }} />
                 </div>
               </div>
             ))}
@@ -388,7 +388,7 @@ export function HandoverEditor({
           {media.length > 0 && (
             <ul className="mt-2 grid grid-cols-3 gap-2 sm:grid-cols-5">
               {media.map((m) => (
-                <li key={m.id} className="overflow-hidden rounded-lg bg-stone-100" data-testid="media-item">
+                <li key={m.id} className="overflow-hidden rounded-lg bg-surface-2" data-testid="media-item">
                   {m.media_type === "video" ? (
                     <video src={m.url} controls className="h-20 w-full object-cover" />
                   ) : (
@@ -404,7 +404,7 @@ export function HandoverEditor({
         {/* comment */}
         {!isConfirmed && (
           <section className="mt-4">
-            <label className="block text-xs font-semibold text-stone-600" htmlFor="h-comment">
+            <label className="block text-xs font-semibold text-muted" htmlFor="h-comment">
               {t("handover_comment")}
             </label>
             <textarea id="h-comment" data-testid="input-comment" rows={2} className={inputCls} value={comment} onChange={(e) => setComment(e.target.value)} />
@@ -412,21 +412,21 @@ export function HandoverEditor({
         )}
 
         {err && (
-          <p role="alert" className="mt-3 text-sm font-semibold text-red-600" data-testid="handover-error">
+          <p role="alert" className="mt-3 text-sm font-semibold text-danger" data-testid="handover-error">
             {err}
           </p>
         )}
 
         <div className="mt-5 flex flex-wrap justify-end gap-2">
-          <button type="button" onClick={onClose} className="rounded-xl border border-stone-300 px-4 py-2.5 text-sm font-semibold text-stone-600">
+          <button type="button" onClick={onClose} className="rounded-xl border border-border-strong px-4 py-2.5 text-sm font-semibold text-muted">
             {t("cancel")}
           </button>
           {!isConfirmed && (
             <>
-              <button type="button" data-testid="btn-save-handover" disabled={busy} onClick={() => void save()} className="rounded-xl border border-stone-300 px-4 py-2.5 text-sm font-semibold text-stone-700 disabled:opacity-60">
+              <button type="button" data-testid="btn-save-handover" disabled={busy} onClick={() => void save()} className="rounded-xl border border-border-strong px-4 py-2.5 text-sm font-semibold text-ink disabled:opacity-60">
                 {t("save")}
               </button>
-              <button type="button" data-testid="btn-confirm-handover" disabled={busy} onClick={() => setOtpOpen(true)} className="rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-60">
+              <button type="button" data-testid="btn-confirm-handover" disabled={busy} onClick={() => setOtpOpen(true)} className="rounded-xl bg-success-fill px-4 py-2.5 text-sm font-bold text-on-dark hover:bg-success-fill disabled:opacity-60">
                 {t("confirm_handover")}
               </button>
             </>
@@ -443,7 +443,7 @@ export function HandoverEditor({
           )}
         </div>
         {!isConfirmed && (
-          <p className="mt-2 text-end text-[11px] text-stone-400">{locale === "ar" ? "التأكيد برمز تحقق من الطرفين يجعل المحضر نهائياً." : "Both parties confirm with an OTP to freeze the record."}</p>
+          <p className="mt-2 text-end text-[11px] text-muted">{locale === "ar" ? "التأكيد برمز تحقق من الطرفين يجعل المحضر نهائياً." : "Both parties confirm with an OTP to freeze the record."}</p>
         )}
       </div>
 

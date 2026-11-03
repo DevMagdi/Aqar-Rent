@@ -52,7 +52,7 @@ export function OrdersListView({ locale }: { locale: Locale }) {
   return (
     <div className="mx-auto max-w-4xl">
       <div className="mb-5 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-stone-900">{t("orders_title")}</h1>
+        <h1 className="text-xl font-bold text-ink-strong">{t("orders_title")}</h1>
         <Link href={`/${locale}/owner`} className="text-sm font-semibold text-ink hover:underline">
           ← {t("dashboard_title")}
         </Link>
@@ -63,7 +63,7 @@ export function OrdersListView({ locale }: { locale: Locale }) {
       ) : !data ? (
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <div key={i} className="h-20 animate-pulse rounded-2xl bg-stone-200" />
+            <div key={i} className="h-20 animate-pulse rounded-2xl bg-track" />
           ))}
         </div>
       ) : data.items.length === 0 ? (
@@ -71,18 +71,18 @@ export function OrdersListView({ locale }: { locale: Locale }) {
       ) : (
         <ul className="space-y-3" data-testid="orders-list">
           {data.items.map((o) => (
-            <li key={o.id} data-testid="order-row" data-status={o.status} className="rounded-2xl border border-stone-200 bg-white p-4">
+            <li key={o.id} data-testid="order-row" data-status={o.status} className="rounded-2xl border border-border bg-surface p-4">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <Link href={`/${locale}/owner/orders/${o.id}`} className="text-sm font-bold text-stone-900 hover:text-ink">
+                  <Link href={`/${locale}/owner/orders/${o.id}`} className="text-sm font-bold text-ink-strong hover:text-ink">
                     {t("order_ref")}: <span className="font-mono">{o.id.slice(0, 8)}</span>
                   </Link>
-                  <p className="mt-0.5 text-xs text-stone-500">
+                  <p className="mt-0.5 text-xs text-muted">
                     {formatDate(o.created_at, locale)} · {o.weeks} {t("week")} · {t(`method_${o.method}`)}
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <span className="text-sm font-bold text-stone-800">{formatMoney(o.total, locale)}</span>
+                  <span className="text-sm font-bold text-ink">{formatMoney(o.total, locale)}</span>
                   <StatusBadge status={o.status} label={statusLabel(o.status)} />
                 </div>
               </div>
@@ -92,7 +92,7 @@ export function OrdersListView({ locale }: { locale: Locale }) {
                   data-testid="btn-download-receipt"
                   disabled={dlId === o.id}
                   onClick={() => downloadReceipt(o.id)}
-                  className="mt-3 rounded-lg border border-stone-300 px-3 py-1.5 text-xs font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-60"
+                  className="mt-3 rounded-lg border border-border-strong px-3 py-1.5 text-xs font-semibold text-ink hover:bg-bg disabled:opacity-60"
                 >
                   {dlId === o.id ? "…" : `⬇ ${t("download_receipt")}`}
                 </button>

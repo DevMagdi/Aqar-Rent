@@ -80,25 +80,25 @@ function CheckoutInner({ locale }: { locale: Locale }) {
 
   if (err) return <ErrorState message={err} onRetry={load} />;
 
-  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-gold";
+  const inputCls = "mt-1 w-full rounded-xl border border-border-strong px-3.5 py-2.5 text-sm outline-none focus:border-gold";
 
   return (
     <div className="mx-auto max-w-2xl space-y-5" data-testid="checkout-form">
       <div>
-        <h1 className="text-xl font-bold text-stone-900">{t("checkout_title")}</h1>
+        <h1 className="text-xl font-bold text-ink-strong">{t("checkout_title")}</h1>
         {listing && (
-          <p className="mt-1 text-sm text-stone-500">
-            {t("checkout_for")}: <b className="text-stone-800" data-testid="checkout-listing-title">{listing.title}</b>
+          <p className="mt-1 text-sm text-muted">
+            {t("checkout_for")}: <b className="text-ink" data-testid="checkout-listing-title">{listing.title}</b>
           </p>
         )}
       </div>
 
       {!plan ? (
-        <div className="h-40 animate-pulse rounded-2xl bg-stone-200" />
+        <div className="h-40 animate-pulse rounded-2xl bg-track" />
       ) : (
         <>
-          <section className="rounded-2xl border border-stone-200 bg-white p-5">
-            <h2 className="text-sm font-bold text-stone-800">{t("weeks")}</h2>
+          <section className="rounded-2xl border border-border bg-surface p-5">
+            <h2 className="text-sm font-bold text-ink">{t("weeks")}</h2>
             <div className="mt-3 flex gap-2" data-testid="weeks-picker">
               {[1, 2, 3, 4].map((w) => (
                 <button
@@ -111,7 +111,7 @@ function CheckoutInner({ locale }: { locale: Locale }) {
                     setPromoResult(null);
                   }}
                   className={`flex-1 rounded-xl border px-3 py-3 text-sm font-bold ${
-                    weeks === w ? "border-gold bg-brand-50 text-ink" : "border-stone-300 text-stone-600"
+                    weeks === w ? "border-gold bg-brand-50 text-ink" : "border-border-strong text-muted"
                   }`}
                 >
                   {w} {t("week")}
@@ -122,43 +122,43 @@ function CheckoutInner({ locale }: { locale: Locale }) {
             </div>
 
             <div className="mt-5">
-              <label className="block text-sm font-semibold text-stone-700" htmlFor="promo">
+              <label className="block text-sm font-semibold text-ink" htmlFor="promo">
                 {t("promo")}
               </label>
               <div className="mt-1 flex gap-2">
                 <input id="promo" data-testid="input-promo" className={inputCls} value={promo} onChange={(e) => setPromo(e.target.value.toUpperCase())} placeholder="SAVE10" />
-                <button type="button" data-testid="btn-apply-promo" onClick={applyPromo} className="rounded-xl border border-stone-300 px-4 text-sm font-semibold text-stone-700 hover:bg-stone-50">
+                <button type="button" data-testid="btn-apply-promo" onClick={applyPromo} className="rounded-xl border border-border-strong px-4 text-sm font-semibold text-ink hover:bg-bg">
                   {t("apply")}
                 </button>
               </div>
               {promoResult?.valid && (
-                <p className="mt-2 text-xs font-semibold text-emerald-600" data-testid="promo-applied">
+                <p className="mt-2 text-xs font-semibold text-success" data-testid="promo-applied">
                   ✓ {promoResult.code} — {formatMoney(promoResult.discount, locale)}
                 </p>
               )}
               {promoResult && !promoResult.valid && (
-                <p className="mt-2 text-xs font-semibold text-red-600">{promoResult.message}</p>
+                <p className="mt-2 text-xs font-semibold text-danger">{promoResult.message}</p>
               )}
             </div>
 
-            <dl className="mt-5 space-y-1.5 border-t border-stone-100 pt-4 text-sm">
+            <dl className="mt-5 space-y-1.5 border-t border-border pt-4 text-sm">
               <div className="flex justify-between">
-                <dt className="text-stone-500">{t("subtotal")}</dt>
+                <dt className="text-muted">{t("subtotal")}</dt>
                 <dd data-testid="checkout-subtotal">{formatMoney(subtotal, locale)}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-stone-500">{t("discount")}</dt>
+                <dt className="text-muted">{t("discount")}</dt>
                 <dd data-testid="checkout-discount">{formatMoney(discount, locale)}</dd>
               </div>
-              <div className="flex justify-between text-base font-bold text-stone-900">
+              <div className="flex justify-between text-base font-bold text-ink-strong">
                 <dt>{t("total")}</dt>
                 <dd data-testid="checkout-total">{formatMoney(total, locale)}</dd>
               </div>
             </dl>
           </section>
 
-          <section className="rounded-2xl border border-stone-200 bg-white p-5">
-            <h2 className="text-sm font-bold text-stone-800">{t("method_card")}</h2>
+          <section className="rounded-2xl border border-border bg-surface p-5">
+            <h2 className="text-sm font-bold text-ink">{t("method_card")}</h2>
             <div className="mt-3 grid gap-2 sm:grid-cols-2" data-testid="methods">
               {METHODS.map((m) => (
                 <button
@@ -168,7 +168,7 @@ function CheckoutInner({ locale }: { locale: Locale }) {
                   aria-pressed={method === m}
                   onClick={() => setMethod(m)}
                   className={`rounded-xl border px-4 py-3 text-sm font-semibold text-start ${
-                    method === m ? "border-gold bg-brand-50 text-ink" : "border-stone-300 text-stone-600"
+                    method === m ? "border-gold bg-brand-50 text-ink" : "border-border-strong text-muted"
                   }`}
                 >
                   {t(`method_${m}`)}
@@ -186,7 +186,7 @@ function CheckoutInner({ locale }: { locale: Locale }) {
           >
             {busy ? t("loading") : `${t("continue_pay")} · ${formatMoney(total, locale)}`}
           </button>
-          <p className="text-center text-xs text-stone-400">
+          <p className="text-center text-xs text-muted">
             <Link href={`/${locale}/owner`} className="hover:underline">
               ← {t("dashboard_title")}
             </Link>
@@ -199,7 +199,7 @@ function CheckoutInner({ locale }: { locale: Locale }) {
 
 export function CheckoutView({ locale }: { locale: Locale }) {
   return (
-    <Suspense fallback={<div className="mx-auto h-96 max-w-2xl animate-pulse rounded-3xl bg-stone-200" />}>
+    <Suspense fallback={<div className="mx-auto h-96 max-w-2xl animate-pulse rounded-3xl bg-track" />}>
       <CheckoutInner locale={locale} />
     </Suspense>
   );

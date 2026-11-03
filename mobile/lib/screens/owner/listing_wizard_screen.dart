@@ -5,6 +5,8 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+
+import '../../core/widgets.dart';
 import 'dart:convert';
 
 import 'package:image_picker/image_picker.dart';
@@ -243,7 +245,7 @@ class _ListingWizardScreenState extends State<ListingWizardScreen> {
       await api.post('/listings/$_listingId/submit', data: {});
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الإرسال للمراجعة ✓')));
-        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const OwnerDashboardScreen()));
+        Navigator.pushReplacement(context, AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations, builder: (_) => const OwnerDashboardScreen()));
       }
     } catch (e) {
       _toast('$e');
@@ -424,7 +426,7 @@ class _ListingWizardScreenState extends State<ListingWizardScreen> {
               Expanded(child: _field(_lng, 'خط الطول', type: TextInputType.number)),
             ],
           ),
-          const Text('اضغط على الخريطة بالأسفل أو أدخل الإحداثيات يدوياً (حدود مصر).', style: TextStyle(fontSize: 12, color: Colors.black54)),
+          Text('اضغط على الخريطة بالأسفل أو أدخل الإحداثيات يدوياً (حدود مصر).', style: TextStyle(fontSize: 12, color: appMutedColor(context))),
           const SizedBox(height: 8),
           SizedBox(height: 180, child: _MiniMap(key: const ValueKey('listing-mini-map'), lat: double.tryParse(_lat.text) ?? 30.0444, lng: double.tryParse(_lng.text) ?? 31.2357, onPick: (la, ln) => setState(() { _lat.text = la.toStringAsFixed(6); _lng.text = ln.toStringAsFixed(6); }))),
         ],

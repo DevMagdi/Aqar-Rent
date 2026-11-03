@@ -139,7 +139,7 @@ class _OfficeScreenState extends State<OfficeScreen> {
             child: Text(s('office_save')),
           ),
           const SizedBox(height: 12),
-          Text(s('commission_note'), style: const TextStyle(fontSize: 11, color: Colors.black54)),
+          Text(s('commission_note'), style: TextStyle(fontSize: 11, color: appMutedColor(context))),
         ],
       );
 
@@ -215,7 +215,7 @@ class _OfficeScreenState extends State<OfficeScreen> {
                   ),
                 )),
           const SizedBox(height: 12),
-          Text(s('commission_note'), style: const TextStyle(fontSize: 10.5, color: Colors.black54)),
+          Text(s('commission_note'), style: TextStyle(fontSize: 10.5, color: appMutedColor(context))),
         ],
       ),
     );
@@ -291,9 +291,9 @@ class _OfficeScreenState extends State<OfficeScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label, style: const TextStyle(fontSize: 10.5, color: Colors.black54)),
+                Text(label, style: TextStyle(fontSize: 10.5, color: appMutedColor(context))),
                 const SizedBox(height: 4),
-                Text(value, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: AppTheme.brand)),
+                Text(value, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Theme.of(context).colorScheme.onSurface)),
               ],
             ),
           ),

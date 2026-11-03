@@ -2,6 +2,8 @@
 // and a map tab sharing the same filter state.
 import 'package:flutter/material.dart';
 
+import '../core/widgets.dart';
+
 import '../api/api_client.dart';
 import '../models/models.dart';
 import 'listing_detail_screen.dart';
@@ -145,13 +147,13 @@ class SearchScreenState extends State<SearchScreen> {
         ),
         Expanded(
           child: _error != null
-              ? Center(child: Padding(padding: const EdgeInsets.all(24), child: Text('$_error')))
+              ? ErrorView(message: _error!, onRetry: _search)
               : _mapMode
                   ? MapScreen(items: _items)
                   : _items.isEmpty && _loading
-                      ? const Center(child: CircularProgressIndicator())
+                      ? const CardSkeleton()
                       : _items.isEmpty
-                          ? const Center(child: Padding(padding: EdgeInsets.all(24), child: Text('لا توجد نتائج مطابقة')))
+                          ? const EmptyView(title: 'لا توجد نتائج مطابقة')
                           : ListView.separated(
                               padding: const EdgeInsets.all(12),
                               itemCount: _items.length + (_cursor != null ? 1 : 0),
@@ -165,10 +167,11 @@ class SearchScreenState extends State<SearchScreen> {
                                 }
                                 final item = _items[i];
                                 return ListingCard(
+                                  staggerIndex: i,
                                   item: item,
                                   onTap: () => Navigator.push(
                                     context,
-                                    MaterialPageRoute(builder: (_) => ListingDetailScreen(listingId: item.id)),
+                                    AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations, builder: (_) => ListingDetailScreen(listingId: item.id)),
                                   ),
                                 );
                               },

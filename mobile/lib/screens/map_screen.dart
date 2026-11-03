@@ -3,6 +3,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+
+import '../core/widgets.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
 import '../config.dart';
@@ -75,18 +77,18 @@ class _MapScreenState extends State<MapScreen> {
                   child: GestureDetector(
                     onTap: () => Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (_) => ListingDetailScreen(listingId: widget.items[i].id)),
+                      AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations, builder: (_) => ListingDetailScreen(listingId: widget.items[i].id)),
                     ),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
                         color: AppColors.gold,
                         borderRadius: BorderRadius.circular(999),
-                        border: Border.all(color: Colors.white),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: Text(
                         '${widget.items[i].rentMonthly}',
-                        style: const TextStyle(color: Colors.white, fontSize: 11, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: AppColors.brand, fontSize: 11, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),

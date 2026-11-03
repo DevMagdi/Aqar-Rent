@@ -1,6 +1,8 @@
 // Owner dashboard: my listings with stats + renew / mark-rented / edit / add.
 import 'package:flutter/material.dart';
 
+import '../../core/widgets.dart';
+
 import '../../api/api_client.dart';
 import '../../models/models.dart';
 import 'checkout_screen.dart';
@@ -67,7 +69,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
       appBar: AppBar(title: const Text('لوحة المالك')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          await Navigator.push(context, MaterialPageRoute(builder: (_) => const ListingWizardScreen()));
+          await Navigator.push(context, AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations, builder: (_) => const ListingWizardScreen()));
           if (mounted) _load();
         },
         icon: const Icon(Icons.add),
@@ -108,7 +110,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                                     const SizedBox(height: 6),
                                     Text(
                                       '👁 ${stats['view_count'] ?? 0} مشاهدات · ☎ ${stats['contact_count'] ?? 0} اتصال · ⏳ ${stats['days_left'] ?? '—'} يوم',
-                                      style: const TextStyle(fontSize: 12, color: Colors.black54),
+                                      style: TextStyle(fontSize: 12, color: appMutedColor(context)),
                                     ),
                                     const SizedBox(height: 8),
                                     Wrap(
@@ -118,7 +120,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                                           onPressed: () async {
                                             await Navigator.push(
                                               context,
-                                              MaterialPageRoute(builder: (_) => ListingWizardScreen(editId: l.id)),
+                                              AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations, builder: (_) => ListingWizardScreen(editId: l.id)),
                                             );
                                             if (mounted) _load();
                                           },
@@ -129,7 +131,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                                             onPressed: () async {
                                               await Navigator.push(
                                                 context,
-                                                MaterialPageRoute(builder: (_) => CheckoutScreen(listingId: l.id, title: l.title)),
+                                                AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations, builder: (_) => CheckoutScreen(listingId: l.id, title: l.title)),
                                               );
                                               if (mounted) _load();
                                             },

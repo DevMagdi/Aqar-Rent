@@ -143,7 +143,7 @@ export function Plans() {
         ) : (
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-stone-200 text-xs uppercase text-stone-400">
+              <tr className="border-b border-border text-xs uppercase text-muted">
                 <th className="p-2 text-start">Name</th>
                 <th className="p-2 text-start">Price</th>
                 <th className="p-2 text-start">Duration</th>
@@ -154,7 +154,7 @@ export function Plans() {
             </thead>
             <tbody>
               {plans.map((p) => (
-                <tr key={p.id} data-testid="plan-row" className="border-b border-stone-100">
+                <tr key={p.id} data-testid="plan-row" className="border-b border-border">
                   <td className="p-2 font-semibold">{p.name}</td>
                   <td className="p-2">{p.price_egp} EGP</td>
                   <td className="p-2">{p.duration_days} days</td>
@@ -163,10 +163,10 @@ export function Plans() {
                     <Badge status={p.active ? "active" : "expired"}>{p.active ? "active" : "inactive"}</Badge>
                   </td>
                   <td className="p-2 text-end">
-                    <button type="button" onClick={() => togglePlanActive(p)} className="me-2 rounded-lg border border-stone-300 px-2.5 py-1 text-xs font-bold">
+                    <button type="button" onClick={() => togglePlanActive(p)} className="me-2 rounded-lg border border-border-strong px-2.5 py-1 text-xs font-bold">
                       {p.active ? "Disable" : "Enable"}
                     </button>
-                    <button type="button" data-testid="btn-delete-plan" onClick={() => deactivatePlan(p)} className="rounded-lg border border-red-200 px-2.5 py-1 text-xs font-bold text-red-600">
+                    <button type="button" data-testid="btn-delete-plan" onClick={() => deactivatePlan(p)} className="rounded-lg border border-danger/20 px-2.5 py-1 text-xs font-bold text-danger">
                       Delete
                     </button>
                   </td>
@@ -193,7 +193,7 @@ export function Plans() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200 text-xs uppercase text-stone-400">
+                <tr className="border-b border-border text-xs uppercase text-muted">
                   <th className="p-2 text-start">Code</th>
                   <th className="p-2 text-start">Value</th>
                   <th className="p-2 text-start">Uses</th>
@@ -204,7 +204,7 @@ export function Plans() {
               </thead>
               <tbody>
                 {promos.map((p) => (
-                  <tr key={p.id} data-testid="promo-row" className="border-b border-stone-100">
+                  <tr key={p.id} data-testid="promo-row" className="border-b border-border">
                     <td className="p-2 font-mono font-bold">{p.code}</td>
                     <td className="p-2">
                       {p.type === "percent" ? `${p.value}%` : `${p.value} EGP`}
@@ -218,7 +218,7 @@ export function Plans() {
                       <Badge status={p.active ? "active" : "expired"}>{p.active ? "active" : "inactive"}</Badge>
                     </td>
                     <td className="p-2 text-end">
-                      <button type="button" data-testid="btn-toggle-promo" onClick={() => togglePromo(p)} className="rounded-lg border border-stone-300 px-2.5 py-1 text-xs font-bold">
+                      <button type="button" data-testid="btn-toggle-promo" onClick={() => togglePromo(p)} className="rounded-lg border border-border-strong px-2.5 py-1 text-xs font-bold">
                         {p.active ? "Disable" : "Enable"}
                       </button>
                     </td>

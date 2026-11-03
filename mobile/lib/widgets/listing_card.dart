@@ -9,12 +9,13 @@ import '../core/widgets.dart';
 import '../models/models.dart';
 
 class ListingCard extends StatefulWidget {
-  const ListingCard({super.key, required this.item, required this.onTap, this.badge});
+  const ListingCard({super.key, required this.item, required this.onTap, this.badge, this.staggerIndex = 0});
 
   final SearchItem item;
   final VoidCallback onTap;
   /// Optional premium badge (e.g. "متاح الآن"); rendered as a gradient chip.
   final String? badge;
+  final int staggerIndex;
 
   @override
   State<ListingCard> createState() => _ListingCardState();
@@ -30,9 +31,12 @@ class _ListingCardState extends State<ListingCard> {
     final radius = BorderRadius.circular(22); // spec: cards20–24
     final url = item.thumbUrl;
 
-    return AnimatedScale(
+    final reduce = MediaQuery.of(context).disableAnimations;
+    return MotionReveal(
+      index: widget.staggerIndex,
+      child: AnimatedScale(
       scale: _pressed ? 0.985 : 1.0,
-      duration: const Duration(milliseconds: 150),
+      duration: reduce ? Duration.zero : AppMotion.fast,
       curve: Curves.easeOut,
       child: GestureDetector(
         onTapDown: (_) => setState(() => _pressed = true),
@@ -216,6 +220,7 @@ class _ListingCardState extends State<ListingCard> {
           ),
         ),
       ),
+      ),
     );
   }
 }
@@ -259,7 +264,7 @@ class _PremiumBadge extends StatelessWidget {
         gradient: LinearGradient(
           colors: gold
               ? [AppColors.gold, AppColors.goldLight]
-              : [AppColors.teal, AppColors.tealInk],
+              : [AppColors.tealInk, AppColors.success],
         ),
         borderRadius: BorderRadius.circular(999),
         boxShadow: const [
@@ -268,10 +273,10 @@ class _PremiumBadge extends StatelessWidget {
       ),
       child: Text(
         gold ? "✦ $label" : "✓ $label",
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w800,
-          color: AppColors.brand, // deep navy on gold — never white
+          color: gold ? AppColors.brand : AppColors.onDark,
         ),
       ),
     );

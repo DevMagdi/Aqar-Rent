@@ -19,9 +19,9 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   if (!ready || !user) {
     return (
       <div className="mx-auto max-w-3xl space-y-3" data-testid="auth-redirect">
-        <div className="h-10 w-48 animate-pulse rounded-xl bg-stone-200" />
-        <div className="h-40 animate-pulse rounded-2xl bg-stone-200" />
-        <p className="text-center text-sm text-stone-500">{t("login_required")}</p>
+        <div className="h-10 w-48 animate-pulse rounded-xl bg-track" />
+        <div className="h-40 animate-pulse rounded-2xl bg-track" />
+        <p className="text-center text-sm text-muted">{t("login_required")}</p>
       </div>
     );
   }

@@ -356,7 +356,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
                   label: Text(_busy ? '…' : 'تأكيد المحضر برمز تحقق'),
                 ),
                 const SizedBox(height: 8),
-                const Text('التأكيد برمز تحقق من الطرفين يجعل المحضر نهائياً.', style: TextStyle(fontSize: 11, color: Colors.black54)),
+                Text('التأكيد برمز تحقق من الطرفين يجعل المحضر نهائياً.', style: TextStyle(fontSize: 11, color: appMutedColor(context))),
               ],
             ),
     );
@@ -419,7 +419,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
               children: [
                 const Text('✓ المحضر نهائي وغير قابل للتعديل', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold)),
                 if (_hash.isNotEmpty)
-                  Text('SHA-256: $_hash', style: const TextStyle(fontSize: 10, color: Colors.black54)),
+                  Text('SHA-256: $_hash', style: TextStyle(fontSize: 10, color: appMutedColor(context))),
               ],
             ),
           ),

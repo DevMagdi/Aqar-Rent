@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ContactBox } from "@/components/ContactBox";
+import { MobileContactDock } from "@/components/MobileContactDock";
+import { Reveal, Stagger } from "@/components/motion";
 import { DetailMap } from "@/components/DetailMap";
 import { Gallery } from "@/components/Gallery";
 import { ListingCard } from "@/components/ListingCard";
@@ -126,15 +128,15 @@ export default async function ListingPage({ params }: { params: Promise<Params> 
 
       <div className="grid gap-6 lg:grid-cols-[1.6fr_1fr]">
         <div className="space-y-5">
-          <Gallery media={d.media} title={d.title} />
+          <Reveal className="listing-gallery-reveal"><Gallery media={d.media} title={d.title} listingId={d.id} /></Reveal>
 
-          <div className="rounded-2xl border border-stone-200 bg-white p-5">
+          <Reveal as="section" className="surface-card p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h1 className="text-xl font-bold text-stone-900 sm:text-2xl" data-testid="listing-title">
+                <h1 className="text-xl font-bold text-ink-strong sm:text-2xl" data-testid="listing-title">
                   {d.title}
                 </h1>
-                <p className="mt-1 text-sm text-stone-500">
+                <p className="mt-1 text-sm text-muted">
                   📍 {d.address_text} · {locationName(city, l)} {locationName(gov, l) ? `· ${locationName(gov, l)}` : ""}
                 </p>
               </div>
@@ -151,12 +153,12 @@ export default async function ListingPage({ params }: { params: Promise<Params> 
                 {d.area_m2} م² · {d.bedrooms} {t("bedrooms")} · {d.bathrooms} {t("bathrooms")}
               </Pill>
               {d.verified_badge && (
-                <span data-testid="verified-badge" className="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
+                <span data-testid="verified-badge" className="inline-flex items-center gap-1 rounded-full bg-success-bg px-2.5 py-0.5 text-xs font-bold text-success">
                   ✓ {t("verified_owner")}
                 </span>
               )}
               {d.is_featured && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800">
+                <span className="inline-flex items-center gap-1 rounded-full bg-warn-bg px-2.5 py-0.5 text-xs font-bold text-warn">
                   ★ {l === "ar" ? "إعلان مميز" : "Featured"}
                 </span>
               )}
@@ -174,77 +176,77 @@ export default async function ListingPage({ params }: { params: Promise<Params> 
               <FavoriteButton listingId={d.id} />
               <ShareButton title={d.title} />
             </div>
-          </div>
+          </Reveal>
 
           {d.trust && (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-5" data-testid="trust-panel">
-              <h2 className="text-sm font-bold text-emerald-900">
+            <Reveal className="surface-card bg-success-bg p-5" data-testid="trust-panel">
+              <h2 className="text-sm font-bold text-success">
                 {l === "ar" ? "مستوى توثيق المالك" : "Owner trust level"}
               </h2>
-              <p className="mt-1 text-lg font-extrabold text-emerald-800" dir={l === "ar" ? "rtl" : "ltr"}>
+              <p className="mt-1 text-lg font-extrabold text-success" dir={l === "ar" ? "rtl" : "ltr"}>
                 {l === "ar" ? d.trust.label_ar : d.trust.label_en}
               </p>
               <ul className="mt-2 flex flex-wrap gap-1.5">
                 {d.trust.badges.map((b) => (
-                  <li key={b.code} className="rounded-full bg-white px-2.5 py-1 text-[11px] font-semibold text-emerald-800">
+                  <li key={b.code} className="rounded-full bg-surface px-2.5 py-1 text-[11px] font-semibold text-success">
                     ✓ {l === "ar" ? b.label_ar : b.label_en}
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-[11px] leading-relaxed text-emerald-800">
+              <p className="mt-2 text-[11px] leading-relaxed text-success">
                 {l === "ar" ? d.trust.note_ar : d.trust.note_en}
               </p>
               {d.agent && (
-                <p className="mt-2 text-xs text-emerald-900">
+                <p className="mt-2 text-xs text-success">
                   {l === "ar" ? "الوسيط المسؤول" : "Responsible agent"}: {d.agent.full_name}
                 </p>
               )}
-            </div>
+            </Reveal>
           )}
 
-          <div className="rounded-2xl border border-stone-200 bg-white p-5">
-            <h2 className="text-lg font-bold text-stone-900">{t("details")}</h2>
+          <Reveal as="section" className="surface-card p-5">
+            <h2 className="text-lg font-bold text-ink-strong">{t("details")}</h2>
             <dl className="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 sm:grid-cols-2">
               {specs.map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-3 border-b border-stone-100 py-1.5 text-sm">
-                  <dt className="text-stone-500">{k}</dt>
-                  <dd className="font-semibold text-stone-800">{v}</dd>
+                <div key={k} className="flex justify-between gap-3 border-b border-border py-1.5 text-sm">
+                  <dt className="text-muted">{k}</dt>
+                  <dd className="font-semibold text-ink">{v}</dd>
                 </div>
               ))}
             </dl>
-          </div>
+          </Reveal>
 
-          <div className="rounded-2xl border border-stone-200 bg-white p-5">
-            <h2 className="text-lg font-bold text-stone-900">{t("description")}</h2>
-            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-stone-700" data-testid="listing-description">
+          <Reveal as="section" className="surface-card p-5">
+            <h2 className="text-lg font-bold text-ink-strong">{t("description")}</h2>
+            <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-ink" data-testid="listing-description">
               {d.description || t("empty")}
             </p>
-          </div>
+          </Reveal>
 
-          <div className="rounded-2xl border border-stone-200 bg-white p-5">
-            <h2 className="text-lg font-bold text-stone-900">{t("amenities")}</h2>
+          <Reveal as="section" className="surface-card p-5">
+            <h2 className="text-lg font-bold text-ink-strong">{t("amenities")}</h2>
             {amenityEntries.length === 0 ? (
-              <p className="mt-2 text-sm text-stone-500">{t("amenities_none")}</p>
+              <p className="mt-2 text-sm text-muted">{t("amenities_none")}</p>
             ) : (
               <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3" data-testid="amenities">
                 {amenityEntries.map(([k]) => (
-                  <li key={k} className="flex items-center gap-2 rounded-xl bg-stone-50 px-3 py-2 text-sm text-stone-700">
-                    <span className="text-emerald-600">✓</span>{" "}
+                  <li key={k} className="flex items-center gap-2 rounded-xl bg-bg px-3 py-2 text-sm text-ink">
+                    <span className="text-success">✓</span>{" "}
                     {AMENITY_LABEL_KEY[k] ? t(AMENITY_LABEL_KEY[k]) : k.replace(/_/g, " ")}
                   </li>
                 ))}
               </ul>
             )}
-          </div>
+          </Reveal>
 
           <ReportButton listingId={d.id} />
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-20 lg:self-start">
-          <div className="rounded-2xl border border-stone-200 bg-white p-4">
-            <h2 className="mb-3 text-base font-bold text-stone-900">{t("contact_owner")}</h2>
+        <Reveal as="aside" className="space-y-4 lg:sticky lg:top-20 lg:self-start">
+          <div className="hidden rounded-2xl border border-border bg-surface p-4 lg:block">
+            <h2 className="mb-3 text-base font-bold text-ink-strong">{t("contact_owner")}</h2>
             <ContactBox listingId={d.id} ownerName={d.owner_name} />
-            <div className="mt-3 flex items-center justify-between text-xs text-stone-500">
+            <div className="mt-3 flex items-center justify-between text-xs text-muted">
               <span>
                 {t("owner")}: {d.owner_name || t("empty")}
               </span>
@@ -254,20 +256,24 @@ export default async function ListingPage({ params }: { params: Promise<Params> 
             </div>
           </div>
           <DetailMap geo={d.geo} address={d.address_text} listingId={d.id} />
-        </aside>
+        </Reveal>
       </div>
 
+      <MobileContactDock price={formatMoney(d.rent_monthly, l)} perMonth={t("per_month")} label={t("contact_owner")}>
+        <ContactBox listingId={d.id} ownerName={d.owner_name} variant="dock" />
+      </MobileContactDock>
+
       {similar.items.length > 0 && (
-        <section aria-labelledby="sim-h">
-          <h2 id="sim-h" className="mb-4 text-xl font-bold text-stone-900">
+        <Reveal as="section" aria-labelledby="sim-h">
+          <h2 id="sim-h" className="mb-4 text-xl font-bold text-ink-strong">
             {t("similar")}
           </h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <Stagger className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {similar.items.slice(0, 6).map((item) => (
               <ListingCard key={item.id} item={item} locale={l} places={places} />
             ))}
-          </div>
-        </section>
+          </Stagger>
+        </Reveal>
       )}
     </div>
   );

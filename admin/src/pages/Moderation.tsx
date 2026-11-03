@@ -124,7 +124,7 @@ export function Moderation() {
   return (
     <div className="space-y-4" data-testid="moderation-page">
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="me-auto text-lg font-extrabold text-stone-900">Moderation queue</h1>
+        <h1 className="me-auto text-lg font-extrabold text-ink-strong">Moderation queue</h1>
         <input
           data-testid="moderation-search"
           placeholder="Owner phone / user id"
@@ -142,7 +142,7 @@ export function Moderation() {
             data-testid={`tab-${s}`}
             onClick={() => setStatus(s)}
             className={`rounded-full px-3 py-1.5 text-xs font-bold ${
-              status === s ? "bg-stone-900 text-white" : "border border-stone-300 bg-white text-stone-600 hover:bg-stone-50"
+              status === s ? "bg-brand-deep text-on-dark" : "border border-border-strong bg-surface text-muted hover:bg-bg"
             }`}
           >
             {s.replace(/_/g, " ")}
@@ -159,7 +159,7 @@ export function Moderation() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200 text-start text-xs uppercase tracking-wide text-stone-400">
+                <tr className="border-b border-border text-start text-xs uppercase tracking-wide text-muted">
                   <th className="p-2 text-start">Listing</th>
                   <th className="p-2 text-start">Owner</th>
                   <th className="p-2 text-start">Price</th>
@@ -171,14 +171,14 @@ export function Moderation() {
               </thead>
               <tbody>
                 {rows.map((r) => (
-                  <tr key={r.id} data-testid="queue-row" className="border-b border-stone-100 hover:bg-stone-50">
+                  <tr key={r.id} data-testid="queue-row" className="border-b border-border hover:bg-bg">
                     <td className="max-w-56 p-2">
-                      <p className="truncate font-semibold text-stone-900">{r.title || r.listing_id.slice(0, 8)}</p>
-                      <p className="text-xs text-stone-400">{r.governorate_name || ""}</p>
+                      <p className="truncate font-semibold text-ink-strong">{r.title || r.listing_id.slice(0, 8)}</p>
+                      <p className="text-xs text-muted">{r.governorate_name || ""}</p>
                     </td>
                     <td className="p-2 text-xs" dir="ltr">
                       {r.owner_phone || "—"}
-                      {r.owner_name && <p className="text-stone-400">{r.owner_name}</p>}
+                      {r.owner_name && <p className="text-muted">{r.owner_name}</p>}
                     </td>
                     <td className="p-2 font-semibold">{r.rent_monthly?.toLocaleString() ?? "—"}</td>
                     <td className="p-2">
@@ -187,14 +187,14 @@ export function Moderation() {
                     <td className="p-2">{r.report_count > 0 ? <Badge status="rejected">{r.report_count}</Badge> : "0"}</td>
                     <td className="p-2">
                       <Badge status={r.status}>{r.status}</Badge>
-                      {r.reject_reason && <p className="text-[10px] text-red-500">{r.reject_reason}</p>}
+                      {r.reject_reason && <p className="text-[10px] text-danger">{r.reject_reason}</p>}
                     </td>
                     <td className="p-2 text-end">
                       <button
                         type="button"
                         data-testid="btn-open-detail"
                         onClick={() => openDetail(r.listing_id)}
-                        className="rounded-lg bg-stone-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-stone-700"
+                        className="rounded-lg bg-brand-deep px-3 py-1.5 text-xs font-bold text-on-dark hover:bg-brand-deep"
                       >
                         Review
                       </button>
@@ -213,7 +213,7 @@ export function Moderation() {
           onClose={() => setDetail(null)}
           footer={
             <>
-              <button type="button" className={btnGhost} onClick={() => setDetail(null)}>
+              <button type="button" data-modal-dismiss="true" className={btnGhost} onClick={() => setDetail(null)}>
                 Close
               </button>
               <button type="button" data-testid="btn-reject" className={btnDanger} onClick={() => setRejectOpen(true)}>
@@ -228,17 +228,17 @@ export function Moderation() {
           <div className="space-y-3 text-sm" data-testid="moderation-detail">
             <div className="grid grid-cols-4 gap-2">
               {detail.media_urls.slice(0, 8).map((u) => (
-                <a key={u} href={u} target="_blank" rel="noreferrer" className="block aspect-square overflow-hidden rounded-lg bg-stone-100">
+                <a key={u} href={u} target="_blank" rel="noreferrer" className="block aspect-square overflow-hidden rounded-lg bg-surface-2">
                   {/* eslint-disable-next-line jsx-a11y/alt-text */}
                   <img src={u} alt="" className="h-full w-full object-cover" />
                 </a>
               ))}
             </div>
-            <h4 className="font-bold text-stone-900">{detail.title}</h4>
+            <h4 className="font-bold text-ink-strong">{detail.title}</h4>
             <p className="font-semibold text-ink">{detail.rent_monthly.toLocaleString()} EGP/month · {detail.property_type.replace(/_/g, " ")}</p>
-            <p className="text-stone-600">📍 {detail.address_text}, {detail.district_name || ""} {detail.city_name || ""} {detail.governorate_name || ""}</p>
-            <p className="whitespace-pre-line rounded-xl bg-stone-50 p-3 text-stone-700">{detail.description}</p>
-            <div className="grid grid-cols-2 gap-2 rounded-xl bg-stone-50 p-3">
+            <p className="text-muted">📍 {detail.address_text}, {detail.district_name || ""} {detail.city_name || ""} {detail.governorate_name || ""}</p>
+            <p className="whitespace-pre-line rounded-xl bg-bg p-3 text-ink">{detail.description}</p>
+            <div className="grid grid-cols-2 gap-2 rounded-xl bg-bg p-3">
               <p>
                 Owner: <b>{detail.owner_name || "—"}</b>
               </p>
@@ -252,7 +252,7 @@ export function Moderation() {
               <p>
                 Status: <Badge status={detail.status}>{detail.status}</Badge>
               </p>
-              <p className="text-xs text-stone-400">{detail.created_at?.slice(0, 16).replace("T", " ")}</p>
+              <p className="text-xs text-muted">{detail.created_at?.slice(0, 16).replace("T", " ")}</p>
             </div>
           </div>
         </Modal>
@@ -273,7 +273,7 @@ export function Moderation() {
             </>
           }
         >
-          <label className="block text-sm font-semibold text-stone-700" htmlFor="reason">
+          <label className="block text-sm font-semibold text-ink" htmlFor="reason">
             Preset reason
           </label>
           <select id="reason" data-testid="select-reason" className={inputCls} value={reasonCode} onChange={(e) => setReasonCode(e.target.value)}>
@@ -283,11 +283,11 @@ export function Moderation() {
               </option>
             ))}
           </select>
-          <label className="mt-3 block text-sm font-semibold text-stone-700" htmlFor="note">
+          <label className="mt-3 block text-sm font-semibold text-ink" htmlFor="note">
             Note to owner (optional)
           </label>
           <textarea id="note" data-testid="input-note" rows={3} maxLength={1000} className={inputCls} value={note} onChange={(e) => setNote(e.target.value)} />
-          <p className="mt-2 text-xs text-stone-500">
+          <p className="mt-2 text-xs text-muted">
             The listing returns to <b>rejected</b>: the owner can edit it and resubmit (this is how “request changes” works in the backend).
           </p>
         </Modal>

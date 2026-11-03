@@ -9,6 +9,7 @@ import { themeInitScript } from "@/components/ThemeToggle";
 import { PageTransition } from "@/components/PageTransition";
 import { ConsentBanner } from "@/components/ConsentBanner";
 import { Footer } from "@/components/Footer";
+import { ScrollUtilities } from "@/components/ScrollUtilities";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -54,9 +55,11 @@ export default async function LocaleLayout({
   return (
     <html lang={l} dir={dirOf(l)} suppressHydrationWarning>
       <head>
+        <link rel="preload" href={`/fonts/el-messiri-${l === "ar" ? "arabic" : "latin"}-700.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
+        <link rel="preload" href={`/fonts/ibm-plex-${l === "ar" ? "arabic" : "latin"}-400.woff2`} as="font" type="font/woff2" crossOrigin="anonymous" />
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
-      <body className="min-h-screen bg-stone-50 font-sans text-stone-900 antialiased">
+      <body className="min-h-screen bg-bg font-sans text-ink-strong antialiased">
         <Providers locale={l}>
           <Header />
           <main className="mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6">
@@ -64,6 +67,7 @@ export default async function LocaleLayout({
           </main>
           <Footer />
           <ConsentBanner />
+          <ScrollUtilities />
         </Providers>
       </body>
     </html>

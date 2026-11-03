@@ -66,7 +66,7 @@ export function DetailMap({ geo, address, listingId }: { geo: Geo; address: stri
       }
       const el = document.createElement("div");
       el.dataset.testid = "detail-pin";
-      el.className = "h-6 w-6 rounded-full border-4 border-white bg-gold shadow";
+      el.className = "h-6 w-6 rounded-full border-4 border-on-dark bg-gold shadow";
       markerRef.current = new maplibregl.Marker({ element: el }).setLngLat([current.longitude, current.latitude]).addTo(map);
     });
     mapRef.current = map;
@@ -107,11 +107,11 @@ export function DetailMap({ geo, address, listingId }: { geo: Geo; address: stri
   }
 
   return (
-    <section aria-label={t("map")} className="rounded-2xl border border-stone-200 bg-white p-3">
-      <p className="mb-2 text-sm font-semibold text-stone-800">📍 {address}</p>
+    <section aria-label={t("map")} className="rounded-2xl border border-border bg-surface p-3">
+      <p className="mb-2 text-sm font-semibold text-ink">📍 {address}</p>
       <div ref={holder} className="h-56 w-full overflow-hidden rounded-xl" data-testid="detail-map" />
       <div className="mt-2 flex items-center justify-between gap-2">
-        <p className="text-xs text-stone-500">{revealed ? t("show_exact") : t("approx_location")}</p>
+        <p className="text-xs text-muted">{revealed ? t("show_exact") : t("approx_location")}</p>
         {!revealed && (
           <button
             type="button"

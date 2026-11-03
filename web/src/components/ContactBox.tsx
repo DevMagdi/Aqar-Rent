@@ -8,7 +8,8 @@ import { useAuth, useI18n, useToast } from "./Providers";
 import { normalizePhone, telHref, waHref } from "@/lib/utils";
 import type { ContactInfo } from "@/lib/types";
 
-export function ContactBox({ listingId, ownerName }: { listingId: string; ownerName?: string | null }) {
+export function ContactBox({ listingId, ownerName, variant = "default" }: { listingId: string; ownerName?: string | null; variant?: "default" | "dock" }) {
+  const dock = variant === "dock";
   const { locale, t } = useI18n();
   const { user, ready } = useAuth();
   const toast = useToast();
@@ -37,20 +38,20 @@ export function ContactBox({ listingId, ownerName }: { listingId: string; ownerN
   if (contact) {
     const phone = normalizePhone(contact.phone);
     return (
-      <div className="space-y-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-4" data-testid="contact-revealed">
-        <p className="text-sm font-semibold text-emerald-800">
+      <div className="space-y-2 rounded-2xl border border-success/20 bg-success-bg p-4" data-testid={dock ? "contact-revealed-dock" : "contact-revealed"}>
+        <p className="text-sm font-semibold text-success">
           {contact.full_name || ownerName || t("owner")}: <span data-testid="owner-phone" dir="ltr">{phone}</span>
         </p>
         <div className="flex gap-2">
-          <a href={telHref(phone)} className="flex-1 rounded-xl bg-emerald-600 px-3 py-2.5 text-center text-sm font-bold text-white hover:bg-emerald-700">
+          <a href={telHref(phone)} className={`press focus-ring flex-1 rounded-xl px-3 py-2.5 text-center text-sm font-bold transition-colors duration-150 ${dock ? "bg-brand text-on-dark hover:bg-network" : "bg-success text-on-dark hover:bg-success/90"}`} data-testid={dock ? "btn-call-dock-link" : undefined}>
             ☎ {t("call")}
           </a>
           <a
             href={waHref(phone, t("contact_owner"))}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex-1 rounded-xl bg-whatsapp px-3 py-2.5 text-center text-sm font-bold text-gold-text hover:brightness-95"
-            data-testid="whatsapp-link"
+            className={`press focus-ring flex-1 rounded-xl px-3 py-2.5 text-center text-sm font-bold transition-colors duration-150 ${dock ? "bg-gold text-gold-text hover:bg-gold-light" : "bg-whatsapp text-gold-text hover:brightness-95"}`}
+            data-testid={dock ? "btn-whatsapp-dock-link" : "whatsapp-link"}
           >
             {t("whatsapp")}
           </a>
@@ -59,16 +60,16 @@ export function ContactBox({ listingId, ownerName }: { listingId: string; ownerN
     );
   }
 
-  if (!ready) return <div className="h-24 animate-pulse rounded-2xl bg-stone-100" />;
+  if (!ready) return <div className="skeleton h-24" aria-label={t("loading")} />;
 
   if (!user) {
     return (
-      <div className="rounded-2xl border border-stone-200 bg-stone-50 p-4">
-        <p className="text-sm text-stone-600">{t("login_contact")}</p>
+      <div className="rounded-2xl border border-border bg-bg p-4">
+        <p className="text-sm text-muted">{t("login_contact")}</p>
         <Link
           href={`/${locale}/login?next=${encodeURIComponent(pathname)}`}
-          data-testid="login-for-contact"
-          className="mt-3 block rounded-xl bg-gold px-4 py-2.5 text-center text-sm font-semibold text-gold-text hover:bg-gold-dark"
+          data-testid={dock ? "login-for-contact-dock" : "login-for-contact"}
+          className="press focus-ring mt-3 block rounded-xl bg-gold px-4 py-2.5 text-center text-sm font-semibold text-gold-text hover:bg-gold-light"
         >
           {t("nav_login")}
         </Link>
@@ -80,23 +81,23 @@ export function ContactBox({ listingId, ownerName }: { listingId: string; ownerN
     <div className="grid grid-cols-2 gap-2">
       <button
         type="button"
-        data-testid="btn-call"
+        data-testid={dock ? "btn-call-dock" : "btn-call"}
         disabled={loading}
         onClick={() => reveal("call")}
-        className="rounded-xl bg-emerald-600 px-3 py-3 text-sm font-bold text-white hover:bg-emerald-700 disabled:opacity-60"
+        className={`press focus-ring rounded-xl px-3 py-3 text-sm font-bold transition-colors duration-150 disabled:opacity-60 ${dock ? "bg-brand text-on-dark hover:bg-network" : "bg-success text-on-dark hover:bg-success/90"}`}
       >
         ☎ {t("call")}
       </button>
       <button
         type="button"
-        data-testid="btn-whatsapp"
+        data-testid={dock ? "btn-whatsapp-dock" : "btn-whatsapp"}
         disabled={loading}
         onClick={() => reveal("whatsapp")}
-        className="rounded-xl bg-whatsapp px-3 py-3 text-sm font-bold text-gold-text hover:brightness-95 disabled:opacity-60"
+        className={`press focus-ring rounded-xl px-3 py-3 text-sm font-bold transition-colors duration-150 disabled:opacity-60 ${dock ? "bg-gold text-gold-text hover:bg-gold-light" : "bg-whatsapp text-gold-text hover:brightness-95"}`}
       >
         {t("whatsapp")}
       </button>
-      {!contact && loading && <p className="col-span-2 text-center text-xs text-stone-500">{t("loading")}</p>}
+      {!contact && loading && <p className="col-span-2 text-center text-xs text-muted">{t("loading")}</p>}
     </div>
   );
 }

@@ -4,6 +4,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useI18n } from "./Providers";
+import { AnimatedPresence } from "./motion";
 
 const CONSENT_VERSION = "2026-11-01";
 const KEY = "aqar.consent";
@@ -20,17 +21,16 @@ export function ConsentBanner() {
     }
   }, []);
 
-  if (!open) return null;
-
   return (
-    <div
+    <AnimatedPresence present={open} className="consent-banner-presence">
+      <div
       role="dialog"
       aria-label={t("privacy")}
       data-testid="consent-banner"
-      className="fixed inset-x-0 bottom-0 z-[950] border-t border-stone-200 bg-white/98 p-4 shadow-pop"
+      className="fixed inset-x-0 bottom-0 z-[950] border-t border-border bg-surface/98 p-4 shadow-pop"
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center">
-        <p className="flex-1 text-sm text-stone-600">
+        <p className="flex-1 text-sm text-muted">
           {locale === "ar" ? (
             <>
               نستخدم بياناتك لتشغيل حسابك وعرض إعلاناتك فقط — راجع{" "}
@@ -65,6 +65,7 @@ export function ConsentBanner() {
           {locale === "ar" ? "موافق" : "Accept"}
         </button>
       </div>
-    </div>
+      </div>
+    </AnimatedPresence>
   );
 }

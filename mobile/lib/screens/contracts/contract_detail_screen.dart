@@ -2,6 +2,8 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+
+import '../../core/widgets.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
@@ -169,7 +171,7 @@ class _ContractDetailScreenState extends State<ContractDetailScreen> {
                           children: [
                             const Text('✓ العقد مؤكد نهائياً وغير قابل للتعديل', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 13)),
                             if (c['terms_hash'] != null)
-                              Text('SHA-256: ${c['terms_hash']}', style: const TextStyle(fontSize: 10, color: Colors.black54)),
+                              Text('SHA-256: ${c['terms_hash']}', style: TextStyle(fontSize: 10, color: appMutedColor(context))),
                           ],
                         ),
                       ),
@@ -193,7 +195,7 @@ class _ContractDetailScreenState extends State<ContractDetailScreen> {
                     if ('${terms['utilities_responsibility'] ?? ''}'.isNotEmpty) Text('المرافق: ${terms['utilities_responsibility']}'),
                     if ('${terms['termination_terms'] ?? ''}'.isNotEmpty) Text('الإنهاء: ${terms['termination_terms']}'),
                     const SizedBox(height: 8),
-                    const Text('⚖️ اتفاق خاص بين الطرفين: ليس موثّقاً ولا مسجّلاً رسمياً ولا سنداً تنفيذياً، ولا يُغني عن التوثيق الرسمي.', style: TextStyle(fontSize: 11, color: AppColors.warn)),
+                    Text('⚖️ اتفاق خاص بين الطرفين: ليس موثّقاً ولا مسجّلاً رسمياً ولا سنداً تنفيذياً، ولا يُغني عن التوثيق الرسمي.', style: TextStyle(fontSize: 11, color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkWarn : AppColors.warn)),
                   ],
                 ),
               ),
@@ -229,7 +231,7 @@ class _ContractDetailScreenState extends State<ContractDetailScreen> {
                     onPressed: () async {
                       await Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (_) => HandoverScreen(contractId: widget.contractId, kind: 'check_in')),
+                        AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations, builder: (_) => HandoverScreen(contractId: widget.contractId, kind: 'check_in')),
                       );
                       if (mounted) _load();
                     },
@@ -267,7 +269,7 @@ class _ContractDetailScreenState extends State<ContractDetailScreen> {
                         onTap: () async {
                           await Navigator.push(
                             context,
-                            MaterialPageRoute(
+                            AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations,
                               builder: (_) => HandoverScreen(contractId: widget.contractId, kind: kind, existingId: h['id'] as String),
                             ),
                           );

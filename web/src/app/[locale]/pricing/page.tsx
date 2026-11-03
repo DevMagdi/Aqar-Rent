@@ -64,14 +64,14 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
 
   return (
     <div className="space-y-10" dir={ar ? "rtl" : "ltr"}>
-      <header className="rounded-3xl bg-gradient-to-br from-brand-50 via-white to-emerald-50 p-6 sm:p-10">
+      <header className="rounded-3xl bg-gradient-to-br from-brand-50 via-white to-success p-6 sm:p-10">
         <p className="text-xs font-bold uppercase tracking-widest text-ink">
           {ar ? "أسعار شفافة · بلا مفاجآت" : "Transparent pricing · no surprises"}
         </p>
-        <h1 className="mt-2 text-3xl font-extrabold text-stone-900 sm:text-4xl">
+        <h1 className="mt-2 text-3xl font-extrabold text-ink-strong sm:text-4xl">
           {ar ? "ادفع مقابل الظهور والأدوات فقط" : "Pay only for visibility and tools"}
         </h1>
-        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-stone-600 sm:text-base">
+        <p className="mt-3 max-w-2xl text-sm leading-relaxed text-muted sm:text-base">
           {ar
             ? "المنصة لا تحصّل الإيجار أو التأمين، ولا تتقاضى عمولة على الإيجار، ولا تحتفظ بأي مبالغ بين المالك والمستأجر. يمكنك النشر مباشرة أو عبر مكتب عقاري موثّق."
             : "The platform never collects rent or deposits, takes no rent commission and holds no money between owners and tenants. List directly or through a verified office."}
@@ -83,7 +83,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
             ar ? "الوسيط اختياري" : "Broker-optional",
             ar ? "أسعار من قاعدة البيانات" : "DB-backed prices",
           ].map((x) => (
-            <span key={x} className="rounded-full border border-brand-200 bg-white px-3 py-1.5 text-xs font-semibold text-ink">
+            <span key={x} className="rounded-full border border-brand-200 bg-surface px-3 py-1.5 text-xs font-semibold text-ink">
               ✓ {x}
             </span>
           ))}
@@ -92,14 +92,14 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
 
       {/* 1 — entry point */}
       <section aria-labelledby="weekly-h">
-        <h2 id="weekly-h" className="text-xl font-bold text-stone-900">
+        <h2 id="weekly-h" className="text-xl font-bold text-ink-strong">
           {ar ? "١. الإعلان الأسبوعي — نقطة البداية" : "1. Weekly ad — the entry point"}
         </h2>
         <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          <article className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm">
-            <p className="text-sm text-stone-500">{ar ? "إعلان واحد · ٧ أيام" : "One listing · 7 days"}</p>
+          <article className="rounded-2xl border border-border bg-surface p-6 shadow-sm">
+            <p className="text-sm text-muted">{ar ? "إعلان واحد · ٧ أيام" : "One listing · 7 days"}</p>
             <p className="mt-2 text-3xl font-extrabold text-ink">{money(pricing.weekly_ad.price_egp)}</p>
-            <p className="mt-3 text-sm text-stone-600">
+            <p className="mt-3 text-sm text-muted">
               {ar
                 ? "بعد مراجعة الإعلان والمستندات، تدفع مقابل مدة الظهور. لا توجد رسوم خفية أو عمولة عند إتمام الإيجار."
                 : "After listing and document review, pay for visibility. No hidden fees and no commission when a deal closes."}
@@ -111,11 +111,11 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
               {ar ? "أضف إعلانك" : "Post a listing"}
             </Link>
           </article>
-          <article className="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-6">
-            <h3 className="font-bold text-emerald-900">
+          <article className="rounded-2xl border border-success/20 bg-success-bg/60 p-6">
+            <h3 className="font-bold text-success">
               {ar ? "مستويات التوثيق = ثقة أعلى" : "Trust levels = more confidence"}
             </h3>
-            <ol className="mt-3 space-y-2 text-sm text-emerald-900">
+            <ol className="mt-3 space-y-2 text-sm text-success">
               {[
                 ar ? "هاتف موثّق برمز تحقق" : "OTP-verified phone",
                 ar ? "مراجعة الهوية" : "Identity reviewed",
@@ -127,7 +127,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                 </li>
               ))}
             </ol>
-            <p className="mt-3 text-xs text-emerald-800">
+            <p className="mt-3 text-xs text-success">
               {ar ? "مراجعة مستندات من فريقنا — ليست فحصاً حكومياً." : "Document review by our team — not a government check."}
             </p>
           </article>
@@ -136,29 +136,29 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
 
       {/* 2 — packages */}
       <section aria-labelledby="packages-h">
-        <h2 id="packages-h" className="text-xl font-bold text-stone-900">
+        <h2 id="packages-h" className="text-xl font-bold text-ink-strong">
           {ar ? "٢. باقات متعددة الأسابيع وأولوية الظهور" : "2. Multi-week packages & priority boosts"}
         </h2>
-        <p className="mt-1 text-sm text-stone-500">
+        <p className="mt-1 text-sm text-muted">
           {ar ? "كلما زادت المدة، زاد الخصم، وارتفع ترتيب الإعلان في نتائج البحث." : "Longer runs cost less per week and rank higher in search."}
         </p>
         <div className="mt-4 grid gap-4 sm:grid-cols-3">
           {pricing.packages.map((p) => (
-            <article key={p.id} className="relative rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
+            <article key={p.id} className="relative rounded-2xl border border-border bg-surface p-5 shadow-sm">
               {p.is_featured && (
-                <span className="absolute -top-3 end-4 rounded-full bg-amber-400 px-3 py-1 text-[11px] font-bold text-amber-950">
+                <span className="absolute -top-3 end-4 rounded-full bg-gold px-3 py-1 text-[11px] font-bold text-gold-text">
                   ★ {ar ? "مميز" : "Featured"}
                 </span>
               )}
-              <h3 className="font-bold text-stone-900">{name(p.name_ar, p.name_en)}</h3>
-              <p className="mt-1 text-xs text-stone-500">
+              <h3 className="font-bold text-ink-strong">{name(p.name_ar, p.name_en)}</h3>
+              <p className="mt-1 text-xs text-muted">
                 {p.weeks} {ar ? "أسابيع" : "weeks"} · {ar ? "خصم" : "discount"} {p.discount_pct}%
               </p>
               <p className="mt-3 text-2xl font-extrabold text-ink">{money(p.total)}</p>
               {p.discount > 0 && (
-                <p className="text-xs text-stone-400 line-through">{money(p.subtotal)}</p>
+                <p className="text-xs text-muted line-through">{money(p.subtotal)}</p>
               )}
-              <p className="mt-3 text-xs text-stone-500">
+              <p className="mt-3 text-xs text-muted">
                 {ar ? `وزن الأولوية: ${p.priority_weight}` : `Priority weight: ${p.priority_weight}`}
               </p>
             </article>
@@ -168,10 +168,10 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
 
       {/* 3 — subscriptions */}
       <section aria-labelledby="subs-h">
-        <h2 id="subs-h" className="text-xl font-bold text-stone-900">
+        <h2 id="subs-h" className="text-xl font-bold text-ink-strong">
           {ar ? "٣. اشتراكات شهرية — للمالكين والمكاتب" : "3. Monthly subscriptions — owners & offices"}
         </h2>
-        <p className="mt-1 text-sm text-stone-500">
+        <p className="mt-1 text-sm text-muted">
           {ar
             ? "حدود إعلانات أعلى، تحليلات، أدوات جماعية وفرق عمل. الاشتراك لا علاقة له بالإيجار أو التأمين."
             : "Higher listing caps, analytics, bulk tools and teams. Subscriptions never touch rent or deposits."}
@@ -179,22 +179,22 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
         <div className="mt-4 space-y-8">
           {(["individual", "office"] as const).map((audience) => (
             <div key={audience}>
-              <h3 className="text-sm font-bold uppercase tracking-wide text-stone-500">
+              <h3 className="text-sm font-bold uppercase tracking-wide text-muted">
                 {audience === "individual" ? (ar ? "للأفراد (٣ وحدات فأكثر)" : "For individual owners (3+ units)") : ar ? "للمكاتب العقارية والوسطاء" : "For real-estate offices & agents"}
               </h3>
               <div className="mt-3 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {pricing.subscriptions.filter((s) => s.audience === audience).map((s) => (
-                  <article key={s.id} className="flex flex-col rounded-2xl border border-stone-200 bg-white p-5 shadow-sm">
-                    <h4 className="font-bold text-stone-900">{name(s.name_ar, s.name_en)}</h4>
+                  <article key={s.id} className="flex flex-col rounded-2xl border border-border bg-surface p-5 shadow-sm">
+                    <h4 className="font-bold text-ink-strong">{name(s.name_ar, s.name_en)}</h4>
                     <p className="mt-2 text-2xl font-extrabold text-ink">
                       {money(s.monthly_price_egp)}
-                      <span className="text-sm font-normal text-stone-500"> / {ar ? "شهر" : "month"}</span>
+                      <span className="text-sm font-normal text-muted"> / {ar ? "شهر" : "month"}</span>
                     </p>
-                    <p className="mt-2 text-xs text-stone-500">
+                    <p className="mt-2 text-xs text-muted">
                       {ar ? `حتى ${s.listing_limit} إعلان` : `Up to ${s.listing_limit} listings`} ·{" "}
                       {ar ? `${s.seats} مستخدم` : `${s.seats} seat(s)`}
                     </p>
-                    <ul className="mt-3 flex-1 space-y-1.5 text-xs text-stone-600">
+                    <ul className="mt-3 flex-1 space-y-1.5 text-xs text-muted">
                       {Object.entries(s.features)
                         .filter(([, on]) => on)
                         .map(([key]) => (
@@ -219,26 +219,26 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
       </section>
 
       {/* 4 — offices positioning */}
-      <section className="rounded-3xl bg-stone-900 p-6 text-stone-100 sm:p-10">
+      <section className="rounded-3xl bg-brand-deep p-6 text-on-dark sm:p-10">
         <h2 className="text-2xl font-extrabold">
           {ar ? "أفضل من واتساب + إكسل لإدارة الإيجار" : "Better than WhatsApp + Excel for rental management"}
         </h2>
-        <p className="mt-3 max-w-2xl text-sm text-stone-300">
+        <p className="mt-3 max-w-2xl text-sm text-on-dark">
           {ar
             ? "صفحة مكتب بعلامتك، فريق بحسابات مستقلة، ربط كل وحدة بوسيط مسؤول، مسار عملاء من «جديد» حتى «تم الإغلاق»، متابعات، ولوحة أداء. عمولتك مع المالك اتفاق خاص تسجّله اختيارياً — المنصة لا تحصّلها ولا تتوسط فيها."
             : "A branded office page, individual team logins, an agent on every unit, a lead pipeline from new to won, follow-ups and a performance dashboard. Your owner commission is a private agreement you may record — the platform never collects or intermediates it."}
         </p>
         <div className="mt-5 flex flex-wrap gap-3">
-          <Link href={`/${l}/office`} className="rounded-xl bg-white px-5 py-2.5 text-sm font-bold text-stone-900">
+          <Link href={`/${l}/office`} className="rounded-xl bg-surface px-5 py-2.5 text-sm font-bold text-ink-strong">
             {ar ? "لوحة المكتب" : "Office workspace"}
           </Link>
-          <Link href={`/${l}/how-it-works`} className="rounded-xl border border-stone-600 px-5 py-2.5 text-sm font-bold text-white">
+          <Link href={`/${l}/how-it-works`} className="rounded-xl border border-border-strong px-5 py-2.5 text-sm font-bold text-on-dark">
             {ar ? "كيف يعمل" : "How it works"}
           </Link>
         </div>
       </section>
 
-      <p className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-xs leading-relaxed text-amber-900">
+      <p className="rounded-2xl border border-warn/20 bg-warn-bg p-4 text-xs leading-relaxed text-warn">
         ⚖️{" "}
         {ar
           ? "جميع المبالغ المعروضة مقابل خدمات المنصة فقط (إعلانات، باقات، اشتراكات، تحقق مميز اختياري، حزم عقود). لا تُعد المنصة طرفاً في عقد الإيجار، وعقودها اتفاقات خاصة ليست موثّقة ولا سندات تنفيذية ولا تُغني عن التسجيل الرسمي."

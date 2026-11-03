@@ -48,3 +48,18 @@ export const TOKENS_DARK = {
   info: "var(--color-info)",
   neutral: "var(--color-neutral)",
 } as const;
+
+
+/** Motion values are token references too; animations stay in CSS and Flutter's AppMotion. */
+export const MOTION = {
+  easeOut: "var(--ease-out)",
+  easeInOut: "var(--ease-in-out)",
+  easeSpring: "var(--ease-spring)",
+  instant: "var(--dur-instant)",
+  fast: "var(--dur-fast)",
+  base: "var(--dur-base)",
+  slow: "var(--dur-slow)",
+  hero: "var(--dur-hero)",
+  stagger: "var(--stagger)",
+  rise: "var(--rise)",
+} as const;

@@ -48,27 +48,27 @@ export function AccountView() {
     }
   }
 
-  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-4 py-3 text-sm outline-none focus:border-gold";
+  const inputCls = "mt-1 w-full rounded-xl border border-border-strong px-4 py-3 text-sm outline-none focus:border-gold";
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <section className="rounded-3xl border border-stone-200 bg-white p-6">
-        <h1 className="text-xl font-bold text-stone-900">{t("account_title")}</h1>
+      <section className="rounded-3xl border border-border bg-surface p-6">
+        <h1 className="text-xl font-bold text-ink-strong">{t("account_title")}</h1>
         <form onSubmit={save} className="mt-4 space-y-4" data-testid="account-form">
           <div>
-            <label className="text-sm font-semibold text-stone-700" htmlFor="acc-phone">
+            <label className="text-sm font-semibold text-ink" htmlFor="acc-phone">
               {t("account_phone")}
             </label>
-            <input id="acc-phone" dir="ltr" readOnly value={user?.phone || ""} className={inputCls + " bg-stone-50 text-stone-500"} />
+            <input id="acc-phone" dir="ltr" readOnly value={user?.phone || ""} className={inputCls + " bg-bg text-muted"} />
           </div>
           <div>
-            <label className="text-sm font-semibold text-stone-700" htmlFor="acc-name">
+            <label className="text-sm font-semibold text-ink" htmlFor="acc-name">
               {t("account_name")}
             </label>
             <input id="acc-name" data-testid="input-name" className={inputCls} value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
           </div>
           <div>
-            <label className="text-sm font-semibold text-stone-700" htmlFor="acc-lang">
+            <label className="text-sm font-semibold text-ink" htmlFor="acc-lang">
               {t("account_language")}
             </label>
             <select id="acc-lang" data-testid="select-language" className={inputCls} value={lang} onChange={(e) => setLang(e.target.value as "ar" | "en")}>
@@ -77,7 +77,7 @@ export function AccountView() {
             </select>
           </div>
           {err && (
-            <p role="alert" className="text-sm text-red-600">
+            <p role="alert" className="text-sm text-danger">
               {err}
             </p>
           )}
@@ -87,26 +87,26 @@ export function AccountView() {
         </form>
       </section>
 
-      <section className="rounded-3xl border border-red-200 bg-red-50 p-6">
-        <h2 className="font-bold text-red-800">{t("delete_account")}</h2>
-        <p className="mt-1 text-sm text-red-700">{t("delete_warning")}</p>
+      <section className="rounded-3xl border border-danger/20 bg-danger-bg p-6">
+        <h2 className="font-bold text-danger">{t("delete_account")}</h2>
+        <p className="mt-1 text-sm text-danger">{t("delete_warning")}</p>
         {!confirming ? (
           <button
             type="button"
             data-testid="btn-delete-account"
             onClick={() => setConfirming(true)}
-            className="mt-4 rounded-xl border border-red-400 bg-white px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-100"
+            className="mt-4 rounded-xl border border-danger/20 bg-surface px-4 py-2.5 text-sm font-semibold text-danger hover:bg-danger-bg"
           >
             {t("delete_account")}
           </button>
         ) : (
           <div className="mt-4 space-y-3">
-            <p className="text-sm font-semibold text-red-800">{t("delete_confirm")}</p>
+            <p className="text-sm font-semibold text-danger">{t("delete_confirm")}</p>
             <div className="flex gap-2">
-              <button type="button" onClick={() => setConfirming(false)} className="flex-1 rounded-xl border border-stone-300 bg-white py-2.5 text-sm font-semibold text-stone-700">
+              <button type="button" onClick={() => setConfirming(false)} className="flex-1 rounded-xl border border-border-strong bg-surface py-2.5 text-sm font-semibold text-ink">
                 {t("cancel")}
               </button>
-              <button type="button" data-testid="btn-delete-confirm" disabled={busy} onClick={removeAccount} className="flex-1 rounded-xl bg-red-600 py-2.5 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-60">
+              <button type="button" data-testid="btn-delete-confirm" disabled={busy} onClick={removeAccount} className="flex-1 rounded-xl bg-danger-fill py-2.5 text-sm font-semibold text-on-dark hover:bg-danger-fill disabled:opacity-60">
                 {t("confirm_ok")}
               </button>
             </div>

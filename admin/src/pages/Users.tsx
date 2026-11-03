@@ -57,7 +57,7 @@ export function Users() {
   return (
     <div className="space-y-4" data-testid="users-page">
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="me-auto text-lg font-extrabold text-stone-900">Users</h1>
+        <h1 className="me-auto text-lg font-extrabold text-ink-strong">Users</h1>
         <input data-testid="users-search" placeholder="Phone / name / id" className={inputCls + " w-56"} value={q} onChange={(e) => setQ(e.target.value)} />
         <select data-testid="users-status-filter" className={inputCls + " w-36"} value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">All statuses</option>
@@ -75,7 +75,7 @@ export function Users() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200 text-xs uppercase tracking-wide text-stone-400">
+                <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
                   <th className="p-2 text-start">User</th>
                   <th className="p-2 text-start">Status</th>
                   <th className="p-2 text-start">Verification</th>
@@ -86,10 +86,10 @@ export function Users() {
               </thead>
               <tbody>
                 {rows.map((r) => (
-                  <tr key={r.id} data-testid="user-row" className="border-b border-stone-100 hover:bg-stone-50">
+                  <tr key={r.id} data-testid="user-row" className="border-b border-border hover:bg-bg">
                     <td className="p-2">
-                      <p className="font-semibold text-stone-900">{r.full_name || "—"}</p>
-                      <p className="text-xs text-stone-500" dir="ltr">
+                      <p className="font-semibold text-ink-strong">{r.full_name || "—"}</p>
+                      <p className="text-xs text-muted" dir="ltr">
                         {r.phone}
                       </p>
                     </td>
@@ -101,15 +101,15 @@ export function Users() {
                     </td>
                     <td className="p-2">
                       {r.listings_count}
-                      {r.listing_cap !== null && <span className="text-xs text-stone-400"> / cap {r.listing_cap}</span>}
+                      {r.listing_cap !== null && <span className="text-xs text-muted"> / cap {r.listing_cap}</span>}
                     </td>
-                    <td className="p-2 text-xs text-stone-500">{r.created_at?.slice(0, 10)}</td>
+                    <td className="p-2 text-xs text-muted">{r.created_at?.slice(0, 10)}</td>
                     <td className="p-2 text-end">
                       <button
                         type="button"
                         data-testid="btn-user-actions"
                         onClick={() => setTarget(r)}
-                        className="rounded-lg bg-stone-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-stone-700"
+                        className="rounded-lg bg-brand-deep px-3 py-1.5 text-xs font-bold text-on-dark hover:bg-brand-deep"
                       >
                         Manage
                       </button>
@@ -127,18 +127,18 @@ export function Users() {
           title={`Manage — ${target.full_name || target.phone}`}
           onClose={() => setTarget(null)}
           footer={
-            <button type="button" className={btnGhost} onClick={() => setTarget(null)}>
+            <button type="button" data-modal-dismiss="true" className={btnGhost} onClick={() => setTarget(null)}>
               Close
             </button>
           }
         >
           <div className="space-y-3 text-sm" data-testid="user-actions">
-            <div className="rounded-xl bg-stone-50 p-3">
+            <div className="rounded-xl bg-bg p-3">
               <p>
                 Status: <Badge status={target.status}>{target.status}</Badge> · Listings: <b>{target.listings_count}</b> · Cap:{" "}
                 <b>{target.listing_cap ?? "default (5)"}</b>
               </p>
-              <p className="text-xs text-stone-500">Joined {target.created_at?.slice(0, 10)} · verification {target.verification_status}</p>
+              <p className="text-xs text-muted">Joined {target.created_at?.slice(0, 10)} · verification {target.verification_status}</p>
             </div>
             {target.status === "active" ? (
               <button

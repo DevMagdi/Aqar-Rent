@@ -93,7 +93,7 @@ export function Payments() {
   return (
     <div className="space-y-4" data-testid="payments-page">
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="me-auto text-lg font-extrabold text-stone-900">Payments & refunds</h1>
+        <h1 className="me-auto text-lg font-extrabold text-ink-strong">Payments & refunds</h1>
         <select data-testid="filter-status" className={inputCls + " w-36"} value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="">All statuses</option>
           <option value="pending">pending</option>
@@ -115,21 +115,21 @@ export function Payments() {
 
       {rev && (
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <div className="rounded-2xl border border-stone-200 bg-white p-4" data-testid="revenue-total">
-            <p className="text-xs font-semibold uppercase text-stone-400">Total paid</p>
-            <p className="text-xl font-extrabold text-stone-900">{rev.total_paid_egp.toLocaleString()} EGP</p>
+          <div className="rounded-2xl border border-border bg-surface p-4" data-testid="revenue-total">
+            <p className="text-xs font-semibold uppercase text-muted">Total paid</p>
+            <p className="text-xl font-extrabold text-ink-strong">{rev.total_paid_egp.toLocaleString()} EGP</p>
           </div>
-          <div className="rounded-2xl border border-stone-200 bg-white p-4">
-            <p className="text-xs font-semibold uppercase text-stone-400">Refunded</p>
-            <p className="text-xl font-extrabold text-red-700">{rev.total_refunded_egp.toLocaleString()} EGP</p>
+          <div className="rounded-2xl border border-border bg-surface p-4">
+            <p className="text-xs font-semibold uppercase text-muted">Refunded</p>
+            <p className="text-xl font-extrabold text-danger">{rev.total_refunded_egp.toLocaleString()} EGP</p>
           </div>
-          <div className="rounded-2xl border border-stone-200 bg-white p-4">
-            <p className="text-xs font-semibold uppercase text-stone-400">Net revenue</p>
-            <p className="text-xl font-extrabold text-emerald-700">{rev.net_egp.toLocaleString()} EGP</p>
+          <div className="rounded-2xl border border-border bg-surface p-4">
+            <p className="text-xs font-semibold uppercase text-muted">Net revenue</p>
+            <p className="text-xl font-extrabold text-success">{rev.net_egp.toLocaleString()} EGP</p>
           </div>
-          <div className="rounded-2xl border border-stone-200 bg-white p-4">
-            <p className="text-xs font-semibold uppercase text-stone-400">Paid orders</p>
-            <p className="text-xl font-extrabold text-stone-900">{rev.count_paid}</p>
+          <div className="rounded-2xl border border-border bg-surface p-4">
+            <p className="text-xs font-semibold uppercase text-muted">Paid orders</p>
+            <p className="text-xl font-extrabold text-ink-strong">{rev.count_paid}</p>
           </div>
         </div>
       )}
@@ -155,7 +155,7 @@ export function Payments() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-stone-200 text-xs uppercase tracking-wide text-stone-400">
+                <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
                   <th className="p-2 text-start">Order</th>
                   <th className="p-2 text-start">Owner</th>
                   <th className="p-2 text-start">Method</th>
@@ -167,7 +167,7 @@ export function Payments() {
               </thead>
               <tbody>
                 {rows.map((r) => (
-                  <tr key={r.id} data-testid="payment-row" className="border-b border-stone-100 hover:bg-stone-50">
+                  <tr key={r.id} data-testid="payment-row" className="border-b border-border hover:bg-bg">
                     <td className="p-2 font-mono text-xs">{r.order_id.slice(0, 8)}</td>
                     <td className="p-2 text-xs" dir="ltr">
                       {r.owner_phone || "—"}
@@ -177,14 +177,14 @@ export function Payments() {
                     <td className="p-2">
                       <Badge status={r.status}>{r.status}</Badge>
                     </td>
-                    <td className="p-2 font-mono text-xs text-stone-400">{r.gateway_txn_id || "—"}</td>
+                    <td className="p-2 font-mono text-xs text-muted">{r.gateway_txn_id || "—"}</td>
                     <td className="p-2 text-end">
                       {r.status === "paid" && (
                         <button
                           type="button"
                           data-testid="btn-refund"
                           onClick={() => setTarget(r)}
-                          className="rounded-lg border border-red-300 px-2.5 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50"
+                          className="rounded-lg border border-danger/20 px-2.5 py-1.5 text-xs font-bold text-danger hover:bg-danger-bg"
                         >
                           Refund
                         </button>
@@ -204,7 +204,7 @@ export function Payments() {
           onClose={() => setTarget(null)}
           footer={
             <>
-              <button type="button" className={btnGhost} onClick={() => setTarget(null)}>
+              <button type="button" data-modal-dismiss="true" className={btnGhost} onClick={() => setTarget(null)}>
                 Cancel
               </button>
               <button type="button" data-testid="btn-refund-confirm" className={btnDanger} disabled={busy} onClick={refund}>
@@ -213,14 +213,14 @@ export function Payments() {
             </>
           }
         >
-          <p className="text-sm text-stone-600">
+          <p className="text-sm text-muted">
             Order <b className="font-mono">{target.order_id.slice(0, 8)}</b> · {target.amount.toLocaleString()} EGP · {target.method}
           </p>
-          <label className="mt-3 block text-sm font-semibold text-stone-700" htmlFor="ramt">
+          <label className="mt-3 block text-sm font-semibold text-ink" htmlFor="ramt">
             Partial amount (empty = full refund)
           </label>
           <input id="ramt" data-testid="input-refund-amount" type="number" min="1" className={inputCls} value={amount} onChange={(e) => setAmount(e.target.value)} />
-          <label className="mt-3 block text-sm font-semibold text-stone-700" htmlFor="rreason">
+          <label className="mt-3 block text-sm font-semibold text-ink" htmlFor="rreason">
             Reason
           </label>
           <input id="rreason" data-testid="input-refund-reason" className={inputCls} value={reason} onChange={(e) => setReason(e.target.value)} maxLength={1000} />

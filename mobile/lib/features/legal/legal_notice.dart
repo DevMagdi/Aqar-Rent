@@ -12,9 +12,9 @@ class LegalNotice extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppTheme.amber.withValues(alpha: 0.10),
+          color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkWarnBg : AppColors.warnBg,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppTheme.amber.withValues(alpha: 0.35)),
+          border: Border.all(color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkWarn : AppColors.warn),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -27,7 +27,7 @@ class LegalNotice extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               compact ? s('legal_private_only') : s('legal_body'),
-              style: const TextStyle(fontSize: 11, height: 1.6, color: AppColors.warn),
+              style: TextStyle(fontSize: 11, height: 1.6, color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkWarn : AppColors.warn),
             ),
           ],
         ),

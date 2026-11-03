@@ -148,7 +148,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   children: [
                     Text(v.rejectReason != null ? 'مرفوض: ${v.rejectReason}' : _statusAr(v.status)),
                     if (v.appealStatus != 'none')
-                      Text('الاعتراض: ${v.appealStatus}', style: const TextStyle(fontSize: 11, color: AppColors.warn)),
+                      Text('الاعتراض: ${v.appealStatus}', style: TextStyle(fontSize: 11, color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkWarn : AppColors.warn)),
                     if (v.status == 'rejected' && v.appealStatus == 'none')
                       Padding(
                         padding: const EdgeInsets.only(top: 4),

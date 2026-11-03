@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ListingCard } from "@/components/ListingCard";
+import { CountUp, Reveal, Stagger } from "@/components/motion";
 import { SearchBar } from "@/components/SearchBar";
 import { makeT } from "@/lib/i18n";
 import { fetchServer } from "@/lib/server";
@@ -45,20 +46,21 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
   }
 
   const stats = [
-    { value: l === "ar" ? "٤" : "4", label: t("trust_stat_levels") },
-    { value: l === "ar" ? "٠٪" : "0%", label: t("trust_stat_commission") },
-    { value: l === "ar" ? "٣" : "3", label: t("trust_stat_tools") },
-    { value: l === "ar" ? "٢٤" : "24", label: t("trust_stat_review") },
+    { value: 4, label: t("trust_stat_levels") },
+    { value: 0, suffix: "%", label: t("trust_stat_commission") },
+    { value: 3, label: t("trust_stat_tools") },
+    { value: 24, label: t("trust_stat_review") },
   ];
   const steps = [t("how_step_one"), t("how_step_two"), t("how_step_three")];
 
   return (
-    <div className="home-page page-enter space-y-12 sm:space-y-16">
+    <div className="home-page space-y-12 sm:space-y-16">
       <section className="home-hero" data-testid="hero">
         <div className="home-hero-content">
           <p className="home-trust-chip"><span aria-hidden>✓</span>{t("hero_trust_chip")}</p>
           <h1 className="home-hero-title font-display">
-            {t("hero_title_start")} <span>{t("hero_title_gold")}</span>
+            <span className="hero-title-line">{t("hero_title_start")}</span>
+            <span className="hero-title-line hero-shimmer-word">{t("hero_title_gold")}</span>
           </h1>
           <p className="home-hero-subtitle">{t("hero_sub")}</p>
           <div className="mt-5 flex flex-wrap gap-3 text-sm text-on-dark/80">
@@ -77,14 +79,14 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <SearchBar compact governorates={governorates} cities={cities} />
       </div>
 
-      <section aria-label={t("hero_trust_chip")} className="trust-strip">
+      <Stagger as="section" aria-label={t("hero_trust_chip")} className="trust-strip">
         {stats.map((stat) => (
           <article key={stat.label} className="trust-stat-card">
-            <strong className="trust-stat-value font-display">{stat.value}</strong>
+            <strong className="trust-stat-value font-display"><CountUp value={stat.value} locale={l} suffix={"suffix" in stat ? stat.suffix : ""} /></strong>
             <span>{stat.label}</span>
           </article>
         ))}
-      </section>
+      </Stagger>
 
       <section aria-labelledby="latest-h" data-testid="latest-listings">
         <div className="mb-5 flex items-end justify-between gap-4">
@@ -97,34 +99,34 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           </Link>
         </div>
         {latest.items.length === 0 ? (
-          <p className="rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface p-8 text-center text-sm text-muted shadow-card" data-testid="empty-state">
+          <Reveal as="p" className="empty-state rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface p-8 text-center text-sm text-muted shadow-card" data-testid="empty-state">
             {t("no_results")}
-          </p>
+          </Reveal>
         ) : (
-          <div className="listing-grid">
+          <Stagger className="listing-grid" key={`home-listings-${latest.items.length}`}>
             {latest.items.map((item, i) => (
               <ListingCard key={item.id} item={item} locale={l} places={places} eager={i < 3} />
             ))}
-          </div>
+          </Stagger>
         )}
       </section>
 
-      <section aria-labelledby="how-home-title" className="home-how">
+      <Reveal as="section" aria-labelledby="how-home-title" className="home-how">
         <div className="mb-5">
           <p className="eyebrow">{t("how_it_works")}</p>
           <h2 id="how-home-title" className="section-title font-display">{t("how_it_works")}</h2>
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <Stagger className="grid gap-4 md:grid-cols-3">
           {steps.map((step, index) => (
             <article key={step} className="how-card surface-card">
               <span className="how-number font-display">{l === "ar" ? ["٠١", "٠٢", "٠٣"][index] : `0${index + 1}`}</span>
               <p>{step}</p>
             </article>
           ))}
-        </div>
-      </section>
+        </Stagger>
+      </Reveal>
 
-      <section className="home-cta" aria-label={t("cta_home_title")}>
+      <Reveal as="section" className="home-cta" aria-label={t("cta_home_title")}>
         <div>
           <p className="eyebrow">{t("cta_home_sub")}</p>
           <h2 className="font-display text-2xl font-bold sm:text-3xl">{t("cta_home_title")}</h2>
@@ -133,7 +135,7 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
         <Link href={`/${l}/owner/new`} className="btn-secondary shrink-0">
           {t("nav_add")}
         </Link>
-      </section>
+      </Reveal>
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "@/lib/api";
+import { Stagger } from "@/components/motion";
 import { AreaChart, BarChart, Card, Empty, Spinner, Stat } from "@/components/ui";
 
 interface Funnel {
@@ -54,7 +55,7 @@ export function Dashboard() {
       .catch((e) => setErr(e.message));
   }, []);
 
-  if (err) return <p className="text-sm text-red-600" role="alert">{err}</p>;
+  if (err) return <p className="text-sm text-danger" role="alert">{err}</p>;
   if (!d) return <Spinner />;
 
   const byGov = Object.entries(
@@ -78,12 +79,12 @@ export function Dashboard() {
         </div>
         <span className="rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-muted">Live operational data</span>
       </div>
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <Stagger as="div" className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Stat label="Users" value={d.users_total} hint={`${d.users_banned} banned`} />
         <Stat label="Active ad periods" value={d.active_ad_periods} hint={`${listingsTotal} listings total`} />
-        <Stat label="Revenue (EGP)" value={d.revenue_egp.toLocaleString()} hint="paid − refunded" testid="revenue" />
+        <Stat label="Revenue (EGP)" value={d.revenue_egp} hint="paid − refunded" testid="revenue" />
         <Stat label="Contact events" value={d.contact_events_total} hint="call / whatsapp reveals" />
-      </div>
+      </Stagger>
       <div className="grid grid-cols-2 gap-3">
         <Stat label="Reports open" value={d.reports_open} />
         <Stat label="Verifications pending" value={d.verifications_pending} />
@@ -114,17 +115,17 @@ export function Dashboard() {
           ) : (
             <Empty text="—" />
           )}
-          <p className="mt-2 text-xs text-stone-400">conversion: {funnel?.conversion_pct ?? 0}%</p>
+          <p className="mt-2 text-xs text-muted">conversion: {funnel?.conversion_pct ?? 0}%</p>
         </Card>
         <Card title="Quick actions">
           <div className="flex flex-wrap gap-2">
             <Link to="/moderation" className="rounded-xl bg-gold px-4 py-2 text-sm font-semibold text-gold-text hover:bg-gold-dark">
               Moderation queue
             </Link>
-            <Link to="/verifications" className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-50">
+            <Link to="/verifications" className="rounded-xl border border-border-strong bg-surface px-4 py-2 text-sm font-semibold text-ink hover:bg-bg">
               Verifications
             </Link>
-            <Link to="/bank-transfers" className="rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-50">
+            <Link to="/bank-transfers" className="rounded-xl border border-border-strong bg-surface px-4 py-2 text-sm font-semibold text-ink hover:bg-bg">
               Bank transfers
             </Link>
           </div>

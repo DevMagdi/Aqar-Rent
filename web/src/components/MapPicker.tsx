@@ -44,7 +44,7 @@ export default function MapPicker({
     });
     const el = document.createElement("div");
     el.dataset.testid = "wizard-pin";
-    el.className = "h-7 w-7 rounded-full border-4 border-white bg-gold shadow-lg";
+    el.className = "h-7 w-7 rounded-full border-4 border-on-dark bg-gold shadow-lg";
     const marker = new maplibregl.Marker({ element: el, draggable: true, color: clientTokenColor("gold-dark") }).setLngLat([lng, lat]).addTo(map);
     marker.on("dragend", () => {
       const p = marker.getLngLat();

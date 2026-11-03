@@ -1,7 +1,6 @@
 // Aqar Rent premium theme — SINGLE SOURCE OF TRUTH for mobile colours.
 // Byte-verified against web tokens by web/src/styles/tokens.test.ts.
 // Light in the base constants; dark in AppColors.dark* (spec: #0B1220/#141C2B).
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AppColors {
@@ -72,6 +71,37 @@ class AppColors {
   static const darkTeal = Color(0xFF2DD4BF);
 }
 
+/// Motion tokens mirror web/src/styles/tokens.css. Keep entrances restrained and GPU-friendly.
+class AppMotion {
+  AppMotion._();
+
+  static const Duration instant = Duration(milliseconds: 80);
+  static const Duration fast = Duration(milliseconds: 160);
+  static const Duration base = Duration(milliseconds: 280);
+  static const Duration slow = Duration(milliseconds: 480);
+  static const Duration hero = Duration(milliseconds: 900);
+  static const Duration stagger = Duration(milliseconds: 60);
+  static const double rise = 16;
+  static const Cubic easeOut = Cubic(0.22, 1, 0.36, 1);
+  static const Cubic easeInOut = Cubic(0.65, 0, 0.35, 1);
+  static const Cubic easeSpring = Cubic(0.34, 1.3, 0.64, 1);
+}
+
+class AqarPageTransitionsBuilder extends PageTransitionsBuilder {
+  const AqarPageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(PageRoute<T> route, BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+    if (MediaQuery.of(context).disableAnimations) return child;
+    final rtl = Directionality.of(context) == TextDirection.rtl;
+    final begin = rtl ? const Offset(-0.035, 0) : const Offset(0.035, 0);
+    final curve = CurvedAnimation(parent: animation, curve: AppMotion.easeOut, reverseCurve: AppMotion.easeOut);
+    return FadeTransition(opacity: animation, child: SlideTransition(position: Tween<Offset>(begin: begin, end: Offset.zero).animate(curve), child: child));
+  }
+}
+
+Color appMutedColor(BuildContext context) => Theme.of(context).brightness == Brightness.dark ? AppColors.darkMuted : AppColors.muted;
+
 /// Global theme mode: follows the system by default, overridable in-app.
 final ValueNotifier<ThemeMode> appThemeMode = ValueNotifier(ThemeMode.system);
 
@@ -131,7 +161,7 @@ class AppTheme {
         primary: accent,
         onPrimary: onAccent,
         secondary: isDark ? AppColors.darkTeal : AppColors.tealInk,
-        onSecondary: Colors.white,
+        onSecondary: isDark ? AppColors.brandDeep : Colors.white,
         error: danger,
         onError: isDark ? AppColors.brandDeep : Colors.white,
         surface: surface,
@@ -223,11 +253,11 @@ class AppTheme {
       splashFactory: InkSparkle.splashFactory,
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          TargetPlatform.android: FadeUpwardsPageTransitionsBuilder(),
-          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.linux: FadeUpwardsPageTransitionsBuilder(),
-          TargetPlatform.macOS: FadeUpwardsPageTransitionsBuilder(),
-          TargetPlatform.windows: FadeUpwardsPageTransitionsBuilder(),
+          TargetPlatform.android: AqarPageTransitionsBuilder(),
+          TargetPlatform.iOS: AqarPageTransitionsBuilder(),
+          TargetPlatform.linux: AqarPageTransitionsBuilder(),
+          TargetPlatform.macOS: AqarPageTransitionsBuilder(),
+          TargetPlatform.windows: AqarPageTransitionsBuilder(),
         },
       ),
     );

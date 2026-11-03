@@ -12,7 +12,7 @@ import { useI18n, useToast } from "./Providers";
 import { AMENITY_KEYS, AMENITY_LABEL_KEY } from "@/lib/utils";
 import type { ListingDetail, Location, Media } from "@/lib/types";
 
-const MapPicker = dynamic(() => import("./MapPicker"), { ssr: false, loading: () => <div className="h-72 animate-pulse rounded-2xl bg-stone-100" /> });
+const MapPicker = dynamic(() => import("./MapPicker"), { ssr: false, loading: () => <div className="h-72 animate-pulse rounded-2xl bg-surface-2" /> });
 
 const PROPERTY_TYPES = ["apartment", "studio", "villa", "room", "shop", "office", "clinic"];
 const FURNISHED = ["furnished", "unfurnished", "semi"];
@@ -461,31 +461,31 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
 
   // ── render ────────────────────────────────────────────────────────────
   if (initialLoading) {
-    return <div className="mx-auto h-96 max-w-3xl animate-pulse rounded-3xl bg-stone-200" data-testid="wizard-loading" />;
+    return <div className="mx-auto h-96 max-w-3xl animate-pulse rounded-3xl bg-track" data-testid="wizard-loading" />;
   }
   if (loadErr) {
     return (
-      <div className="mx-auto max-w-3xl rounded-2xl border border-red-200 bg-red-50 p-6 text-center text-sm text-red-700" role="alert">
+      <div className="mx-auto max-w-3xl rounded-2xl border border-danger/20 bg-danger-bg p-6 text-center text-sm text-danger" role="alert">
         {loadErr}
       </div>
     );
   }
   if (submitted) {
     return (
-      <div className="mx-auto max-w-xl rounded-3xl border border-emerald-200 bg-emerald-50 p-8 text-center" data-testid="wizard-submitted">
+      <div className="mx-auto max-w-xl rounded-3xl border border-success/20 bg-success-bg p-8 text-center" data-testid="wizard-submitted">
         <p className="text-3xl">✓</p>
-        <h1 className="mt-2 text-xl font-bold text-emerald-900">{t("submit_review")}</h1>
-        <p className="mt-2 text-sm text-emerald-700">{t("submit_hint")}</p>
-        <Link href={`/${locale}/owner`} className="mt-5 inline-block rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-emerald-700">
+        <h1 className="mt-2 text-xl font-bold text-success">{t("submit_review")}</h1>
+        <p className="mt-2 text-sm text-success">{t("submit_hint")}</p>
+        <Link href={`/${locale}/owner`} className="mt-5 inline-block rounded-xl bg-success-fill px-5 py-2.5 text-sm font-semibold text-on-dark hover:bg-success-fill">
           {t("dashboard_title")}
         </Link>
       </div>
     );
   }
 
-  const inputCls = "mt-1 w-full rounded-xl border border-stone-300 px-3.5 py-2.5 text-sm outline-none focus:border-gold";
-  const errCls = "mt-1 text-xs font-semibold text-red-600";
-  const labelCls = "block text-sm font-semibold text-stone-700";
+  const inputCls = "mt-1 w-full rounded-xl border border-border-strong px-3.5 py-2.5 text-sm outline-none focus:border-gold";
+  const errCls = "mt-1 text-xs font-semibold text-danger";
+  const labelCls = "block text-sm font-semibold text-ink";
 
   const field = (name: string, node: React.ReactNode) => (
     <div>
@@ -506,20 +506,20 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
           <li key={s} className="flex-1">
             <div
               data-testid={`step-dot-${i}`}
-              className={`h-1.5 rounded-full ${i <= step ? "bg-gold" : "bg-stone-200"}`}
+              className={`h-1.5 rounded-full ${i <= step ? "bg-gold" : "bg-track"}`}
               title={t(s)}
             />
-            <p className={`mt-1 hidden text-[11px] sm:block ${i === step ? "font-bold text-ink" : "text-stone-400"}`}>{t(s)}</p>
+            <p className={`mt-1 hidden text-[11px] sm:block ${i === step ? "font-bold text-ink" : "text-muted"}`}>{t(s)}</p>
           </li>
         ))}
       </ol>
-      <p className="mb-3 text-sm font-semibold text-stone-500">
+      <p className="mb-3 text-sm font-semibold text-muted">
         {t("step")} {step + 1} {t("of")} {STEPS.length} — <span data-testid="step-name">{t(STEPS[step])}</span>
-        {saving && <span className="ms-2 text-xs text-stone-400">…</span>}
-        {savedTick && <span className="ms-2 text-xs text-emerald-600">✓ {t("draft_saved")}</span>}
+        {saving && <span className="ms-2 text-xs text-muted">…</span>}
+        {savedTick && <span className="ms-2 text-xs text-success">✓ {t("draft_saved")}</span>}
       </p>
 
-      <div className="rounded-3xl border border-stone-200 bg-white p-5 sm:p-6">
+      <div className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
         {/* ── STEP 1: basics ─────────────────────────────── */}
         {step === 0 && (
           <div className="space-y-4" data-testid="step-basics">
@@ -634,7 +634,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
               </label>
               {field("building_age", <input id="w-age" type="number" min={0} max={300} className={inputCls} value={form.building_age} onChange={(e) => update({ building_age: e.target.value })} />)}
             </div>
-            <label className="flex items-center gap-2 text-sm font-semibold text-stone-700 sm:col-span-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-ink sm:col-span-2">
               <input type="checkbox" data-testid="input-elevator" checked={form.has_elevator} onChange={(e) => update({ has_elevator: e.target.checked })} className="h-4 w-4 accent-brand-600" />
               {t("elevator")}
             </label>
@@ -648,7 +648,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
                     data-testid={`amenity-${a}`}
                     aria-pressed={!!form.amenities[a]}
                     onClick={() => update({ amenities: { ...form.amenities, [a]: !form.amenities[a] } })}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-medium ${form.amenities[a] ? "border-gold bg-brand-50 text-ink" : "border-stone-300 text-stone-600"}`}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-medium ${form.amenities[a] ? "border-gold bg-brand-50 text-ink" : "border-border-strong text-muted"}`}
                   >
                     {t(AMENITY_LABEL_KEY[a] || a)}
                   </button>
@@ -718,7 +718,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
             </div>
             <div>
               <p className={labelCls}>{t("pin_label")}</p>
-              <div className="mt-2 overflow-hidden rounded-2xl border border-stone-200">
+              <div className="mt-2 overflow-hidden rounded-2xl border border-border">
                 <MapPicker
                   lat={Number(form.latitude) || 30.0444}
                   lng={Number(form.longitude) || 31.2357}
@@ -727,13 +727,13 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
               </div>
               <div className="mt-3 grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-semibold text-stone-500" htmlFor="w-lat">
+                  <label className="text-xs font-semibold text-muted" htmlFor="w-lat">
                     {t("lat")}
                   </label>
                   {field("latitude", <input id="w-lat" data-testid="input-latitude" dir="ltr" inputMode="decimal" className={inputCls} value={form.latitude} onChange={(e) => update({ latitude: e.target.value })} />)}
                 </div>
                 <div>
-                  <label className="text-xs font-semibold text-stone-500" htmlFor="w-lng">
+                  <label className="text-xs font-semibold text-muted" htmlFor="w-lng">
                     {t("lng")}
                   </label>
                   {field("longitude", <input id="w-lng" data-testid="input-longitude" dir="ltr" inputMode="decimal" className={inputCls} value={form.longitude} onChange={(e) => update({ longitude: e.target.value })} />)}
@@ -748,7 +748,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
           <div className="space-y-4" data-testid="step-photos">
             <div>
               <p className={labelCls}>{t("photos_label")}</p>
-              <p className="mt-1 text-xs text-stone-500">{t("photos_hint")}</p>
+              <p className="mt-1 text-xs text-muted">{t("photos_hint")}</p>
             </div>
             <input
               ref={(el) => {
@@ -757,7 +757,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
               type="file"
               accept="image/jpeg,image/png,image/webp"
               multiple
-              className="block w-full text-sm text-stone-600 file:me-3 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink"
+              className="block w-full text-sm text-muted file:me-3 file:rounded-xl file:border-0 file:bg-brand-50 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink"
               onChange={(e) => {
                 void addFiles(e.target.files);
                 e.currentTarget.value = "";
@@ -789,12 +789,12 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
                     });
                     dragIndex.current = null;
                   }}
-                  className="flex items-center gap-3 rounded-xl border border-stone-200 bg-stone-50 p-2"
+                  className="flex items-center gap-3 rounded-xl border border-border bg-bg p-2"
                 >
-                  <span className="cursor-grab select-none text-stone-400" title={t("reorder")} aria-hidden>
+                  <span className="cursor-grab select-none text-muted" title={t("reorder")} aria-hidden>
                     ⠿
                   </span>
-                  <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-lg bg-stone-200 text-xs text-stone-500">
+                  <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-lg bg-track text-xs text-muted">
                     {p.remote?.thumb_url ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={p.remote.thumb_url} alt="" className="h-full w-full object-cover" />
@@ -806,17 +806,17 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
                     )}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-semibold text-stone-700">
+                    <p className="truncate text-xs font-semibold text-ink">
                       {i === 0 && p.status === "done" && <span className="me-1 rounded bg-brand-100 px-1.5 py-0.5 text-[10px] text-ink">{t("cover")}</span>}
                       {p.local?.name || p.remote?.id?.slice(0, 8)}
                     </p>
                     {p.status === "uploading" && (
-                      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-stone-200">
+                      <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-track">
                         <div className="h-full bg-gold transition-all" style={{ width: `${p.progress}%` }} />
                       </div>
                     )}
-                    {p.status === "error" && <p className="mt-0.5 text-[11px] font-semibold text-red-600">{p.error || t("upload_failed")}</p>}
-                    {p.status === "done" && <p className="mt-0.5 text-[11px] text-emerald-600">✓</p>}
+                    {p.status === "error" && <p className="mt-0.5 text-[11px] font-semibold text-danger">{p.error || t("upload_failed")}</p>}
+                    {p.status === "done" && <p className="mt-0.5 text-[11px] text-success">✓</p>}
                   </div>
                   <div className="flex items-center gap-1">
                     {p.status === "error" && (
@@ -824,25 +824,25 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
                         type="button"
                         data-testid="photo-retry"
                         onClick={() => setPhotos((prev) => prev.map((x) => (x.key === p.key ? { ...x, status: "pending" } : x)))}
-                        className="rounded-lg border border-stone-300 px-2 py-1 text-xs font-semibold text-stone-600"
+                        className="rounded-lg border border-border-strong px-2 py-1 text-xs font-semibold text-muted"
                       >
                         {t("upload_retry")}
                       </button>
                     )}
-                    <button type="button" aria-label="up" onClick={() => movePhoto(i, -1)} disabled={i === 0} className="rounded-lg border border-stone-300 px-2 py-1 text-xs disabled:opacity-30">
+                    <button type="button" aria-label="up" onClick={() => movePhoto(i, -1)} disabled={i === 0} className="rounded-lg border border-border-strong px-2 py-1 text-xs disabled:opacity-30">
                       ↑
                     </button>
-                    <button type="button" aria-label="down" onClick={() => movePhoto(i, 1)} disabled={i === photos.length - 1} className="rounded-lg border border-stone-300 px-2 py-1 text-xs disabled:opacity-30">
+                    <button type="button" aria-label="down" onClick={() => movePhoto(i, 1)} disabled={i === photos.length - 1} className="rounded-lg border border-border-strong px-2 py-1 text-xs disabled:opacity-30">
                       ↓
                     </button>
-                    <button type="button" aria-label={t("remove")} data-testid="photo-remove" onClick={() => removePhoto(p.key)} className="rounded-lg border border-red-200 px-2 py-1 text-xs text-red-600">
+                    <button type="button" aria-label={t("remove")} data-testid="photo-remove" onClick={() => removePhoto(p.key)} className="rounded-lg border border-danger/20 px-2 py-1 text-xs text-danger">
                       ✕
                     </button>
                   </div>
                 </li>
               ))}
             </ul>
-            <p className="text-xs text-stone-500" data-testid="photo-count">
+            <p className="text-xs text-muted" data-testid="photo-count">
               {photos.filter((p) => p.status !== "error").length}/{MAX_PHOTOS}
             </p>
             {photoBusy && <p className="text-sm font-semibold text-ink">{t("loading_upload")}</p>}
@@ -867,14 +867,14 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
                 onChange={(e) => update({ description: e.target.value })}
               />,
             )}
-            <p className="mt-1 text-xs text-stone-400">{form.description.length}/5000</p>
+            <p className="mt-1 text-xs text-muted">{form.description.length}/5000</p>
           </div>
         )}
 
         {/* ── STEP 6: review ─────────────────────────────── */}
         {step === 5 && (
           <div className="space-y-4" data-testid="step-review">
-            <h2 className="text-lg font-bold text-stone-900">{t("review_submit")}</h2>
+            <h2 className="text-lg font-bold text-ink-strong">{t("review_submit")}</h2>
             <dl className="grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
               {[
                 [t("title_label"), form.title],
@@ -886,9 +886,9 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
                 [t("address_label"), form.address_text],
                 [t("min_term"), `${form.min_term_months} ${t("month_s")}`],
               ].map(([k, v]) => (
-                <div key={k} className="flex justify-between gap-3 border-b border-stone-100 py-1.5">
-                  <dt className="text-stone-500">{k}</dt>
-                  <dd className="truncate font-semibold text-stone-800">{v || "—"}</dd>
+                <div key={k} className="flex justify-between gap-3 border-b border-border py-1.5">
+                  <dt className="text-muted">{k}</dt>
+                  <dd className="truncate font-semibold text-ink">{v || "—"}</dd>
                 </div>
               ))}
             </dl>
@@ -896,7 +896,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
               {photos
                 .filter((p) => p.remote)
                 .map((p) => (
-                  <span key={p.key} className="h-14 w-14 overflow-hidden rounded-lg bg-stone-100">
+                  <span key={p.key} className="h-14 w-14 overflow-hidden rounded-lg bg-surface-2">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={p.remote!.thumb_url || p.remote!.url} alt="" className="h-full w-full object-cover" />
                   </span>
@@ -914,7 +914,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
               data-testid="btn-submit-listing"
               disabled={submitting}
               onClick={submit}
-              className="w-full rounded-xl bg-emerald-600 py-3 font-bold text-white hover:bg-emerald-700 disabled:opacity-60"
+              className="w-full rounded-xl bg-success-fill py-3 font-bold text-on-dark hover:bg-success-fill disabled:opacity-60"
             >
               {submitting ? t("loading") : t("submit_review")}
             </button>
@@ -930,7 +930,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
             data-testid="btn-prev"
             onClick={() => go(-1)}
             disabled={step === 0}
-            className="rounded-xl border border-stone-300 bg-white px-5 py-2.5 text-sm font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-40"
+            className="rounded-xl border border-border-strong bg-surface px-5 py-2.5 text-sm font-semibold text-ink hover:bg-bg disabled:opacity-40"
           >
             → {t("prev")}
           </button>
@@ -945,12 +945,12 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
               {t("next")} ←
             </button>
           ) : (
-            <span className="text-xs text-stone-400">{t("review_submit")}</span>
+            <span className="text-xs text-muted">{t("review_submit")}</span>
           )}
         </div>
       )}
       <p className="mt-4 text-center">
-        <Link href={`/${locale}/owner`} className="text-sm text-stone-500 hover:underline">
+        <Link href={`/${locale}/owner`} className="text-sm text-muted hover:underline">
           ← {t("dashboard_title")}
         </Link>
       </p>
