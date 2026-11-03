@@ -1,7 +1,6 @@
 // Aqar Rent premium theme — SINGLE SOURCE OF TRUTH for mobile colours.
 // Byte-verified against web tokens by web/src/styles/tokens.test.ts.
 // Light in the base constants; dark in AppColors.dark* (spec: #0B1220/#141C2B).
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AppColors {

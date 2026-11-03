@@ -7,8 +7,7 @@ import 'i18n.dart';
 import 'theme.dart';
 
 class AqarPageRoute<T> extends PageRouteBuilder<T> {
-  AqarPageRoute({required WidgetBuilder builder, RouteSettings? settings, bool disableAnimations = false}) : super(
-    settings: settings,
+  AqarPageRoute({required WidgetBuilder builder, super.settings, bool disableAnimations = false}) : super(
     pageBuilder: (context, _, __) => builder(context),
     transitionDuration: disableAnimations ? Duration.zero : AppMotion.base,
     reverseTransitionDuration: disableAnimations ? Duration.zero : AppMotion.fast,
