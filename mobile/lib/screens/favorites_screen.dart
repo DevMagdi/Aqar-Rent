@@ -46,35 +46,19 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
       child: ListView.separated(
         padding: const EdgeInsets.all(12),
         itemCount: _items.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 8),
+        separatorBuilder: (_, __) => const SizedBox(height: 12),
         itemBuilder: (context, i) {
           final item = _items[i];
-          return Card(
-            child: ListTile(
-              title: Text(item.title, maxLines: 1, overflow: TextOverflow.ellipsis),
-              subtitle: Text('${item.rentMonthly} جنيه/شهر'),
-              trailing: const Icon(Icons.chevron_left),
-              onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => ListingDetailScreen(listingId: item.id))),
+          return ListingCard(
+            item: item,
+            badge: item.availableFrom == null ? 'متاح الآن' : null,
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => ListingDetailScreen(listingId: item.id)),
             ),
           );
         },
       ),
     );
   }
-}            child: ListView.separated(
-              padding: const EdgeInsets.all(12),
-              itemCount: _items.length,
-              separatorBuilder: (_, __) => const SizedBox(height: 12),
-              itemBuilder: (context, i) {
-                final item = _items[i];
-                return ListingCard(
-                  item: item,
-                  badge: item.availableFrom == null ? "متاح الآن" : null,
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => ListingDetailScreen(listingId: item.id)),
-                  ),
-                );
-              },
-            ),
-
+}

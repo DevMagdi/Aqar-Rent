@@ -13,7 +13,6 @@ import '../features/legal/legal_notice.dart';
 import 'favorites_screen.dart';
 import 'notifications_screen.dart';
 import 'search_screen.dart';
-import 'contracts/contracts_home_screen.dart';
 import '../core/theme.dart';
 
 class HomeShell extends StatefulWidget {

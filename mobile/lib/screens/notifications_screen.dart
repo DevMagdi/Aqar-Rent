@@ -66,7 +66,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ),
                 for (final n in _items)
                   Card(
-                    color: n.read ? null : const AppColors.goldTint14,
+                    color: n.read ? null : AppColors.goldTint14,
                     child: ListTile(
                       title: Text(n.title, style: TextStyle(fontWeight: n.read ? FontWeight.normal : FontWeight.bold)),
                       subtitle: Text(n.body),

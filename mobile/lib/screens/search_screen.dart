@@ -7,7 +7,6 @@ import '../api/api_client.dart';
 import '../models/models.dart';
 import 'listing_detail_screen.dart';
 import 'map_screen.dart';
-import '../core/theme.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});

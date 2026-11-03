@@ -245,7 +245,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                   onPressed: () => _contact('whatsapp'),
                   icon: const Icon(Icons.chat),
                   label: const Text('واتساب'),
-                  style: FilledButton.styleFrom(backgroundColor: const AppColors.whatsapp),
+                  style: FilledButton.styleFrom(backgroundColor: AppColors.whatsapp),
                 ),
               ),
             ],
