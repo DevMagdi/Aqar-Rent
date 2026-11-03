@@ -31,7 +31,24 @@ jobs:
           python scripts/check_mobile.py
       - name: Static analysis
         working-directory: mobile
-        run: flutter analyze --fatal-infos
+        shell: bash
+        run: |
+          set +e
+          flutter analyze --fatal-infos --format machine > "$RUNNER_TEMP/flutter-analyze.log" 2>&1
+          status=$?
+          cat "$RUNNER_TEMP/flutter-analyze.log"
+          if [ "$status" -ne 0 ]; then
+            while IFS='|' read -r severity type code details path line column length message; do
+              case "$severity" in
+                ERROR|WARNING|INFO)
+                  path=${path#file://}
+                  path=${path#*/mobile/}
+                  echo "::error file=mobile/$path,line=$line,col=$column::$message [$code]"
+                  ;;
+              esac
+            done < "$RUNNER_TEMP/flutter-analyze.log"
+          fi
+          exit "$status"
       - name: Unit + widget tests
         working-directory: mobile
         run: flutter test --coverage
