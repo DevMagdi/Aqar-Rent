@@ -21,6 +21,7 @@ from app.core.errors import AppError
 from app.models.catalog import Listing, Plan
 from app.models.commerce import AdPeriod, Order, Payment, PromoCode
 from app.models.enums import ListingStatus, OrderStatus, PaymentMethod, PromoType
+from app.models.growth import AdPackage
 from app.models.identity import User
 from app.services.common import as_utc, utcnow
 
@@ -44,11 +45,13 @@ def get_default_plan(db: Session) -> Plan:
     return plan
 
 
-def compute_totals(plan: Plan, weeks: int, promo: PromoCode | None = None) -> dict[str, float]:
-    if weeks < 1 or weeks > 4:
+def compute_totals(
+    plan: Plan, weeks: int, promo: PromoCode | None = None, *, max_weeks: int = 4
+) -> dict[str, float]:
+    if weeks < 1 or weeks > max_weeks:
         raise AppError(
             "INVALID_WEEKS",
-            "You can buy 1 to 4 consecutive weeks per purchase",
+            f"You can buy 1 to {max_weeks} consecutive weeks per purchase",
             status_code=422,
             details={"weeks": weeks},
         )
@@ -66,7 +69,7 @@ def compute_totals(plan: Plan, weeks: int, promo: PromoCode | None = None) -> di
 
 
 def validate_promo(
-    db: Session, code: str, weeks: int, plan: Plan, *, consume_view: bool = False
+    db: Session, code: str, weeks: int, plan: Plan, *, consume_view: bool = False, max_weeks: int = 4
 ) -> tuple[PromoCode | None, dict[str, float]]:
     promo = db.execute(select(PromoCode).where(PromoCode.code == code.upper().strip())).scalar_one_or_none()
     if promo is None or not promo.active:
@@ -77,7 +80,7 @@ def validate_promo(
         raise AppError("PROMO_EXPIRED", "Promo code has expired", status_code=400)
     if promo.max_uses is not None and promo.used_count >= promo.max_uses:
         raise AppError("PROMO_EXHAUSTED", "Promo code reached its max uses", status_code=400)
-    totals = compute_totals(plan, weeks, promo)
+    totals = compute_totals(plan, weeks, promo, max_weeks=max_weeks)
     return promo, totals
 
 
@@ -119,10 +122,10 @@ def _check_duplicate_pending(db: Session, listing_id: uuid.UUID, method: str) ->
 
 def _check_running_ad_cap(db: Session, owner: User, listing: Listing) -> None:
     """BR-7 at checkout: at most `listing_cap` (default 5) simultaneously live ads."""
-    from app.services.listing_service import DEFAULT_LISTING_CAP
+    from app.services.entitlements import effective_listing_cap
 
     now = utcnow()
-    cap = owner.listing_cap if owner.listing_cap is not None else DEFAULT_LISTING_CAP
+    cap = effective_listing_cap(db, owner)
     listing_running = db.execute(
         select(func.count())
         .select_from(AdPeriod)
@@ -164,6 +167,7 @@ def create_order(
     weeks: int,
     method: str,
     promo_code: str | None = None,
+    package_id: uuid.UUID | None = None,
 ) -> Order:
     listing = db.get(Listing, listing_id)
     if listing is None or listing.owner_id != owner.id:
@@ -191,9 +195,34 @@ def create_order(
 
     plan = get_default_plan(db)  # BR-1
     promo = None
-    totals = compute_totals(plan, weeks)  # BR-2 + BR-1 math
+    package = None
+    max_weeks = 4  # BR-2 baseline
+    if package_id is not None:
+        package = db.get(AdPackage, package_id)
+        if package is None or not package.active:
+            raise AppError("PACKAGE_NOT_FOUND", "Ad package not found", status_code=404)
+        if package.weeks != weeks:
+            raise AppError(
+                "PACKAGE_WEEKS_MISMATCH",
+                "weeks must equal the package duration",
+                status_code=422,
+                details={"package_weeks": package.weeks, "weeks": weeks},
+            )
+        max_weeks = 52
+    totals = compute_totals(plan, weeks, max_weeks=max_weeks)  # BR-2 + BR-1 math
     if promo_code:
-        promo, totals = validate_promo(db, promo_code, weeks, plan)
+        promo, promo_totals = validate_promo(db, promo_code, weeks, plan, max_weeks=max_weeks)
+        totals["discount"] = promo_totals["discount"]
+        totals["total"] = promo_totals["total"]
+    if package is not None:
+        from decimal import Decimal
+
+        package_discount = float(
+            (Decimal(str(totals["subtotal"])) * Decimal(str(package.discount_pct)) / Decimal("100"))
+            .quantize(Decimal("0.01"))
+        )
+        totals["discount"] = round(min(totals["discount"] + package_discount, totals["subtotal"]), 2)
+        totals["total"] = round(totals["subtotal"] - totals["discount"], 2)
 
     gateway = "manual" if method == BANK_TRANSFER else None
     expires_at = None
@@ -208,6 +237,7 @@ def create_order(
         total=totals["total"],
         promo_code_id=promo.id if promo else None,
         plan_id=plan.id,  # BR-1: which plan priced this order
+        ad_package_id=package.id if package else None,
         status=OrderStatus.pending.value,
         method=method,
         gateway=gateway,
@@ -264,7 +294,7 @@ def order_to_dict(
 ) -> dict[str, Any]:
     data: dict[str, Any] = {
         "id": str(order.id),
-        "listing_id": str(order.listing_id),
+        "listing_id": str(order.listing_id) if order.listing_id is not None else None,
         "weeks": order.weeks,
         "subtotal": float(order.subtotal),
         "discount": float(order.discount),
@@ -278,6 +308,11 @@ def order_to_dict(
         "created_at": order.created_at,
         "bank_instructions": None,
         "plan_id": str(order.plan_id) if order.plan_id else None,
+        "kind": getattr(order, "kind", "ad_period"),
+        "package_id": str(order.ad_package_id) if getattr(order, "ad_package_id", None) else None,
+        "subscription_plan_id": str(order.subscription_plan_id)
+        if getattr(order, "subscription_plan_id", None)
+        else None,
         "checkout_url": (checkout or {}).get("checkout_url"),
         "payment_reference": (checkout or {}).get("payment_reference"),
         "receipt_ready": False,

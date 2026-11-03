@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
+import '../core/widgets.dart';
 import '../models/models.dart';
 
 class ListingCard extends StatefulWidget {
@@ -91,7 +92,7 @@ class _ListingCardState extends State<ListingCard> {
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: [Colors.transparent, Color(0x66000000), Color(0xBF000000)],
+                          colors: [Colors.transparent, AppColors.overlayMid, AppColors.overlayScrim],
                           stops: [0.0, 0.55, 1.0],
                         ),
                       ),
@@ -153,6 +154,31 @@ class _ListingCardState extends State<ListingCard> {
                       ),
                     ),
                     const SizedBox(height: 5),
+                    // Phase5 trust / featured / office row
+                    if (item.trustLevel != null || item.isFeatured || (item.officeNameAr?.isNotEmpty ?? false))
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 5),
+                        child: Row(
+                          children: [
+                            if (item.trustLevel != null) TrustBadge(level: item.trustLevel!, compact: true),
+                            if (item.isFeatured) ...[
+                              const SizedBox(width: 6),
+                              const Icon(Icons.star_rounded, size: 15, color: AppColors.goldDark),
+                            ],
+                            if (item.officeNameAr != null && item.officeNameAr!.isNotEmpty) ...[
+                              const SizedBox(width: 6),
+                              Flexible(
+                                child: Text(
+                                  "🏢 ${item.officeNameAr}",
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 11, color: dark ? AppColors.darkMuted : AppColors.muted),
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
                     Row(
                       children: [
                         Icon(Icons.location_on_outlined, size: 14, color: dark ? AppColors.darkMuted : AppColors.muted),
@@ -237,7 +263,7 @@ class _PremiumBadge extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(999),
         boxShadow: const [
-          BoxShadow(color: Color(0x40000000), blurRadius: 6, offset: Offset(0, 2)),
+          BoxShadow(color: AppColors.shadowSoft, blurRadius: 6, offset: Offset(0, 2)),
         ],
       ),
       child: Text(

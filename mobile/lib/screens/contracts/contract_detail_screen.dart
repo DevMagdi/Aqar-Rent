@@ -193,7 +193,7 @@ class _ContractDetailScreenState extends State<ContractDetailScreen> {
                     if ('${terms['utilities_responsibility'] ?? ''}'.isNotEmpty) Text('المرافق: ${terms['utilities_responsibility']}'),
                     if ('${terms['termination_terms'] ?? ''}'.isNotEmpty) Text('الإنهاء: ${terms['termination_terms']}'),
                     const SizedBox(height: 8),
-                    const Text('⚖️ مسودة — تحتاج مراجعة محامي قبل الاستخدام الإنتاجي.', style: TextStyle(fontSize: 11, color: AppColors.warn)),
+                    const Text('⚖️ اتفاق خاص بين الطرفين: ليس موثّقاً ولا مسجّلاً رسمياً ولا سنداً تنفيذياً، ولا يُغني عن التوثيق الرسمي.', style: TextStyle(fontSize: 11, color: AppColors.warn)),
                   ],
                 ),
               ),

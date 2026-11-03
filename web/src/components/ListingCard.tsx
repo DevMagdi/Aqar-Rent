@@ -76,6 +76,20 @@ export function ListingCard({
             </p>
             {availableNow && <BadgeFeatured label={t("available_now")} />}
           </div>
+          {item.is_featured ? (
+            <span className="absolute top-2 end-2 rounded-full bg-amber-400 px-2 py-1 text-[11px] font-bold text-amber-950 shadow">
+              ★ {t("trust_featured")}
+            </span>
+          ) : null}
+          {item.verified_owner ? (
+            <span
+              data-testid="trust-badge"
+              title={locale === "ar" ? item.trust_label_ar || "" : "Verified owner"}
+              className="absolute top-2 start-2 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-1 text-[11px] font-bold text-white shadow"
+            >
+              ✓ {t("trust_verified")}
+            </span>
+          ) : null}
         </div>
 
         {/* ── content: title → location → refined meta row ── */}
@@ -90,6 +104,9 @@ export function ListingCard({
             </svg>
             <span className="truncate">{[locationName(city, locale), locationName(gov, locale)].filter(Boolean).join("، ") || item.address_text}</span>
           </p>
+          {item.office_name_ar ? (
+            <p className="truncate text-xs font-semibold text-ink">🏢 {item.office_name_ar}</p>
+          ) : null}
           <div className="flex items-center gap-2 border-t border-track pt-2.5 text-xs font-medium text-muted" dir={locale === "ar" ? "rtl" : "ltr"}>
             <span className="rounded-full bg-track px-2 py-0.5 tabular-nums">{item.area_m2.toFixed(0)} م²</span>
             <span className="rounded-full bg-track px-2 py-0.5 tabular-nums">

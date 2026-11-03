@@ -73,6 +73,11 @@ class Contract(TimestampMixin, Base):
     fee_order_id: Mapped[UUID | None] = mapped_column(
         Uuid, ForeignKey("orders.id", ondelete="SET NULL"), nullable=True
     )
+    # Phase 5 — future official-registry seam. Default is honest "unavailable":
+    # no Egyptian digital rental registry exists today.
+    registry_status: Mapped[str] = mapped_column(String(20), default="unavailable")
+    registry_ref: Mapped[str | None] = mapped_column(String(120), nullable=True)
+    registry_payload: Mapped[dict | None] = mapped_column(JSONType, nullable=True)
 
 
 class Handover(TimestampMixin, Base):

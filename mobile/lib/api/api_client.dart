@@ -4,6 +4,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import '../config.dart';
+import '../core/cache.dart';
+import '../core/connectivity.dart';
 
 class ApiException implements Exception {
   ApiException(this.status, this.message, this.code);
@@ -16,7 +18,7 @@ class ApiException implements Exception {
 
 class ApiClient {
   ApiClient({Dio? dio}) : _dio = dio ?? Dio(BaseOptions(baseUrl: '${AppConfig.apiBase}/api/v1', connectTimeout: const Duration(seconds: 15), receiveTimeout: const Duration(seconds: 20))) {
-    _dio!.interceptors.add(InterceptorsWrapper(
+    _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
         final token = await storage.read(key: 'aqar.access');
         if (token != null && !options.headers.containsKey('Authorization')) {
@@ -32,7 +34,7 @@ class ApiClient {
             final token = await storage.read(key: 'aqar.access');
             e.requestOptions.headers['Authorization'] = 'Bearer $token';
             try {
-              final res = await _dio!.fetch(e.requestOptions);
+              final res = await _dio.fetch(e.requestOptions);
               return handler.resolve(res);
             } on DioException catch (err) {
               return handler.next(err);
@@ -44,7 +46,7 @@ class ApiClient {
     ));
   }
 
-  final Dio? _dio;
+  late final Dio _dio;
   static const storage = FlutterSecureStorage();
 
   static Future<void> saveTokens(String access, String refresh) async {
@@ -74,16 +76,40 @@ class ApiClient {
 
   Future<dynamic> get(String path, {Map<String, dynamic>? query}) async {
     try {
-      final res = await _dio!.get(path, queryParameters: query);
+      final res = await _dio.get(path, queryParameters: query);
       return res.data;
     } on DioException catch (e) {
       throw _wrap(e);
     }
   }
 
+  /// GET with transparent offline fallback: fresh data is cached; on network
+  /// failure the last cached JSON is returned. Callers can show the offline
+  /// banner via `ConnectivityService.instance.changes`.
+  Future<dynamic> cachedGet(
+    String path, {
+    Map<String, dynamic>? query,
+    bool forceRefresh = false,
+  }) async {
+    final key = '$path${query == null ? '' : query.toString()}';
+    if (!forceRefresh && !ConnectivityService.instance.online) {
+      final cached = await CacheStore.instance.read(key);
+      if (cached != null) return cached.value;
+    }
+    try {
+      final fresh = await get(path, query: query);
+      await CacheStore.instance.put(key, fresh);
+      return fresh;
+    } catch (e) {
+      final cached = await CacheStore.instance.read(key);
+      if (cached != null) return cached.value;
+      rethrow;
+    }
+  }
+
   Future<dynamic> post(String path, {Object? data}) async {
     try {
-      final res = await _dio!.post(path, data: data);
+      final res = await _dio.post(path, data: data);
       return res.data;
     } on DioException catch (e) {
       throw _wrap(e);
@@ -92,7 +118,7 @@ class ApiClient {
 
   Future<dynamic> delete(String path) async {
     try {
-      final res = await _dio!.delete(path);
+      final res = await _dio.delete(path);
       return res.data;
     } on DioException catch (e) {
       throw _wrap(e);
@@ -101,7 +127,7 @@ class ApiClient {
 
   Future<dynamic> patch(String path, {Object? data}) async {
     try {
-      final res = await _dio!.patch(path, data: data);
+      final res = await _dio.patch(path, data: data);
       return res.data;
     } on DioException catch (e) {
       throw _wrap(e);
@@ -121,7 +147,7 @@ class ApiClient {
       'file': await MultipartFile.fromFile(file.path, filename: file.name),
     });
     try {
-      final res = await _dio!.post(
+      final res = await _dio.post(
         path,
         data: form,
         onSendProgress: onProgress == null ? null : (s, t) => onProgress(s, t),

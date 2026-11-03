@@ -29,6 +29,7 @@ export function Header() {
     { href: `/${locale}`, label: t("nav_home") },
     { href: `/${locale}/search`, label: t("nav_search") },
     { href: `/${locale}/owner/new`, label: t("nav_add") },
+    { href: `/${locale}/pricing`, label: t("nav_pricing") },
   ];
   const authNav = user
     ? [
@@ -36,6 +37,7 @@ export function Header() {
         { href: `/${locale}/favorites`, label: t("nav_favorites") },
         { href: `/${locale}/notifications`, label: unread ? `${t("nav_notifications")} (${unread})` : t("nav_notifications") },
         { href: `/${locale}/contracts`, label: t("contracts") },
+        { href: `/${locale}/office`, label: t("nav_offices") },
         { href: `/${locale}/account`, label: t("nav_account") },
       ]
     : [];

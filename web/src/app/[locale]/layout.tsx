@@ -19,14 +19,14 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const { locale } = await params;
   const l = (locale === "en" ? "en" : "ar") as Locale;
   const site = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
-  const title = l === "ar" ? "عقار ربنا — إيجار مباشر بدون وسطاء" : "Aqar Rent — direct rentals, no brokers";
+  const title = l === "ar" ? "عقار رينت — إيجار مباشر بدون وسطاء" : "Aqar Rent — direct rentals, no brokers";
   const desc =
     l === "ar"
       ? "سوق إيجار مصري مباشر بين المالك والمستأجر: ابحث، قارن، وتواصل — بدون عمولة وساطة."
       : "The Egyptian direct rental market between owners and tenants: search, compare, contact — no broker fees.";
   return {
     metadataBase: new URL(site),
-    title: { default: title, template: `%s | ${l === "ar" ? "عقار ربنا" : "Aqar Rent"}` },
+    title: { default: title, template: `%s | ${l === "ar" ? "عقار رينت" : "Aqar Rent"}` },
     description: desc,
     alternates: {
       canonical: `/${l}`,
@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
     openGraph: {
       title,
       description: desc,
-      siteName: l === "ar" ? "عقار ربنا" : "Aqar Rent",
+      siteName: l === "ar" ? "عقار رينت" : "Aqar Rent",
       locale: l === "ar" ? "ar_EG" : "en_US",
       images: [{ url: "/og?title=Aqar%20Rent&sub=Broker-free%20rentals%20in%20Egypt", width: 1200, height: 630 }],
     },

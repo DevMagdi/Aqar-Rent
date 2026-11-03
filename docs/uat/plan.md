@@ -38,3 +38,26 @@ automated evidence that proves them + the manual steps for the pilot.
 
 Sign-off: product + engineering + (legal for contract templates, per
 docs/privacy/pdpl-note.md).
+
+---
+
+## Phase 5 UAT scenarios (automated + manual)
+
+1. **Owner Plus**: buy a subscription with a card → webhook → `/me/entitlements`
+   raises the cap; create 6+ listings; expire plan → cap returns to 5.
+2. **8-week featured package**: checkout with `package_id`, confirm discount and
+   featured rank; legacy 5-week request without package returns 422.
+3. **Office**: create profile → staff verify → invite agent → agent OTP login →
+   lead new→won → dashboard shows conversion 100% → outsider gets 403.
+4. **Trust**: upload ID → structured rejection → appeal → staff reopen → approve
+   → ownership doc → premium grant → public card shows "مالك موثّق".
+5. **Legal**: contract PDF has no draft banner, includes bordered legal notice,
+   QR and hash; `/verify/{ref}` and `/contracts/{id}/registry-status` show
+   honest "unavailable" copy.
+6. **Reconciliation**: after a settlement `/admin/growth/reconciliation` is
+   consistent; invalid HMAC and amount mismatch create audit events.
+7. **Mobile (device)**: onboarding → Arabic/English toggle → pricing → trust →
+   office → deep link → biometric re-lock → offline banner with cached results.
+8. **Production boot**: set `ENVIRONMENT=production` with `PAYMENT_PROVIDER=mock`
+   and confirm the API refuses to start; release Flutter build fails fast on an
+   HTTP API base.

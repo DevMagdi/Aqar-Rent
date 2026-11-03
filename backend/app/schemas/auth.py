@@ -62,6 +62,9 @@ class UserOut(BaseModel):
     language: str = "ar"
     status: str
     verification_status: str
+    account_type: str = "individual"
+    verification_level: str = "phone"
+    premium_verified_until: datetime | None = None
     created_at: datetime | None = None
 
 

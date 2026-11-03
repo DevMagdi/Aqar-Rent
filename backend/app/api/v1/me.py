@@ -173,9 +173,15 @@ def upload_verification(
     user: CurrentUser,
     db: DbDep,
     storage: StorageDep,
+    settings: SettingsDep,
     doc_type: str = Form(...),
     file: UploadFile = File(...),
 ) -> VerificationOut:
+    from app.core.rate_limit import check_rate_limit
+
+    check_rate_limit(
+        f"verification:upload:{user.id}", settings.verification_upload_rate_limit_per_hour, 3600
+    )
     if doc_type not in ALLOWED_DOC_TYPES:
         raise AppError(
             "INVALID_DOC_TYPE",

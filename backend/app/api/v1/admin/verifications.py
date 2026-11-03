@@ -24,11 +24,17 @@ def verification_queue(
     storage: StorageDep,
     staff: StaffUser = Depends(require_roles(StaffRole.moderator)),
     status: str = Query(default=DocStatus.pending.value),
+    appeal_pending: bool = Query(default=False, description="Only documents with a pending appeal"),
 ) -> list[VerificationQueueItemOut]:
     rows = (
         db.execute(
             select(VerificationDocument)
             .where(VerificationDocument.status == status)
+            .where(
+                VerificationDocument.appeal_status == "pending"
+                if appeal_pending
+                else VerificationDocument.id.is_not(None)
+            )
             .order_by(VerificationDocument.created_at.asc())
             .limit(200)
         )
@@ -53,6 +59,9 @@ def verification_queue(
                 status=r.status,
                 file_url=storage.signed_url(r.file_key),  # short-lived, private
                 reject_reason=r.reject_reason,
+                reject_reason_code=r.reject_reason_code,
+                appeal_status=r.appeal_status,
+                appeal_note=r.appeal_note,
                 created_at=r.created_at,
             )
         )
@@ -74,5 +83,7 @@ def decision(
     doc = db.get(VerificationDocument, doc_id)
     if doc is None:
         raise AppError("DOC_NOT_FOUND", "Document not found", status_code=404)
-    doc = decide_verification(db, staff.id, doc, payload.decision, payload.reason, ip=ip)
+    doc = decide_verification(
+        db, staff.id, doc, payload.decision, payload.reason, ip=ip, reason_code=payload.reason_code
+    )
     return ActionOut(id=str(doc.id), status=doc.status, reject_reason=doc.reject_reason)

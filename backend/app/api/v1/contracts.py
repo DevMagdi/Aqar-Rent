@@ -327,6 +327,33 @@ def create_fee_order(
 
 
 @router.get(
+    "/contracts/{contract_id}/registry-status",
+    summary="Official registry status (honest: unavailable in Egypt today)",
+)
+def registry_status(
+    contract_id: UUID, user: CurrentUser, db: DbDep, settings: SettingsDep
+) -> dict:
+    """Architecture seam for a future official Egyptian digital rental registry.
+
+    Today it ALWAYS reports `unavailable` with a clear bilingual explanation.
+    The private agreement is never presented as registered/notarized.
+    """
+    from app.integrations.registry import registry_status_for
+
+    contract = contract_service.get_contract_for_user(db, contract_id, user)
+    return registry_status_for(contract, settings)
+
+
+@router.get(
+    "/contracts/{contract_id}/handovers/comparison",
+    summary="Side-by-side check-in / check-out comparison (items, meters, evidence)",
+)
+def handover_comparison(contract_id: UUID, user: CurrentUser, db: DbDep) -> dict:
+    contract = contract_service.get_contract_for_user(db, contract_id, user)
+    return handover_service.comparison_for(db, contract, user)
+
+
+@router.get(
     "/verify/{reference_no}", response_model=PublicVerifyOut, summary="Public contract verification (no auth)"
 )
 def verify(reference_no: str, db: DbDep) -> PublicVerifyOut:

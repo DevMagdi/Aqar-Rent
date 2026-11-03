@@ -3,13 +3,14 @@
 // content rules,3–15 photos ≤1.5MB server-side re-encode).
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'dart:convert';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:maplibre_gl/maplibre_gl.dart';
 
-import '../api/api_client.dart';
+import '../../api/api_client.dart';
 import 'dashboard_screen.dart';
 import '../../core/theme.dart';
 
@@ -194,13 +195,13 @@ class _ListingWizardScreenState extends State<ListingWizardScreen> {
   Future<void> _addPhotos() async {
     final picked = await _picker.pickMultiImage(imageQuality: 85);
     if (picked.isEmpty) return;
-    final room = MAX_PHOTOS - (_uploaded.length + _pending.length);
+    final room = maxPhotos - (_uploaded.length + _pending.length);
     setState(() => _pending.addAll(picked.take(room < 0 ? 0 : room)));
     // upload everything now (progress per file)
     await _uploadPending();
   }
 
-  static const MAX_PHOTOS = 15;
+  static const maxPhotos = 15;
 
   Future<void> _uploadPending() async {
     if (_pending.isEmpty) return;
@@ -254,7 +255,30 @@ class _ListingWizardScreenState extends State<ListingWizardScreen> {
   @override
   Widget build(BuildContext context) {
     if (_loading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
-    const steps = ['الأساسيات', 'المواصفات', 'الموقع', 'الصور', 'الوصف', 'المراجعة'];
+    if (_error != null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text('تعذّر تحميل البيانات')),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(_error!, textAlign: TextAlign.center),
+                const SizedBox(height: 16),
+                FilledButton(
+                  onPressed: () {
+                    setState(() { _error = null; _loading = true; });
+                    _boot();
+                  },
+                  child: const Text('إعادة المحاولة'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
     return Scaffold(
       appBar: AppBar(title: Text(widget.editId == null ? 'إعلان جديد' : 'تعديل الإعلان')),
       body: Stepper(
@@ -314,7 +338,7 @@ class _ListingWizardScreenState extends State<ListingWizardScreen> {
           _field(_rent, 'الإيجار الشهري *', type: TextInputType.number),
           _field(_deposit, 'التأمين (أشهر)', type: TextInputType.number),
           DropdownButtonFormField<String>(
-            value: _propertyType,
+            initialValue: _propertyType,
             decoration: const InputDecoration(labelText: 'نوع العقار', border: OutlineInputBorder()),
             items: const [
               DropdownMenuItem(value: 'apartment', child: Text('شقة')),
@@ -329,7 +353,7 @@ class _ListingWizardScreenState extends State<ListingWizardScreen> {
           ),
           const SizedBox(height: 10),
           DropdownButtonFormField<String>(
-            value: _furnished,
+            initialValue: _furnished,
             decoration: const InputDecoration(labelText: 'التأثيث', border: OutlineInputBorder()),
             items: const [
               DropdownMenuItem(value: 'furnished', child: Text('مفروش')),
@@ -370,7 +394,7 @@ class _ListingWizardScreenState extends State<ListingWizardScreen> {
   Widget _location() => Column(
         children: [
           DropdownButtonFormField<String>(
-            value: _govId,
+            initialValue: _govId,
             decoration: const InputDecoration(labelText: 'المحافظة *', border: OutlineInputBorder()),
             items: [
               const DropdownMenuItem(value: null, child: Text('—')),
@@ -383,7 +407,7 @@ class _ListingWizardScreenState extends State<ListingWizardScreen> {
           ),
           const SizedBox(height: 10),
           DropdownButtonFormField<String>(
-            value: _cityId,
+            initialValue: _cityId,
             decoration: const InputDecoration(labelText: 'المدينة *', border: OutlineInputBorder()),
             items: [
               const DropdownMenuItem(value: null, child: Text('—')),
@@ -402,7 +426,7 @@ class _ListingWizardScreenState extends State<ListingWizardScreen> {
           ),
           const Text('اضغط على الخريطة بالأسفل أو أدخل الإحداثيات يدوياً (حدود مصر).', style: TextStyle(fontSize: 12, color: Colors.black54)),
           const SizedBox(height: 8),
-          SizedBox(height: 180, child: _MiniMap(lat: double.tryParse(_lat.text) ?? 30.0444, lng: double.tryParse(_lng.text) ?? 31.2357, onPick: (la, ln) => setState(() { _lat.text = la.toStringAsFixed(6); _lng.text = ln.toStringAsFixed(6); }))),
+          SizedBox(height: 180, child: _MiniMap(key: const ValueKey('listing-mini-map'), lat: double.tryParse(_lat.text) ?? 30.0444, lng: double.tryParse(_lng.text) ?? 31.2357, onPick: (la, ln) => setState(() { _lat.text = la.toStringAsFixed(6); _lng.text = ln.toStringAsFixed(6); }))),
         ],
       );
 
@@ -423,8 +447,8 @@ class _ListingWizardScreenState extends State<ListingWizardScreen> {
                       child: SizedBox(
                         width: 72,
                         height: 72,
-                        child: Image.network(m['thumb_url'] ?? m['url'], fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => const ColoredBox(color: AppColors.track)),
+                        child: CachedNetworkImage(imageUrl: m['thumb_url'] ?? m['url'], fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) => const ColoredBox(color: AppColors.track)),
                       ),
                     ),
                     Positioned(
@@ -480,8 +504,6 @@ class _MiniMap extends StatefulWidget {
 }
 
 class _MiniMapState extends State<_MiniMap> {
-  MaplibreMapController? _c;
-
   static const _style = {
     'version': 8,
     'sources': {
@@ -500,15 +522,11 @@ class _MiniMapState extends State<_MiniMap> {
   Widget build(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12),
-      child: MaplibreMap(
+      child: MapLibreMap(
         styleString: jsonEncode(_style),
         initialCameraPosition: CameraPosition(target: LatLng(widget.lat, widget.lng), zoom: 13),
-        onMapCreated: (c) => _c = c,
-        onMapClick: (point) async {
-          final c = _c;
-          if (c == null) return;
-          final ll = await c.toLatLng(point);
-          widget.onPick(ll.latitude, ll.longitude);
+        onMapClick: (_, coordinates) {
+          widget.onPick(coordinates.latitude, coordinates.longitude);
         },
       ),
     );

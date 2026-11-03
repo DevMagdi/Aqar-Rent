@@ -51,8 +51,10 @@ class RejectIn(BaseModel):
 
 
 class VerificationDecisionIn(BaseModel):
-    decision: Literal["approve", "reject"]
+    decision: Literal["approve", "reject", "reopen"]
     reason: str | None = Field(default=None, max_length=1_000)
+    # Phase 5: structured, localizable rejection reason (see /trust/reject-reasons).
+    reason_code: str | None = Field(default=None, max_length=40)
 
 
 class VerificationQueueItemOut(BaseModel):
@@ -64,6 +66,9 @@ class VerificationQueueItemOut(BaseModel):
     status: str
     file_url: str | None = None
     reject_reason: str | None = None
+    reject_reason_code: str | None = None
+    appeal_status: str = "none"
+    appeal_note: str | None = None
     created_at: datetime | None = None
 
 

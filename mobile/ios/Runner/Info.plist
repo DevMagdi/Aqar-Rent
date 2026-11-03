@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>CFBundleDevelopmentRegion</key>
+  <string>ar</string>
+  <key>CFBundleLocalizations</key>
+  <array><string>ar</string><string>en</string></array>
+  <key>CFBundleDisplayName</key>
+  <string>عقار رينت</string>
+  <key>CFBundleName</key>
+  <string>Aqar Rent</string>
+  <key>CFBundleIdentifier</key>
+  <string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+  <key>CFBundleExecutable</key>
+  <string>$(EXECUTABLE_NAME)</string>
+  <key>CFBundlePackageType</key>
+  <string>APPL</string>
+  <key>CFBundleShortVersionString</key>
+  <string>$(FLUTTER_BUILD_NAME)</string>
+  <key>CFBundleVersion</key>
+  <string>$(FLUTTER_BUILD_NUMBER)</string>
+  <key>LSRequiresIPhoneOS</key>
+  <true/>
+  <key>UILaunchStoryboardName</key>
+  <string>LaunchScreen</string>
+  <key>UISupportedInterfaceOrientations</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+    <string>UIInterfaceOrientationLandscapeLeft</string>
+    <string>UIInterfaceOrientationLandscapeRight</string>
+  </array>
+  <key>CADisableMinimumFrameDurationOnPhone</key>
+  <true/>
+  <key>UIStatusBarHidden</key>
+  <false/>
+  <key>UIViewControllerBasedStatusBarAppearance</key>
+  <true/>
+  <key>ITSAppUsesNonExemptEncryption</key>
+  <false/>
+
+  <!-- Permission justification (Arabic-first, App Store privacy labels). -->
+  <key>NSCameraUsageDescription</key>
+  <string>لإلتقاط صور الوحدة ومستندات التوثيق ومحاضر التسليم داخل التطبيق.</string>
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>لاختيار صور الوحدة ومستندات التوثيق من مكتبة الصور.</string>
+  <key>NSUserTrackingUsageDescription</key>
+  <string>لا نستخدم تتبع الإعلانات؛ الإذن مطلوب فقط لقياس أداء الإشعارات.</string>
+  <key>NSFaceIDUsageDescription</key>
+  <string>لفتح التطبيق بأمان عبر Face ID عند وجود جلسة مسجلة.</string>
+
+  <!-- Deep links: custom scheme + universal links (Associated Domains). -->
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLName</key>
+      <string>com.aqarrent.app</string>
+      <key>CFBundleURLSchemes</key>
+      <array><string>aqarrent</string></array>
+    </dict>
+  </array>
+  <key>FlutterDeepLinkingEnabled</key>
+  <true/>
+</dict>
+</plist>

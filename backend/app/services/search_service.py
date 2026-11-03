@@ -229,7 +229,8 @@ def search_listings(db: Session, params: SearchParams, storage=None) -> dict[str
             cursor_vals = [float(last.area_m2), str(last.id)]
         next_cursor = encode_cursor(cursor_vals)
 
-    items = [_item(row, thumb_keys.get(row.id), storage) for row in rows]
+    trust = _owner_trust(db, rows)
+    items = [_item(row, thumb_keys.get(row.id), storage, trust=trust) for row in rows]
     return {"items": items, "next_cursor": next_cursor, "limit": params.limit}
 
 
@@ -272,7 +273,48 @@ def _thumb_keys(db: Session, listing_ids: list[uuid.UUID]) -> dict[uuid.UUID, st
     return out
 
 
-def _item(row: Listing, thumb_key: str | None, storage=None) -> dict[str, Any]:
+def _owner_trust(db: Session, rows: list[Listing]) -> dict[uuid.UUID, dict[str, Any]]:
+    """One batched query for public trust badges (no N+1 on search results)."""
+    from app.models.enums import VERIFICATION_LEVEL_LABELS
+    from app.models.growth import OfficeProfile
+    from app.models.identity import User
+
+    if not rows:
+        return {}
+    owner_ids = {r.owner_id for r in rows}
+    levels = dict(
+        db.execute(select(User.id, User.verification_level).where(User.id.in_(owner_ids))).all()
+    )
+    office_ids = {r.office_id for r in rows if r.office_id}
+    offices = (
+        dict(
+            db.execute(
+                select(OfficeProfile.id, OfficeProfile.name_ar).where(
+                    OfficeProfile.id.in_(office_ids)
+                )
+            ).all()
+        )
+        if office_ids
+        else {}
+    )
+    out: dict[uuid.UUID, dict[str, Any]] = {}
+    for row in rows:
+        level = levels.get(row.owner_id, "phone")
+        out[row.id] = {
+            "level": level,
+            "verified_owner": level in ("ownership", "premium"),
+            "label_ar": VERIFICATION_LEVEL_LABELS.get(level, VERIFICATION_LEVEL_LABELS["phone"])["ar"],
+            "office_name_ar": offices.get(row.office_id) if row.office_id else None,
+        }
+    return out
+
+
+def _item(
+    row: Listing,
+    thumb_key: str | None,
+    storage=None,
+    trust: dict[uuid.UUID, dict[str, Any]] | None = None,
+) -> dict[str, Any]:
     lat, lon = approx_point(row.latitude, row.longitude, str(row.id))
     thumb_url = None
     if thumb_key:
@@ -295,5 +337,10 @@ def _item(row: Listing, thumb_key: str | None, storage=None) -> dict[str, Any]:
         "geo": {"latitude": lat, "longitude": lon, "accuracy_m": APPROX_RADIUS_M},
         "available_from": row.available_from,
         "thumb_url": thumb_url,
+        "trust_level": (trust or {}).get(row.id, {}).get("level"),
+        "verified_owner": (trust or {}).get(row.id, {}).get("verified_owner", False),
+        "trust_label_ar": (trust or {}).get(row.id, {}).get("label_ar"),
+        "office_name_ar": (trust or {}).get(row.id, {}).get("office_name_ar"),
+        "is_featured": float(row.ad_priority or 0) > 0,
         "created_at": row.created_at,
     }

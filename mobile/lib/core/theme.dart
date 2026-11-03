@@ -1,6 +1,7 @@
 // Aqar Rent premium theme — SINGLE SOURCE OF TRUTH for mobile colours.
 // Byte-verified against web tokens by web/src/styles/tokens.test.ts.
 // Light in the base constants; dark in AppColors.dark* (spec: #0B1220/#141C2B).
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class AppColors {
@@ -44,6 +45,11 @@ class AppColors {
 
   static const whatsapp = Color(0xFF25D366); // official integration colour
 
+  /* ── Neutral overlays (not brand colours — scrim + soft shadow) ── */
+  static const overlayScrim = Color(0xBF000000); // image gradient scrim (bottom)
+  static const overlayMid = Color(0x66000000); // gradient mid stop
+  static const shadowSoft = Color(0x40000000); // badge/card soft shadow
+
   /* ── Dark mode (spec: bg #0B1220, surface #141C2B) ── */
   static const darkBg = Color(0xFF0B1220);
   static const darkSurface = Color(0xFF141C2B);
@@ -69,6 +75,15 @@ final ValueNotifier<ThemeMode> appThemeMode = ValueNotifier(ThemeMode.system);
 
 class AppTheme {
   AppTheme._();
+
+  /* ── Phase-5 compatibility aliases (their screens reference AppTheme.*):
+     mapped to premium values that stay WCAG-AA both as text on light and as
+     backgrounds behind white text — navy/teal-ink/warn instead of the old
+     terracotta palette (removed per the premium overhaul). ── */
+  static const Color brand = AppColors.brand; // was terracotta — now primary navy
+  static const Color brandDark = AppColors.brandDeep;
+  static const Color teal = AppColors.tealInk; // 5.8:1 text · 5.4:1 under white
+  static const Color amber = AppColors.warn;
 
   static ThemeData light() => _base(
         brightness: Brightness.light,

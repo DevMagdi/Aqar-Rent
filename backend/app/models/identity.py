@@ -31,12 +31,25 @@ class User(TimestampMixin, Base):
     verification_status: Mapped[str] = mapped_column(
         String(20), default=UserVerificationStatus.unverified.value
     )
+    # Phase 5 trust ladder / personas. `account_type=office` users own exactly
+    # one OfficeProfile; agents are separate user accounts linked via OfficeMember.
+    account_type: Mapped[str] = mapped_column(String(20), default="individual", index=True)
+    verification_level: Mapped[str] = mapped_column(String(20), default="phone", index=True)
+    premium_verified_until: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     # Super Admin can raise the default 5-active-listing cap per user (BR-7).
     listing_cap: Mapped[int | None] = mapped_column(Integer, nullable=True)
 
     devices: Mapped[list[Device]] = relationship(back_populates="user", cascade="all, delete-orphan")
-    listings: Mapped[list[Any]] = relationship("Listing", back_populates="owner", lazy="selectin")
+    # `listings.agent_user_id` is also a FK to users — disambiguate explicitly.
+    listings: Mapped[list[Any]] = relationship(
+        "Listing",
+        back_populates="owner",
+        lazy="selectin",
+        foreign_keys="[Listing.owner_id]",
+    )
 
 
 class Device(TimestampMixin, Base):
@@ -72,6 +85,12 @@ class VerificationDocument(TimestampMixin, Base):
         Uuid, ForeignKey("staff_users.id", ondelete="SET NULL"), nullable=True
     )
     reject_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    # Phase 5: structured rejection code + one-round appeal with re-review.
+    reject_reason_code: Mapped[str | None] = mapped_column(String(40), nullable=True)
+    appeal_status: Mapped[str] = mapped_column(String(20), default="none", index=True)
+    appeal_note: Mapped[str | None] = mapped_column(Text, nullable=True)
+    appeal_submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    appeal_reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 

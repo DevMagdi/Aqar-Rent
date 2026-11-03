@@ -4,8 +4,8 @@ import 'package:flutter/material.dart';
 
 import 'package:url_launcher/url_launcher.dart';
 
-import '../api/api_client.dart';
-import '../models/models.dart';
+import '../../api/api_client.dart';
+import '../../models/models.dart';
 import 'orders_screen.dart';
 import '../../core/theme.dart';
 
@@ -299,7 +299,7 @@ class _OrderPayScreenState extends State<OrderPayScreen> {
             )
           else if (o.status == 'pending' && o.method != 'bank_transfer')
             FilledButton.icon(
-              onPressed: o.checkoutUrl == null ? _refreshCheckout : () => launchExternal(Uri.parse(o.checkoutUrl!)),
+              onPressed: o.checkoutUrl == null ? _refreshCheckout : () => launchUrl(Uri.parse(o.checkoutUrl!), mode: LaunchMode.externalApplication),
               icon: const Icon(Icons.open_in_new),
               label: Text(o.checkoutUrl == null ? 'تجهيز الدفع' : 'فتح صفحة الدفع'),
             )

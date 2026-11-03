@@ -4,7 +4,8 @@ immutable final terms (SHA-256) → Arabic PDF with QR verification.
 Rules (spec):
 * clause text lives in editable template files under `app/contract_templates/`
   (override with CONTRACT_TEMPLATE_DIR) — never hard-coded in Python;
-* every template header says it is a DRAFT needing lawyer review;
+* templates are production-grade Arabic PRIVATE-AGREEMENT clauses with an
+  explicit legal notice (no claim of notarization / executive force);
 * the second party is invited by phone and must OTP-login to view/confirm;
 * each party confirms the final text with a fresh OTP; both confirmations make
   the contract immutable and stamp hash / timestamps / IPs / device info;
@@ -35,10 +36,18 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_TEMPLATE_DIR = Path(__file__).resolve().parent.parent / "contract_templates"
 DISCLAIMER = (
-    "هذا اتفاق خاص ولا يحل محل التسجيل الرسمي أو التوثيق. / "
-    "This is a private agreement template and does not replace official registration or notarization."
+    "إشعار قانوني: هذا اتفاق خاص بين الطرفين؛ ليس عقداً موثّقاً ولا مسجّلاً رسمياً وليس سنداً تنفيذياً، "
+    "ولا يُغني عن التسجيل أو التوثيق لدى الجهات المختصة. / LEGAL NOTICE: this is a private agreement; "
+    "it is not notarized, not officially registered, is not an executive instrument, and does not "
+    "replace official registration or notarization."
 )
-DRAFT_BANNER = "مسودة — تحتاج مراجعة محامي قبل الاستخدام الإنتاجي."
+LEGAL_NOTICE = (
+    "اتفاق خاص بين الطرفين — لا يُغني عن التوثيق أو التسجيل الرسمي، ولا يُعد سنداً تنفيذياً. "
+    "يرجى استشارة محامٍ مصري عند الحاجة."
+)
+# Kept as an alias for older PDF code / external imports; the wording is now
+# a legal notice, never "draft / requires lawyer review".
+DRAFT_BANNER = LEGAL_NOTICE
 
 TEMPLATE_IDS = ("residential_unfurnished", "residential_furnished", "commercial")
 
@@ -70,7 +79,10 @@ def contract_values(settings: Settings, contract: Contract, owner: User, tenant:
     nids = decrypt_nids(settings.secret_key, settings.contract_nid_key, contract.ids_encrypted or "")
     t = contract.terms or {}
     parties = t.get("party_names") or {}
+    site = settings.site_url.rstrip("/")
     return {
+        "reference_no": contract.reference_no,
+        "verify_url": f"{site}/verify/{contract.reference_no}",
         "owner_name": parties.get("owner") or owner.full_name or "",
         "tenant_name": parties.get("tenant") or tenant.full_name or "",
         "owner_nid": nids.get("owner", ""),

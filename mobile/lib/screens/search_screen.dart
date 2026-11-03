@@ -1,10 +1,10 @@
 // Search: query bar, filter sheet (spec parity with web), results list,
 // and a map tab sharing the same filter state.
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
 import '../models/models.dart';
-import '../widgets/listing_card.dart';
 import 'listing_detail_screen.dart';
 import 'map_screen.dart';
 import '../core/theme.dart';
@@ -45,7 +45,7 @@ class _SearchScreenState extends State<SearchScreen> {
     if (_loading) return;
     setState(() { _loading = true; if (reset) _error = null; });
     try {
-      final res = await api.get('/listings?${_query}') as Map<String, dynamic>;
+      final res = await api.get('/listings?$_query') as Map<String, dynamic>;
       final items = ((res['items'] as List?) ?? []).whereType<Map<String, dynamic>>().map(SearchItem.fromJson).toList();
       if (!mounted) return;
       setState(() {
@@ -204,7 +204,7 @@ class _FilterSheetState extends State<FilterSheet> {
           Row(children: [Expanded(child: _num('min_price', 'الحد الأدنى')), const SizedBox(width: 8), Expanded(child: _num('max_price', 'الحد الأقصى'))]),
           Row(children: [Expanded(child: _num('bedrooms', 'غرف النوم')), const SizedBox(width: 8), Expanded(child: _num('bathrooms', 'دورات المياه'))]),
           DropdownButtonFormField<String>(
-            value: f['property_type'] as String?,
+            initialValue: f['property_type'] as String?,
             decoration: const InputDecoration(labelText: 'نوع العقار', isDense: true, border: OutlineInputBorder()),
             items: const [
               DropdownMenuItem(value: null, child: Text('—')),
@@ -219,7 +219,7 @@ class _FilterSheetState extends State<FilterSheet> {
             onChanged: (v) => f['property_type'] = v,
           ),
           DropdownButtonFormField<String>(
-            value: f['furnished'] as String?,
+            initialValue: f['furnished'] as String?,
             decoration: const InputDecoration(labelText: 'التأثيث', isDense: true, border: OutlineInputBorder()),
             items: const [
               DropdownMenuItem(value: null, child: Text('—')),
@@ -230,7 +230,7 @@ class _FilterSheetState extends State<FilterSheet> {
             onChanged: (v) => f['furnished'] = v,
           ),
           DropdownButtonFormField<String>(
-            value: f['sort'] as String? ?? 'newest',
+            initialValue: f['sort'] as String? ?? 'newest',
             decoration: const InputDecoration(labelText: 'الترتيب', isDense: true, border: OutlineInputBorder()),
             items: const [
               DropdownMenuItem(value: 'newest', child: Text('الأحدث')),

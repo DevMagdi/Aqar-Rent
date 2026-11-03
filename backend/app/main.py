@@ -18,12 +18,17 @@ from app.integrations.otp import build_otp_provider
 from app.services.storage import build_storage
 
 DESCRIPTION = """
-Aqar Rent (إيجار مباشر) — a broker-free rental marketplace for Egypt.
-Owners pay a flat 500 EGP / 7 days per listing; the platform never takes
-commission and never handles rent or deposits.
+Aqar Rent (عقار رينت) — Egypt's most trusted, transparent, broker-OPTIONAL
+rental platform. Individuals list directly; verified real-estate offices manage
+owners' units, teams and leads. Revenue comes from a flat 500 EGP / 7-day ad,
+multi-week packages and monthly owner/office subscriptions — NEVER from rent,
+deposits or commission on rent money (which the platform never holds).
 
 * Arabic-first (RTL), English secondary.
+* Contracts are PRIVATE AGREEMENTS: not notarized, not officially registered,
+  not executive instruments, and no substitute for official registration.
 * Standard error body: `{code, message, details}`; cursor pagination.
+* Production refuses mock payments/OTP, weak secrets and console providers.
 """
 
 
