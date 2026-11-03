@@ -7,7 +7,7 @@ type Mode = "light" | "dark";
 
 function currentMode(): Mode {
   if (typeof document === "undefined") return "light";
-  return document.documentElement.classList.contains("dark") ? "dark" : "light";
+  return document.documentElement.dataset.theme === "dark" || document.documentElement.classList.contains("dark") ? "dark" : "light";
 }
 
 export function ThemeToggle() {
@@ -21,6 +21,7 @@ export function ThemeToggle() {
   function toggle() {
     const next: Mode = mode === "dark" ? "light" : "dark";
     document.documentElement.classList.toggle("dark", next === "dark");
+    document.documentElement.dataset.theme = next;
     try {
       localStorage.setItem("aqar.theme", next);
     } catch {
@@ -36,7 +37,7 @@ export function ThemeToggle() {
       onClick={toggle}
       aria-label={mode === "dark" ? `Switch to light mode (${t("brand")})` : `Switch to dark mode (${t("brand")})`}
       title={mode === "dark" ? "Light" : "Dark"}
-      className="grid h-9 w-9 place-items-center rounded-xl border border-border bg-surface text-ink transition duration-150 hover:bg-track active:scale-[0.96]"
+      className="grid h-11 w-11 place-items-center rounded-xl border border-border bg-surface text-ink transition duration-150 hover:bg-track active:scale-[0.96]"
     >
       {mode === "dark" ? (
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>
@@ -53,4 +54,4 @@ export function ThemeToggle() {
 }
 
 /** Inline bootstrap: apply persisted/system theme before first paint (no flash). */
-export const themeInitScript = `(function(){try{var t=localStorage.getItem('aqar.theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d);}catch(e){}})();`;
+export const themeInitScript = `(function(){try{var t=localStorage.getItem('aqar.theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d);document.documentElement.dataset.theme=d?'dark':'light';}catch(e){}})();`;

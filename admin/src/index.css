@@ -1,5 +1,7 @@
 /* Aqar admin — global styles. Palette source of truth: src/styles/tokens.css */
 
+@import "@fontsource/el-messiri/600.css";
+@import "@fontsource/el-messiri/700.css";
 @import "@fontsource/ibm-plex-sans-arabic/400.css";
 @import "@fontsource/ibm-plex-sans-arabic/500.css";
 @import "@fontsource/ibm-plex-sans-arabic/600.css";
@@ -15,7 +17,9 @@
   --color-gold: var(--color-gold);
   --color-gold-light: var(--color-gold-light);
   --color-gold-dark: var(--color-gold-dark);
+  --color-gold-text: var(--color-gold-text);
   --color-on-dark: var(--color-on-dark);
+  --color-surface-2: var(--color-surface-2);
   /* surfaces */
   --color-bg: var(--color-bg);
   --color-surface: var(--color-surface);
@@ -51,9 +55,11 @@
   --color-teal-bg: var(--color-teal-bg);
   --color-teal-on-dark: var(--color-teal-on-dark);
   --color-whatsapp: var(--color-whatsapp);
-  /* legacy class names → Mantiq values */
+  /* Legacy utility colors stay token-backed; semantic fills remain dark enough for light text. */
   --color-brand-50: var(--color-gold-tint-8);
   --color-brand-100: var(--color-gold-tint-12);
+  --color-brand-200: var(--color-border-strong);
+  --color-brand-400: var(--color-gold-dark);
   --color-brand-500: var(--color-gold);
   --color-brand-600: var(--color-gold);
   --color-brand-700: var(--color-gold-dark);
@@ -71,21 +77,34 @@
   --color-stone-900: var(--color-brand-deep);
   --color-emerald-50: var(--color-success-bg);
   --color-emerald-100: var(--color-success-bg);
-  --color-emerald-500: var(--color-success);
-  --color-emerald-600: var(--color-success);
-  --color-emerald-700: var(--color-success);
+  --color-emerald-200: var(--color-success-bg);
+  --color-emerald-300: var(--color-success-bg);
+  --color-emerald-400: var(--color-success);
+  --color-emerald-500: var(--color-success-fill);
+  --color-emerald-600: var(--color-success-fill);
+  --color-emerald-700: var(--color-success-fill);
   --color-emerald-800: var(--color-success);
+  --color-emerald-900: var(--color-success);
   --color-red-50: var(--color-danger-bg);
   --color-red-100: var(--color-danger-bg);
-  --color-red-500: var(--color-danger);
-  --color-red-600: var(--color-danger);
-  --color-red-700: var(--color-danger);
+  --color-red-200: var(--color-danger-bg);
+  --color-red-300: var(--color-danger-bg);
+  --color-red-400: var(--color-danger);
+  --color-red-500: var(--color-danger-fill);
+  --color-red-600: var(--color-danger-fill);
+  --color-red-700: var(--color-danger-fill);
   --color-red-800: var(--color-danger);
+  --color-red-900: var(--color-danger);
   --color-amber-50: var(--color-warn-bg);
   --color-amber-100: var(--color-warn-bg);
+  --color-amber-200: var(--color-warn-bg);
+  --color-amber-300: var(--color-warn-bg);
+  --color-amber-400: var(--color-gold);
   --color-amber-600: var(--color-warn);
   --color-amber-700: var(--color-warn);
   --color-amber-800: var(--color-warn);
+  --color-amber-900: var(--color-warn);
+  --color-amber-950: var(--color-gold-text);
   --color-sky-100: var(--color-info-bg);
   --color-sky-600: var(--color-info);
   --color-sky-700: var(--color-info);
@@ -93,8 +112,12 @@
   --color-violet-100: var(--color-neutral-bg);
   --color-violet-700: var(--color-neutral);
   --color-violet-800: var(--color-neutral);
+  --color-white: var(--color-on-dark);
+  --color-black: var(--color-brand-deep);
+
   /* typography + geometry */
   --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
   --text-base: var(--text-base-size);
   --text-base--line-height: var(--text-base-line);
   --text-sm: 14px;
@@ -138,7 +161,7 @@ body {
   }
 }
 .page-enter {
-  animation: aqar-page-in 250ms cubic-bezier(0.22, 1, 0.36, 1);
+  animation: aqar-page-in 400ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 @keyframes aqar-shimmer {
@@ -183,11 +206,11 @@ button:not(:disabled):active {
 
 /* cinematic card lift — used by .card-lift (ListingCard, dashboards) */
 .card-lift {
-  transition: transform var(--transition-fast) cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow var(--transition-fast) ease;
+  transition: transform var(--transition-card) cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow var(--transition-card) ease;
 }
 .card-lift:hover {
-  transform: scale(1.02);
+  transform: translateY(-4px);
   box-shadow: var(--shadow-elevate);
 }
 
@@ -204,3 +227,98 @@ button:not(:disabled):active {
     transform: none;
   }
 }
+
+
+/* Shared premium primitives; pages retain their existing semantics and data. */
+h1, h2, h3, h4, .font-display, [data-display], [data-kpi-value] {
+  font-family: var(--font-display);
+  line-height: 1.25;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 44px; padding: 12px 22px; border: 1px solid transparent;
+  border-radius: var(--radius-field); background: var(--color-gold); color: var(--color-gold-text);
+  font-weight: 600; transition: background-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+.btn-primary:hover { background: var(--color-gold-light); box-shadow: var(--shadow-card); }
+.btn-secondary {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 44px; padding: 12px 22px; border: 1px solid var(--color-brand);
+  border-radius: var(--radius-field); background: var(--color-brand-deep); color: var(--color-on-dark); font-weight: 600;
+}
+.btn-ghost {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 44px; padding: 12px 22px; border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-field); background: transparent; color: var(--color-ink); font-weight: 600;
+}
+
+/* Gold is always paired with navy, never white. */
+button[class*="bg-gold"], a[class*="bg-gold"] { color: var(--color-gold-text); }
+
+.surface-card {
+  border: 1px solid var(--color-border); border-radius: var(--radius-card);
+  background: var(--color-surface); box-shadow: var(--shadow-card);
+}
+.soft-chip {
+  display: inline-flex; align-items: center; gap: .35rem; border-radius: var(--radius-pill);
+  padding: .3rem .7rem; background: var(--color-surface-2); color: var(--color-ink);
+  font-size: 12px; font-weight: 600;
+}
+
+@media (max-width: 899px) {
+  .hero-search-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .listing-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Shared identity components */
+.brand-lockup { display: inline-flex; align-items: center; gap: .65rem; color: var(--color-sidebar-text, var(--color-ink)); }
+.brand-mark { width: 42px; height: 42px; flex: none; }
+.brand-wordmark { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; line-height: 1.15; }
+h1, h2, h3, h4, .font-display, [data-display], [data-kpi-value] { font-family: var(--font-display); line-height: 1.25; font-variant-numeric: lining-nums tabular-nums; }
+
+.btn-primary {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 44px; padding: 12px 22px; border: 1px solid transparent;
+  border-radius: var(--radius-field); background: var(--color-gold); color: var(--color-gold-text);
+  font-weight: 600; transition: background-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+}
+.btn-primary:hover { background: var(--color-gold-light); box-shadow: var(--shadow-card); }
+.btn-secondary { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 44px; padding: 12px 22px; border: 1px solid var(--color-brand); border-radius: var(--radius-field); background: var(--color-brand-deep); color: var(--color-on-dark); font-weight: 600; }
+.btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: .5rem; min-height: 44px; padding: 12px 22px; border: 1px solid var(--color-border-strong); border-radius: var(--radius-field); background: transparent; color: var(--color-ink); font-weight: 600; }
+button[class*="bg-gold"], a[class*="bg-gold"] { color: var(--color-gold-text); }
+
+.surface-card { border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); box-shadow: var(--shadow-card); }
+table { width: 100%; min-width: 680px; border-collapse: collapse; }
+thead { background: var(--color-surface-2); color: var(--color-muted); font-size: 12px; text-align: start; }
+th { padding: 12px; font-weight: 600; }
+td { padding: 12px; border-block-end: 1px solid var(--color-border); }
+tbody tr:hover { background: var(--color-surface-2); }
+input, select, textarea { border-radius: var(--radius-field); }
+
+/* Legacy white surfaces become token surfaces in dark mode across every admin page. */
+.bg-white { background-color: var(--color-surface) !important; }
+.bg-white\/95, .bg-white\/98 { background-color: color-mix(in srgb, var(--color-surface) 97%, transparent) !important; }
+.dark .text-stone-900, :root[data-theme="dark"] .text-stone-900 { color: var(--color-ink-strong) !important; }
+.dark .text-stone-800, .dark .text-stone-700, :root[data-theme="dark"] .text-stone-800, :root[data-theme="dark"] .text-stone-700 { color: var(--color-ink) !important; }
+.dark .border-stone-200, .dark .border-stone-300, :root[data-theme="dark"] .border-stone-200, :root[data-theme="dark"] .border-stone-300 { border-color: var(--color-border) !important; }
+.dark input, .dark select, .dark textarea, :root[data-theme="dark"] input, :root[data-theme="dark"] select, :root[data-theme="dark"] textarea { color: var(--color-ink); background: var(--color-surface); border-color: var(--color-border-strong); }
+
+@media (max-width: 899px) {
+  main { overflow-x: auto; }
+  table { display: block; overflow-x: auto; white-space: nowrap; }
+}
+
+button { min-height: 44px; }
+.kpi-stat { position: relative; overflow: hidden; box-shadow: var(--shadow-card); }
+.kpi-stat::before { position: absolute; inset-block: 0; inset-inline-start: 0; width: 3px; content: ""; background: var(--color-gold); }
+.eyebrow { color: var(--color-teal-ink); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+@media (max-width: 1023px) { main { padding-block-end: 92px !important; } }
+[data-testid="admin-sidebar"] nav a, nav.fixed a { display: flex; min-height: 44px; align-items: center; }
+
+.dark .text-emerald-600, .dark .text-emerald-700, .dark .text-emerald-800, .dark .text-emerald-900, :root[data-theme="dark"] .text-emerald-600, :root[data-theme="dark"] .text-emerald-700, :root[data-theme="dark"] .text-emerald-800, :root[data-theme="dark"] .text-emerald-900 { color: var(--color-success) !important; }
+.dark .text-red-500, .dark .text-red-600, .dark .text-red-700, .dark .text-red-800, .dark .text-red-900, :root[data-theme="dark"] .text-red-500, :root[data-theme="dark"] .text-red-600, :root[data-theme="dark"] .text-red-700, :root[data-theme="dark"] .text-red-800, :root[data-theme="dark"] .text-red-900 { color: var(--color-danger) !important; }
+
+.text-white { color: var(--color-on-dark) !important; }
+.text-stone-100, .text-stone-300 { color: var(--color-muted) !important; }

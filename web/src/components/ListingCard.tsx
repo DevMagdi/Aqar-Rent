@@ -12,10 +12,8 @@ export function BadgeFeatured({ label, tone = "gold" }: { label: string; tone?: 
   return (
     <span
       data-testid="badge-premium"
-      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold shadow-[0_1px_2px_rgba(11,18,32,0.25)] ring-1 ring-black/5 ${
-        tone === "gold"
-          ? "bg-gradient-to-br from-gold to-gold-light text-brand-deep"
-          : "bg-gradient-to-br from-teal to-teal-ink text-white"
+      className={`inline-flex items-center gap-1 rounded-full border border-white/20 bg-brand-deep/70 px-2.5 py-1 text-[11px] font-bold text-gold-light shadow backdrop-blur ${
+        tone === "gold" ? "" : "text-on-dark"
       }`}
     >
       {tone === "gold" ? "✦" : "✓"} {label}
@@ -46,11 +44,11 @@ export function ListingCard({
     <article
       data-testid="listing-card"
       data-listing-id={item.id}
-      className="card-lift group overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface shadow-card will-change-transform"
+      className="card-lift group relative overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface shadow-card will-change-transform"
     >
       <Link href={href} className="block focus-visible:outline-none">
         {/* ── hero image:16:10, zoom on hover, gradient price band ── */}
-        <div className="relative aspect-[16/10] w-full overflow-hidden bg-track">
+        <div className="relative h-[170px] w-full overflow-hidden bg-track">
           {item.thumb_url ? (
             <Image
               src={item.thumb_url}
@@ -70,22 +68,17 @@ export function ListingCard({
           />
           {/* dominant price, ON the image */}
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-3">
-            <p className="text-2xl font-extrabold leading-none text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.6)]">
+            <p className="font-display text-2xl font-extrabold leading-none text-white listing-price-text">
               {formatMoney(item.rent_monthly, locale)}
-              <span className="ms-1 text-xs font-semibold text-white/85">EGP/شهر</span>
+              <span className="ms-1 text-xs font-semibold text-white/85">{t("per_month")}</span>
             </p>
             {availableNow && <BadgeFeatured label={t("available_now")} />}
           </div>
-          {item.is_featured ? (
-            <span className="absolute top-2 end-2 rounded-full bg-amber-400 px-2 py-1 text-[11px] font-bold text-amber-950 shadow">
-              ★ {t("trust_featured")}
-            </span>
-          ) : null}
           {item.verified_owner ? (
             <span
               data-testid="trust-badge"
               title={locale === "ar" ? item.trust_label_ar || "" : "Verified owner"}
-              className="absolute top-2 start-2 inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2 py-1 text-[11px] font-bold text-white shadow"
+              className="absolute top-2 start-2 inline-flex items-center gap-1 rounded-full border border-white/20 bg-brand-deep/70 px-2.5 py-1 text-[11px] font-bold text-gold-light shadow backdrop-blur"
             >
               ✓ {t("trust_verified")}
             </span>
@@ -105,7 +98,7 @@ export function ListingCard({
             <span className="truncate">{[locationName(city, locale), locationName(gov, locale)].filter(Boolean).join("، ") || item.address_text}</span>
           </p>
           {item.office_name_ar ? (
-            <p className="truncate text-xs font-semibold text-ink">🏢 {item.office_name_ar}</p>
+            <p className="inline-flex max-w-full items-center gap-1 truncate rounded-full bg-teal-bg px-2.5 py-1 text-xs font-semibold text-teal-ink">✓ {item.office_name_ar}</p>
           ) : null}
           <div className="flex items-center gap-2 border-t border-track pt-2.5 text-xs font-medium text-muted" dir={locale === "ar" ? "rtl" : "ltr"}>
             <span className="rounded-full bg-track px-2 py-0.5 tabular-nums">{item.area_m2.toFixed(0)} م²</span>
@@ -116,6 +109,7 @@ export function ListingCard({
               🛁 {item.bathrooms}
             </span>
             <span className="rounded-full bg-track px-2 py-0.5">{t(`spec.${item.furnished}`)}</span>
+            {item.is_featured && <span className="rounded-full bg-gold-tint-14 px-2 py-0.5 text-ink">★ {t("trust_featured")}</span>}
           </div>
         </div>
       </Link>

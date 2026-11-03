@@ -3,7 +3,7 @@
 import * as maplibregl from "maplibre-gl";
 import type { Map as MLMap, GeoJSONSource } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { TOKENS } from "../styles/tokenValues";
+import { clientTokenColor } from "@/lib/clientColor";
 import { useEffect, useRef } from "react";
 import { formatMoney } from "@/lib/utils";
 import type { Locale, SearchItem } from "@/lib/types";
@@ -68,17 +68,19 @@ export default function MapView({
     map.on("load", () => {
       readyRef.current = true;
       map.addSource("pts", { type: "geojson", data: featureCollection([]), cluster: true, clusterMaxZoom: 13, clusterRadius: 48 });
+      const goldDark = clientTokenColor("gold-dark");
+      const surface = clientTokenColor("surface");
       map.addLayer({
         id: "clusters",
         type: "circle",
         source: "pts",
         filter: ["has", "point_count"],
         paint: {
-          "circle-color": TOKENS.goldDark,
+          "circle-color": goldDark,
           "circle-radius": ["step", ["get", "point_count"], 16, 5, 20, 12, 26],
           "circle-opacity": 0.85,
           "circle-stroke-width": 2,
-          "circle-stroke-color": TOKENS.surface,
+          "circle-stroke-color": surface,
         },
       });
       map.on("click", "clusters", async (e: maplibregl.MapLayerMouseEvent) => {
@@ -139,7 +141,7 @@ export default function MapView({
       el.dataset.testid = "price-pin";
       el.dataset.listingId = i.id;
       el.className =
-        "-translate-y-1/2 rounded-full border border-white bg-gold px-2 py-1 text-[11px] font-bold text-brand-deep shadow hover:bg-gold-dark";
+        "-translate-y-1/2 rounded-full border border-white bg-gold px-2 py-1 text-[11px] font-bold text-gold-text shadow hover:bg-gold-dark";
       el.textContent = formatMoney(i.rent_monthly, locale);
       el.addEventListener("click", (ev) => {
         ev.stopPropagation();

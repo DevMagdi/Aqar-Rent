@@ -37,7 +37,7 @@ export function FavoritesView({ locale, places }: { locale: Locale; places: Reco
         <EmptyState
           title={t("favorites_empty")}
           action={
-            <Link href={`/${locale}/search`} className="rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-brand-deep hover:bg-gold-dark">
+            <Link href={`/${locale}/search`} className="rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-gold-text hover:bg-gold-dark">
               {t("browse_listings")}
             </Link>
           }

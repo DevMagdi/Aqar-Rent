@@ -123,8 +123,8 @@ describe("i18n", () => {
 });
 
 describe("formatting", () => {
-  it("money uses latin digits in both locales (stable for UI + tests)", () => {
-    expect(formatMoney(7500, "ar")).toBe("7,500");
+  it("formats money with Arabic digits in Arabic and Latin digits in English", () => {
+    expect(formatMoney(7500, "ar")).toBe("٧٬٥٠٠");
     expect(formatMoney(7500, "en")).toBe("7,500");
   });
   it("waHref builds an international wa.me link", () => {

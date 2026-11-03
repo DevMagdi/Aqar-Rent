@@ -2,7 +2,7 @@
 // Map pin picker: click/drag to set lat+lng (manual inputs exist in the wizard too).
 import * as maplibregl from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { TOKENS } from "../styles/tokenValues";
+import { clientTokenColor } from "@/lib/clientColor";
 import { useEffect, useRef } from "react";
 
 const TILES = process.env.NEXT_PUBLIC_MAP_TILES_URL || "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
@@ -45,7 +45,7 @@ export default function MapPicker({
     const el = document.createElement("div");
     el.dataset.testid = "wizard-pin";
     el.className = "h-7 w-7 rounded-full border-4 border-white bg-gold shadow-lg";
-    const marker = new maplibregl.Marker({ element: el, draggable: true, color: TOKENS.goldDark }).setLngLat([lng, lat]).addTo(map);
+    const marker = new maplibregl.Marker({ element: el, draggable: true, color: clientTokenColor("gold-dark") }).setLngLat([lng, lat]).addTo(map);
     marker.on("dragend", () => {
       const p = marker.getLngLat();
       onPickRef.current(p.lat, p.lng);

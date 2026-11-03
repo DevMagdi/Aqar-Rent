@@ -27,7 +27,7 @@ export function ConsentBanner() {
       role="dialog"
       aria-label={t("privacy")}
       data-testid="consent-banner"
-      className="fixed inset-x-0 bottom-0 z-[950] border-t border-stone-200 bg-white/98 p-4 shadow-[0_-4px_16px_rgba(0,0,0,0.08)]"
+      className="fixed inset-x-0 bottom-0 z-[950] border-t border-stone-200 bg-white/98 p-4 shadow-pop"
     >
       <div className="mx-auto flex max-w-4xl flex-col gap-3 sm:flex-row sm:items-center">
         <p className="flex-1 text-sm text-stone-600">
@@ -60,7 +60,7 @@ export function ConsentBanner() {
             }
             setOpen(false);
           }}
-          className="rounded-xl bg-gold px-5 py-2.5 text-sm font-bold text-brand-deep hover:bg-gold-dark"
+          className="rounded-xl bg-gold px-5 py-2.5 text-sm font-bold text-gold-text hover:bg-gold-dark"
         >
           {locale === "ar" ? "موافق" : "Accept"}
         </button>

@@ -1,37 +1,31 @@
-/* =============================================================================
- * Aqar Rent premium tokens (Mantiq evolution) — SINGLE SOURCE OF TRUTH.
- * Exact values + WCAG evidence: docs/design/premium-tokens.md
- * Light in :root · Dark in .dark (class on <html>, prefers-color-scheme aware)
- * Zero hex outside this file & tokenValues.ts (test-enforced).
- * ============================================================================= */
-
+/* Unified Aqar Rent design tokens. This file is the palette authority. */
 :root {
-  /* ── Brand (spec) ─────────────────────────────────────────────── */
-  --color-brand: #0F1C2E;          /* primary ink —16:1 on bg */
-  --color-brand-deep: #0B1220;     /* deepest navy = dark bg */
-  --color-network: #1D2D45;        /* sidebar hover (derived) */
-  --color-gold: #C9A86C;           /* refined warm gold —7.6:1 on primary */
-  --color-gold-light: #E7D6AF;     /* logo gradient (derived) */
-  --color-gold-dark: #9C814E;      /* focus/hover/graphics —3.7:1 (large/≥3:1 only) */
-  --color-on-dark: #EAE7E0;        /* text on navy —13.9:1 */
+  /* Brand */
+  --color-brand: #0F1C2E;
+  --color-brand-deep: #0B1220;
+  --color-network: #1D2D45;
+  --color-gold: #C9A86C;
+  --color-gold-light: #E7D6AF;
+  --color-gold-dark: #9C814E;
+  --color-gold-text: #0F1C2E;
+  --color-on-dark: #EAE7E0;
 
-  /* ── Trust/secondary (spec) ───────────────────────────────────── */
-  --color-teal: #0D9488;           /* fills/icons —3.7:1 vs white (graphics) */
-  --color-teal-ink: #0B726A;       /* teal text —5.8:1 (derived) */
-  --color-teal-bg: #E6F5F3;        /* soft teal panels (derived) */
-  --color-teal-on-dark: #2DD4BF;   /* dark surfaces —9.2:1 (derived) */
-
-  /* ── Surfaces (spec) ──────────────────────────────────────────── */
-  --color-bg: #F8F7F4;             /* warm off-white */
+  /* Trust and surfaces */
+  --color-teal: #0D9488;
+  --color-teal-ink: #0B726A;
+  --color-teal-bg: #E6F5F3;
+  --color-teal-on-dark: #2DD4BF;
+  --color-bg: #F8F7F4;
   --color-surface: #FFFFFF;
+  --color-surface-2: #F2F0EA;
   --color-ink: var(--color-brand);
   --color-ink-strong: var(--color-brand-deep);
-  --color-muted: #5C6570;          /* 5.5:1 on bg */
+  --color-muted: #5C6570;
   --color-border: rgba(15, 28, 46, 0.10);
   --color-border-strong: rgba(15, 28, 46, 0.16);
   --color-track: rgba(15, 28, 46, 0.08);
 
-  /* ── Sidebar / dark chrome (light mode) ───────────────────────── */
+  /* Permanent dark sidebar */
   --color-sidebar: var(--color-brand);
   --color-sidebar-text: var(--color-on-dark);
   --color-sidebar-active: var(--color-gold);
@@ -39,80 +33,124 @@
   --color-sidebar-hover: var(--color-network);
   --color-sidebar-muted: rgba(234, 231, 224, 0.62);
 
-  /* ── Functional ───────────────────────────────────────────────── */
-  --color-whatsapp: #25D366;
-
-  /* ── Soft gold tints (≤14%) ───────────────────────────────────── */
-  --color-gold-tint-8: rgba(201, 168, 108, 0.08);
-  --color-gold-tint-12: rgba(201, 168, 108, 0.12);
-  --color-gold-tint-14: rgba(201, 168, 108, 0.14);
-
-  /* ── Status (functional, AA-proven — unchanged) ───────────────── */
+  /* Status colors retain their AA-tested semantic pairs */
   --color-success: #1B5E3A;
+  --color-success-fill: #1B5E3A;
   --color-success-bg: #EEF6F0;
   --color-warn: #8A5A12;
   --color-warn-bg: #FDF6EA;
   --color-danger: #A32A22;
+  --color-danger-fill: #A32A22;
   --color-danger-bg: #FDF0EF;
   --color-info: #1F4E8C;
   --color-info-bg: #EDF2F9;
   --color-neutral: #17565F;
   --color-neutral-bg: #ECF3F4;
+  --color-whatsapp: #25D366;
 
-  /* ── Typography (upgraded scale) ──────────────────────────────── */
+  --color-gold-tint-8: rgba(201, 168, 108, 0.08);
+  --color-gold-tint-12: rgba(201, 168, 108, 0.12);
+  --color-gold-tint-14: rgba(201, 168, 108, 0.14);
+  --color-hero-chip-border: rgba(231, 214, 175, 0.28);
+  --color-hero-chip-bg: rgba(11, 18, 32, 0.42);
+
+  /* Typography */
   --font-sans: "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
+  --font-display: "El Messiri", "IBM Plex Sans Arabic", system-ui, sans-serif;
   --text-base-size: 15px;
-  --text-base-line: 24px;        /* generous Arabic line-height */
+  --text-base-line: 1.7;
 
-  /* ── Geometry (spec: cards20–24, buttons14–16) ────────────────── */
-  --radius-card: 22px;
-  --radius-shell: 24px;
-  --radius-field: 14px;
+  /* Geometry and elevation */
+  --radius-card: 18px;
+  --radius-shell: 28px;
+  --radius-field: 12px;
   --radius-pill: 999px;
-  --shadow-card: 0 1px 2px rgba(11, 18, 32, 0.05), 0 10px 28px -14px rgba(11, 18, 32, 0.12);
-  --shadow-pop: 0 12px 32px rgba(11, 18, 32, 0.16);
-  --shadow-elevate: 0 20px 48px -20px rgba(11, 18, 32, 0.32);
+  --radius-phone: 44px;
+  --shadow-card: 0 1px 2px rgba(15, 28, 46, 0.06), 0 12px 32px -12px rgba(15, 28, 46, 0.18);
+  --shadow-pop: 0 16px 40px -12px rgba(15, 28, 46, 0.22);
+  --shadow-elevate: 0 22px 48px -18px rgba(15, 28, 46, 0.28);
+  --shadow-image-text: 0 1px 3px rgba(0, 0, 0, 0.6);
   --transition-fast: 150ms;
+  --transition-card: 250ms;
 }
 
-/* ── Dark mode (full support) — ratios in docs/design/premium-tokens.md ── */
-.dark {
-  --color-bg: #0B1220;             /* spec */
-  --color-surface: #141C2B;        /* spec */
-  --color-ink: #E9EDF5;            /*14.5:1 on surface */
-  --color-ink-strong: #F5F8FC;     /*16:1 */
-  --color-muted: #9AA4B4;          /*6.8:1 on surface */
-  --color-border: rgba(233, 237, 244, 0.12);
-  --color-border-strong: rgba(233, 237, 244, 0.20);
-  --color-track: rgba(233, 237, 244, 0.08);
-
-  --color-sidebar: #101A2C;        /* elevated nav — gold label7.7:1 */
+/* Legacy .dark class stays supported; data-theme is the public theme contract. */
+.dark,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --color-brand: #EAE7E0;
+  --color-brand-deep: #0B1220;
   --color-network: #223149;
-  --color-sidebar-active-bg: rgba(201, 168, 108, 0.16);
-  --color-sidebar-muted: rgba(233, 237, 244, 0.60);
-
-  --color-gold-dark: #D9BE87;      /* price/focus on dark —9.5:1 */
+  --color-gold-dark: #C9A86C;
+  --color-on-dark: #EAE7E0;
   --color-teal: #2DD4BF;
-  --color-teal-ink: #2DD4BF;       /*9.2:1 on dark surface */
+  --color-teal-ink: #2DD4BF;
   --color-teal-bg: rgba(45, 212, 191, 0.16);
   --color-teal-on-dark: #2DD4BF;
-
-  --color-success: #5CD6A0;        /*9.4:1 */
+  --color-bg: #0B1220;
+  --color-surface: #111B2D;
+  --color-surface-2: #16233A;
+  --color-ink: #EAE7E0;
+  --color-ink-strong: #F5F8FC;
+  --color-muted: #9AA4B2;
+  --color-border: rgba(234, 231, 224, 0.09);
+  --color-border-strong: rgba(234, 231, 224, 0.16);
+  --color-track: rgba(234, 231, 224, 0.08);
+  --color-sidebar: #0B1220;
+  --color-sidebar-text: #EAE7E0;
+  --color-sidebar-active: #C9A86C;
+  --color-sidebar-active-bg: rgba(201, 168, 108, 0.14);
+  --color-sidebar-hover: #1D2D45;
+  --color-sidebar-muted: rgba(234, 231, 224, 0.62);
+  --color-success: #5CD6A0;
   --color-success-bg: rgba(92, 214, 160, 0.16);
-  --color-warn: #E9B44C;           /*9.0:1 */
+  --color-warn: #E9B44C;
   --color-warn-bg: rgba(233, 180, 76, 0.16);
-  --color-danger: #F28B82;         /*7.1:1 */
+  --color-danger: #F28B82;
   --color-danger-bg: rgba(242, 139, 130, 0.16);
-  --color-info: #8AB8EC;           /*8.3:1 */
+  --color-info: #8AB8EC;
   --color-info-bg: rgba(138, 184, 236, 0.16);
-  --color-neutral: #7FC9D6;        /*9.1:1 */
+  --color-neutral: #7FC9D6;
   --color-neutral-bg: rgba(127, 201, 214, 0.16);
-
   --color-gold-tint-8: rgba(201, 168, 108, 0.10);
   --color-gold-tint-12: rgba(201, 168, 108, 0.14);
   --color-gold-tint-14: rgba(201, 168, 108, 0.18);
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+  --shadow-pop: 0 16px 40px -12px rgba(0, 0, 0, 0.68);
+  --shadow-elevate: 0 22px 48px -18px rgba(0, 0, 0, 0.75);
+}
 
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 10px 28px -14px rgba(0, 0, 0, 0.55);
-  --shadow-pop: 0 12px 32px rgba(0, 0, 0, 0.55);
-  --shadow-elevate: 0 20px 48px -20px rgba(0, 0, 0, 0.7);
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]):not(.light) {
+    color-scheme: dark;
+    --color-brand: #EAE7E0;
+    --color-bg: #0B1220;
+    --color-surface: #111B2D;
+    --color-surface-2: #16233A;
+    --color-ink: #EAE7E0;
+    --color-ink-strong: #F5F8FC;
+    --color-muted: #9AA4B2;
+    --color-border: rgba(234, 231, 224, 0.09);
+    --color-border-strong: rgba(234, 231, 224, 0.16);
+    --color-track: rgba(234, 231, 224, 0.08);
+    --color-gold-dark: #C9A86C;
+    --color-teal: #2DD4BF;
+    --color-teal-ink: #2DD4BF;
+    --color-teal-bg: rgba(45, 212, 191, 0.16);
+    --color-success: #5CD6A0;
+    --color-success-bg: rgba(92, 214, 160, 0.16);
+    --color-warn: #E9B44C;
+    --color-warn-bg: rgba(233, 180, 76, 0.16);
+    --color-danger: #F28B82;
+    --color-danger-bg: rgba(242, 139, 130, 0.16);
+    --color-info: #8AB8EC;
+    --color-info-bg: rgba(138, 184, 236, 0.16);
+    --color-neutral: #7FC9D6;
+    --color-neutral-bg: rgba(127, 201, 214, 0.16);
+    --color-sidebar: #0B1220;
+    --color-sidebar-hover: #1D2D45;
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
+    --shadow-pop: 0 16px 40px -12px rgba(0, 0, 0, 0.68);
+    --shadow-elevate: 0 22px 48px -18px rgba(0, 0, 0, 0.75);
+  }
 }

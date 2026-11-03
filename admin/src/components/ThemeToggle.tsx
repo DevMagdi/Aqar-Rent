@@ -7,12 +7,13 @@ export function ThemeToggle() {
   const [mode, setMode] = useState<Mode>("light");
 
   useEffect(() => {
-    setMode(document.documentElement.classList.contains("dark") ? "dark" : "light");
+    setMode(document.documentElement.dataset.theme === "dark" || document.documentElement.classList.contains("dark") ? "dark" : "light");
   }, []);
 
   function toggle() {
     const next: Mode = mode === "dark" ? "light" : "dark";
     document.documentElement.classList.toggle("dark", next === "dark");
+    document.documentElement.dataset.theme = next;
     try {
       localStorage.setItem("aqar.theme", next);
     } catch {
@@ -27,7 +28,7 @@ export function ThemeToggle() {
       data-testid="theme-toggle"
       onClick={toggle}
       aria-label={mode === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-      className="grid h-8 w-8 place-items-center rounded-lg border border-border bg-surface text-ink transition duration-150 hover:bg-track active:scale-[0.96]"
+      className="grid h-11 w-11 place-items-center rounded-lg border border-border bg-surface text-ink transition duration-150 hover:bg-track active:scale-[0.96]"
     >
       {mode === "dark" ? (
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden>

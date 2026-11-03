@@ -436,7 +436,7 @@ export function HandoverEditor({
               type="button"
               data-testid="btn-handover-pdf"
               onClick={() => void downloadAuthed(`/handovers/${handoverId}/pdf`, `handover-${kind}.pdf`)}
-              className="rounded-xl bg-gold px-4 py-2.5 text-sm font-bold text-brand-deep hover:bg-gold-dark"
+              className="rounded-xl bg-gold px-4 py-2.5 text-sm font-bold text-gold-text hover:bg-gold-dark"
             >
               ⬇ {t("download_handover_pdf")}
             </button>

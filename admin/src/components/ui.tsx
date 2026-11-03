@@ -30,9 +30,9 @@ export function Card({ title, children, action }: { title?: string; children: Re
 
 export function Stat({ label, value, hint, testid }: { label: string; value: ReactNode; hint?: string; testid?: string }) {
   return (
-    <div className="rounded-2xl border border-stone-200 bg-white p-4 shadow-sm" data-testid={testid || "kpi"}>
+    <div className="kpi-stat rounded-2xl border border-border bg-surface p-4 shadow-card" data-testid={testid || "kpi"}>
       <p className="text-xs font-semibold uppercase tracking-wide text-stone-500">{label}</p>
-      <p className="mt-1 text-2xl font-extrabold text-stone-900" data-testid="kpi-value">
+      <p className="mt-1 font-display text-2xl font-bold text-ink-strong" data-testid="kpi-value">
         {value}
       </p>
       {hint && <p className="mt-0.5 text-xs text-stone-400">{hint}</p>}
@@ -41,6 +41,43 @@ export function Stat({ label, value, hint, testid }: { label: string; value: Rea
 }
 
 /** Horizontal bar chart (no chart lib needed). */
+export function AreaChart({ data, testId }: { data: [string, number][]; testId?: string }) {
+  if (data.length === 0) return <p className="py-10 text-center text-sm text-muted" data-testid={testId}>—</p>;
+  const max = Math.max(1, ...data.map(([, value]) => value));
+  const points = data.map(([label, value], index) => {
+    const x = data.length === 1 ? 50 : (index / (data.length - 1)) * 100;
+    const y = 82 - (value / max) * 62;
+    return { x, y, label, value };
+  });
+  const line = points.map((point, index) => `${index === 0 ? "M" : "L"}${point.x},${point.y}`).join(" ");
+  const area = `${line} L100,90 L0,90 Z`;
+  return (
+    <div data-testid={testId}>
+      <svg viewBox="0 0 100 94" role="img" aria-label="Listing volume by status" className="h-48 w-full overflow-visible">
+        <defs>
+          <linearGradient id="listing-area-fill" x1="0" x2="0" y1="0" y2="1">
+            <stop offset="0%" stopColor="var(--color-gold)" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="var(--color-gold)" stopOpacity="0.02" />
+          </linearGradient>
+        </defs>
+        {[25, 45, 65, 85].map((y) => <path key={y} d={`M0 ${y}H100`} stroke="var(--color-border)" strokeWidth="0.6" />)}
+        <path d={area} fill="url(#listing-area-fill)" />
+        <path d={line} fill="none" stroke="var(--color-gold-dark)" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        {points.map((point) => (
+          <g key={point.label}>
+            <circle cx={point.x} cy={point.y} r="2.5" fill="var(--color-gold-dark)" stroke="var(--color-surface)" strokeWidth="1.2">
+              <title>{point.label.replace(/_/g, " ")}: {point.value}</title>
+            </circle>
+          </g>
+        ))}
+      </svg>
+      <div className="flex flex-wrap justify-between gap-x-3 gap-y-1 text-xs text-muted">
+        {points.map((point) => <span key={point.label}>{point.label.replace(/_/g, " ")}</span>)}
+      </div>
+    </div>
+  );
+}
+
 export function BarChart({ data, testId }: { data: [string, number][]; testId?: string }) {
   const max = Math.max(1, ...data.map(([, v]) => v));
   return (
@@ -100,7 +137,7 @@ export function Spinner() {
 export const inputCls =
   "w-full rounded-xl border border-stone-300 px-3 py-2.5 text-sm outline-none focus:border-gold disabled:bg-stone-50";
 export const btnPrimary =
-  "rounded-xl bg-gold px-4 py-2 text-sm font-semibold text-brand-deep hover:bg-gold-dark disabled:opacity-50";
+  "rounded-xl bg-gold px-4 py-2 text-sm font-semibold text-gold-text hover:bg-gold-dark disabled:opacity-50";
 export const btnGhost =
   "rounded-xl border border-stone-300 bg-white px-4 py-2 text-sm font-semibold text-stone-700 hover:bg-stone-50 disabled:opacity-50";
 export const btnDanger =

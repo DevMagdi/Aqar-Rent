@@ -87,7 +87,7 @@ export function OtpConfirmModal({
             type="button"
             data-testid="otp-request"
             onClick={requestOtp}
-            className="mt-4 w-full rounded-xl bg-gold py-3 text-sm font-bold text-brand-deep hover:bg-gold-dark"
+            className="mt-4 w-full rounded-xl bg-gold py-3 text-sm font-bold text-gold-text hover:bg-gold-dark"
           >
             {t("send_otp")}
           </button>

@@ -940,7 +940,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
               data-testid="btn-next"
               onClick={() => go(1)}
               disabled={photoBusy}
-              className="rounded-xl bg-gold px-6 py-2.5 text-sm font-semibold text-brand-deep hover:bg-gold-dark disabled:opacity-60"
+              className="rounded-xl bg-gold px-6 py-2.5 text-sm font-semibold text-gold-text hover:bg-gold-dark disabled:opacity-60"
             >
               {t("next")} ←
             </button>

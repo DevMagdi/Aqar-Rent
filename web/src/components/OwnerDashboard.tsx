@@ -55,7 +55,7 @@ export function OwnerDashboard() {
           <Link href={`/${locale}/owner/orders`} data-testid="link-orders" className="rounded-xl border border-stone-300 bg-white px-4 py-2.5 text-sm font-semibold text-stone-700 hover:bg-stone-50">
             {t("orders_title")}
           </Link>
-          <Link href={`/${locale}/owner/new`} data-testid="btn-add-listing" className="rounded-xl bg-gold px-4 py-2.5 text-sm font-semibold text-brand-deep hover:bg-gold-dark">
+          <Link href={`/${locale}/owner/new`} data-testid="btn-add-listing" className="rounded-xl bg-gold px-4 py-2.5 text-sm font-semibold text-gold-text hover:bg-gold-dark">
             + {t("add_listing")}
           </Link>
         </div>
@@ -71,7 +71,7 @@ export function OwnerDashboard() {
         <EmptyState
           title={t("listings_empty")}
           action={
-            <Link href={`/${locale}/owner/new`} className="rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-brand-deep">
+            <Link href={`/${locale}/owner/new`} className="rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-gold-text">
               + {t("add_listing")}
             </Link>
           }
@@ -125,7 +125,7 @@ export function OwnerDashboard() {
                     <Link
                       href={`/${locale}/owner/checkout?listing=${l.id}`}
                       data-testid="btn-renew"
-                      className="rounded-lg bg-gold px-3 py-1.5 text-xs font-semibold text-brand-deep hover:bg-gold-dark"
+                      className="rounded-lg bg-gold px-3 py-1.5 text-xs font-semibold text-gold-text hover:bg-gold-dark"
                     >
                       {t("renew")}
                     </Link>

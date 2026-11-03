@@ -3,7 +3,7 @@ import { ListingCard } from "@/components/ListingCard";
 import { SearchBar } from "@/components/SearchBar";
 import { makeT } from "@/lib/i18n";
 import { fetchServer } from "@/lib/server";
-import { DEFAULT_LOCALE, dirOf, LOCALES } from "@/lib/i18n";
+import { LOCALES } from "@/lib/i18n";
 import type { Locale, Location, SearchResult } from "@/lib/types";
 
 export async function generateStaticParams() {
@@ -28,52 +28,111 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
 
   let latest: SearchResult = { items: [], next_cursor: null, limit: 12 };
   let places: Record<string, Location> = {};
+  let governorates: Location[] = [];
+  let cities: Location[] = [];
   try {
-    const [res, govs, cities] = await Promise.all([
+    const [res, govs, cityRows] = await Promise.all([
       fetchServer<SearchResult>("/listings?sort=newest&limit=12"),
       fetchServer<Location[]>("/locations?level=governorate"),
       fetchServer<Location[]>("/locations?level=city"),
     ]);
     latest = res;
-    places = Object.fromEntries([...govs, ...cities].map((x) => [x.id, x]));
+    governorates = govs;
+    cities = cityRows;
+    places = Object.fromEntries([...govs, ...cityRows].map((x) => [x.id, x]));
   } catch {
     // Backend offline in build → render empty states (dev server still works).
   }
 
+  const stats = [
+    { value: l === "ar" ? "٤" : "4", label: t("trust_stat_levels") },
+    { value: l === "ar" ? "٠٪" : "0%", label: t("trust_stat_commission") },
+    { value: l === "ar" ? "٣" : "3", label: t("trust_stat_tools") },
+    { value: l === "ar" ? "٢٤" : "24", label: t("trust_stat_review") },
+  ];
+  const steps = [t("how_step_one"), t("how_step_two"), t("how_step_three")];
+
   return (
-    <div className="space-y-10">
-      <section className="rounded-3xl bg-gradient-to-b from-brand-50 to-stone-50 p-4 sm:p-8" data-testid="hero">
-        <SearchBar />
-        <div className="mt-4 flex flex-wrap gap-3 text-xs text-stone-500">
-          <Link href={`/${l}/how-it-works`} className="hover:text-ink">
-            {t("how_it_works")} →
-          </Link>
-          <Link href={`/${l}/content-rules`} className="hover:text-ink">
-            {t("content_rules")} →
-          </Link>
+    <div className="home-page page-enter space-y-12 sm:space-y-16">
+      <section className="home-hero" data-testid="hero">
+        <div className="home-hero-content">
+          <p className="home-trust-chip"><span aria-hidden>✓</span>{t("hero_trust_chip")}</p>
+          <h1 className="home-hero-title font-display">
+            {t("hero_title_start")} <span>{t("hero_title_gold")}</span>
+          </h1>
+          <p className="home-hero-subtitle">{t("hero_sub")}</p>
+          <div className="mt-5 flex flex-wrap gap-3 text-sm text-on-dark/80">
+            <Link href={`/${l}/how-it-works`} className="underline decoration-gold/70 underline-offset-4 hover:text-gold-light">
+              {t("how_it_works")} {l === "ar" ? "←" : "→"}
+            </Link>
+            <Link href={`/${l}/content-rules`} className="underline decoration-gold/70 underline-offset-4 hover:text-gold-light">
+              {t("content_rules")} {l === "ar" ? "←" : "→"}
+            </Link>
+          </div>
         </div>
+        <div className="hero-glow" aria-hidden />
+      </section>
+
+      <div className="home-search-overlap">
+        <SearchBar compact governorates={governorates} cities={cities} />
+      </div>
+
+      <section aria-label={t("hero_trust_chip")} className="trust-strip">
+        {stats.map((stat) => (
+          <article key={stat.label} className="trust-stat-card">
+            <strong className="trust-stat-value font-display">{stat.value}</strong>
+            <span>{stat.label}</span>
+          </article>
+        ))}
       </section>
 
       <section aria-labelledby="latest-h" data-testid="latest-listings">
-        <div className="mb-4 flex items-center justify-between">
-          <h2 id="latest-h" className="text-xl font-bold text-stone-900">
-            {t("latest_listings")}
-          </h2>
-          <Link href={`/${l}/search`} className="text-sm font-semibold text-ink hover:underline" data-testid="view-all">
-            {t("view_all")} ←
+        <div className="mb-5 flex items-end justify-between gap-4">
+          <div>
+            <p className="eyebrow">{t("nav_search")}</p>
+            <h2 id="latest-h" className="section-title font-display">{t("latest_listings")}</h2>
+          </div>
+          <Link href={`/${l}/search`} className="btn-ghost shrink-0 px-4 py-2 text-sm" data-testid="view-all">
+            {l === "ar" ? "←" : "→"} {t("view_all")}
           </Link>
         </div>
         {latest.items.length === 0 ? (
-          <p className="rounded-2xl border border-dashed border-stone-300 bg-white p-8 text-center text-sm text-stone-500" data-testid="empty-state">
+          <p className="rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface p-8 text-center text-sm text-muted shadow-card" data-testid="empty-state">
             {t("no_results")}
           </p>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="listing-grid">
             {latest.items.map((item, i) => (
               <ListingCard key={item.id} item={item} locale={l} places={places} eager={i < 3} />
             ))}
           </div>
         )}
+      </section>
+
+      <section aria-labelledby="how-home-title" className="home-how">
+        <div className="mb-5">
+          <p className="eyebrow">{t("how_it_works")}</p>
+          <h2 id="how-home-title" className="section-title font-display">{t("how_it_works")}</h2>
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {steps.map((step, index) => (
+            <article key={step} className="how-card surface-card">
+              <span className="how-number font-display">{l === "ar" ? ["٠١", "٠٢", "٠٣"][index] : `0${index + 1}`}</span>
+              <p>{step}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="home-cta" aria-label={t("cta_home_title")}>
+        <div>
+          <p className="eyebrow">{t("cta_home_sub")}</p>
+          <h2 className="font-display text-2xl font-bold sm:text-3xl">{t("cta_home_title")}</h2>
+          <p className="mt-2 max-w-2xl text-xs leading-relaxed text-gold-text">{t("home_contract_notice")}</p>
+        </div>
+        <Link href={`/${l}/owner/new`} className="btn-secondary shrink-0">
+          {t("nav_add")}
+        </Link>
       </section>
     </div>
   );

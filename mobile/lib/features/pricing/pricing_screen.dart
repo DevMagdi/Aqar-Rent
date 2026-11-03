@@ -88,7 +88,7 @@ class _PricingScreenState extends State<PricingScreen> {
               if ((p['discount'] as num? ?? 0) > 0)
                 Text('${p['subtotal']}', style: const TextStyle(fontSize: 11, decoration: TextDecoration.lineThrough, color: Colors.grey)),
               if (p['is_featured'] == true)
-                Text('★ ${s('featured')}', style: const TextStyle(fontSize: 10, color: AppTheme.amber)),
+                Text('★ ${s('featured_plan')}', style: const TextStyle(fontSize: 10, color: AppTheme.amber)),
             ],
           ),
         ),

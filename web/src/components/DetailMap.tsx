@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { useAuth, useI18n, useToast } from "./Providers";
 import type { Geo, ListingDetail } from "@/lib/types";
-import { TOKENS } from "../styles/tokenValues";
+import { clientTokenColor } from "@/lib/clientColor";
 
 const TILES = process.env.NEXT_PUBLIC_MAP_TILES_URL || "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const TILE_NAME = process.env.NEXT_PUBLIC_MAP_STYLE_NAME || "OpenStreetMap";
@@ -57,8 +57,8 @@ export function DetailMap({ geo, address, listingId }: { geo: Geo; address: stri
           source: "circle",
           paint: {
             "circle-radius": 60,
-            "circle-color": `${TOKENS.gold}33`,
-            "circle-stroke-color": TOKENS.goldDark,
+            "circle-color": clientTokenColor("gold", 0.2),
+            "circle-stroke-color": clientTokenColor("gold-dark"),
             "circle-stroke-width": 2,
             "circle-stroke-opacity": 0.7,
           },

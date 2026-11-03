@@ -9,7 +9,6 @@ import { themeInitScript } from "@/components/ThemeToggle";
 import { PageTransition } from "@/components/PageTransition";
 import { ConsentBanner } from "@/components/ConsentBanner";
 import { Footer } from "@/components/Footer";
-import "@/app/globals.css";
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));

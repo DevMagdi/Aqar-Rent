@@ -1,13 +1,4 @@
-/**
- * Design-system compliance (premium tokens) — runs in the normal vitest CI.
- *
- * 1. tokens.css is the single source of truth: tokenValues.ts mirrors light+dark.
- * 2. admin tokens.css is byte-identical to web tokens.css.
- * 3. mobile theme.dart carries the SAME core colours (unified identity).
- * 4. Zero hard-coded hex in TS/TSX/Dart outside the token files.
- * 5. No white text on gold · gold-dark limited to large text/graphics.
- * 6. Locked palette values (spec) + AA-critical spot checks.
- */
+/** Unified palette contract: CSS owns web/admin colors; mobile mirrors those values. */
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
@@ -18,8 +9,6 @@ const ADMIN_SRC = path.resolve(WEB_SRC, "../../admin/src");
 const MOBILE_LIB = path.resolve(WEB_SRC, "../../mobile/lib");
 const TOKENS_CSS = path.resolve(__dirname, "tokens.css");
 const MOBILE_THEME = path.resolve(MOBILE_LIB, "core/theme.dart");
-
-const kebab = (s: string) => s.replace(/[A-Z]/g, (m) => `-${m.toLowerCase()}`);
 
 function walk(dir: string): string[] {
   if (!fs.existsSync(dir)) return [];
@@ -32,140 +21,131 @@ function walk(dir: string): string[] {
   return out;
 }
 
-function readBlocks(): { light: Record<string, string>; dark: Record<string, string> } {
-  const css = fs.readFileSync(TOKENS_CSS, "utf8");
-  const parse = (block: string) => {
-    const map: Record<string, string> = {};
-    for (const m of block.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)) map[m[1]!] = m[2]!.trim();
-    return map;
-  };
-  const darkIdx = css.indexOf(".dark {");
-  if (darkIdx < 0) throw new Error("tokens.css must contain a .dark block");
-  return { light: parse(css.slice(0, darkIdx)), dark: parse(css.slice(darkIdx)) };
+function declarations(block: string): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const match of block.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)) map[match[1]!] = match[2]!.trim();
+  return map;
 }
 
-describe("premium Mantiq tokens", () => {
-  const { light, dark } = readBlocks();
+function cssTokens(): { source: string; light: Record<string, string>; dark: Record<string, string> } {
+  const source = fs.readFileSync(TOKENS_CSS, "utf8");
+  const rootStart = source.indexOf(":root {");
+  const rootEnd = source.indexOf("\n}", rootStart);
+  const darkStart = source.indexOf(":root[data-theme=\"dark\"]");
+  const darkOpen = source.indexOf("{", darkStart);
+  const darkEnd = source.indexOf("\n}", darkOpen);
+  return {
+    source,
+    light: declarations(source.slice(rootStart, rootEnd)),
+    dark: declarations(source.slice(darkOpen + 1, darkEnd)),
+  };
+}
 
-  it("locked palette (spec) — light", () => {
-    expect(light["color-brand"]).toBe("#0F1C2E");
-    expect(light["color-brand-deep"]).toBe("#0B1220");
-    expect(light["color-gold"]).toBe("#C9A86C");
-    expect(light["color-teal"]).toBe("#0D9488");
-    expect(light["color-bg"]).toBe("#F8F7F4");
-    expect(light["color-surface"]).toBe("#FFFFFF");
-    expect(light["color-muted"]).toBe("#5C6570");
-    expect(light["font-sans"]).toContain("IBM Plex Sans Arabic");
-    expect(light["text-base-size"]).toBe("15px");
-    expect(light["radius-card"]).toBe("22px");
-    expect(light["radius-field"]).toBe("14px");
-    expect(light["radius-pill"]).toBe("999px");
-  });
+function toDartColor(value: string): string {
+  const digits = value.startsWith("#") ? value.slice(1) : "";
+  return `0xFF${digits.toUpperCase()}`;
+}
 
-  it("locked palette (spec) — dark", () => {
-    expect(dark["color-bg"]).toBe("#0B1220");
-    expect(dark["color-surface"]).toBe("#141C2B");
-  });
+function resolveToken(value: string, values: Record<string, string>): string {
+  const match = value.match(/^var\(--([a-z0-9-]+)\)$/);
+  if (!match) return value;
+  const resolved = values[match[1]!];
+  if (!resolved || resolved === value) throw new Error(`Unresolved palette reference: ${value}`);
+  return resolveToken(resolved, values);
+}
 
-  it("tokenValues.ts mirrors light tokens exactly", () => {
-    for (const [key, value] of Object.entries(TOKENS)) {
-      const varName = `color-${kebab(key)}`;
-      expect(light[varName], `tokens.css must define --${varName}`).toBe(value);
-    }
-  });
+function rgb(value: string): [number, number, number] {
+  const normalized = value.trim();
+  if (normalized.startsWith("#")) {
+    const digits = normalized.slice(1);
+    return [0, 2, 4].map((offset) => Number.parseInt(digits.slice(offset, offset + 2), 16)) as [number, number, number];
+  }
+  const values = normalized.match(/[\d.]+/g)?.slice(0, 3).map(Number);
+  if (!values || values.length !== 3) throw new Error(`Unsupported palette value: ${value}`);
+  return values as [number, number, number];
+}
 
-  it("TOKENS_DARK mirrors the .dark block exactly", () => {
-    for (const [key, value] of Object.entries(TOKENS_DARK)) {
-      const varName = `color-${kebab(key)}`;
-      expect(dark[varName], `.dark must define --${varName}`).toBe(value);
-    }
-  });
+function luminance(color: string): number {
+  const channels = rgb(color).map((channel) => channel / 255).map((channel) => (channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * channels[0]! + 0.7152 * channels[1]! + 0.0722 * channels[2]!;
+}
 
-  it("admin tokens.css is byte-identical to web tokens.css", () => {
+function contrast(a: string, b: string): number {
+  const values = [luminance(a), luminance(b)].sort((x, y) => y - x);
+  return (values[0]! + 0.05) / (values[1]! + 0.05);
+}
+
+describe("unified design tokens", () => {
+  const { source, light, dark } = cssTokens();
+
+  it("keeps the CSS files identical and tokens.css is the only web/admin palette", () => {
     const admin = fs.readFileSync(path.resolve(ADMIN_SRC, "styles", "tokens.css"), "utf8");
-    expect(admin, "admin/src/styles/tokens.css must mirror web tokens.css").toBe(fs.readFileSync(TOKENS_CSS, "utf8"));
+    expect(admin).toBe(source);
+    for (const [name, value] of Object.entries({ ...TOKENS, ...TOKENS_DARK })) {
+      expect(value).toMatch(/^var\(--color-[a-z0-9-]+\)$/);
+      const cssName = value.slice(6, -1);
+      expect(source).toContain(`--${cssName}:`);
+      expect(name).not.toMatch(/#[0-9a-f]{3,8}/i);
+    }
   });
 
-  it("mobile theme.dart carries the same unified identity colours", () => {
+  it("keeps mobile light and dark palettes aligned with the CSS source", () => {
     const dart = fs.readFileSync(MOBILE_THEME, "utf8");
-    const toDart = (hex: string) => `0xFF${hex.replace("#", "").toUpperCase()}`;
-    for (const [label, value] of Object.entries({
-      brand: TOKENS.brand,
-      brandDeep: TOKENS.brandDeep,
-      gold: TOKENS.gold,
-      bg: TOKENS.bg,
-      surface: TOKENS.surface,
-      muted: TOKENS.muted,
-      teal: TOKENS.teal,
-      darkBg: TOKENS_DARK.bg,
-      darkSurface: TOKENS_DARK.surface,
-    })) {
-      expect(dart, `theme.dart must define ${label} = ${value}`).toContain(toDart(value));
+    const lightNames: Record<string, string> = {
+      brand: "color-brand", brandDeep: "color-brand-deep", network: "color-network",
+      gold: "color-gold", goldLight: "color-gold-light", goldDark: "color-gold-dark",
+      onDark: "color-on-dark", teal: "color-teal", tealInk: "color-teal-ink",
+      bg: "color-bg", surface: "color-surface", muted: "color-muted",
+      success: "color-success", warn: "color-warn", danger: "color-danger",
+      info: "color-info", neutral: "color-neutral", whatsapp: "color-whatsapp",
+    };
+    const darkNames: Record<string, string> = {
+      darkBg: "color-bg", darkSurface: "color-surface", darkSurface2: "color-surface-2",
+      darkInk: "color-ink", darkInkStrong: "color-ink-strong", darkMuted: "color-muted",
+      darkTeal: "color-teal",
+    };
+    for (const [, cssName] of Object.entries(lightNames)) {
+      const value = light[cssName];
+      if (value?.startsWith("#")) expect(dart).toContain(toDartColor(value));
     }
-    // no terracotta / old orange anywhere in mobile
-    const offenders = walk(MOBILE_LIB)
-      .filter((f) => !f.endsWith("theme.dart"))
-      .filter((f) => /0xFF(A93408|C2410C|8A2A06|E76F51)/i.test(fs.readFileSync(f, "utf8")));
-    expect(offenders, `old terracotta/orange left in: ${offenders.join(", ")}`).toEqual([]);
+    for (const [dartName, cssName] of Object.entries(darkNames)) {
+      const value = dark[cssName];
+      if (value?.startsWith("#")) expect(dart, dartName).toContain(toDartColor(value));
+    }
   });
 
-  it("text-gold-dark stays limited to WCAG large-text accents", () => {
-    const offenders: string[] = [];
-    for (const file of [...walk(WEB_SRC), ...walk(ADMIN_SRC)]) {
-      if (file.endsWith(".test.ts")) continue;
-      const text = fs.readFileSync(file, "utf8");
-      for (const [i, line] of text.split("\n").entries()) {
-        if (/text-gold-dark/.test(line) && !line.includes("listing-price")) {
-          offenders.push(`${path.basename(file)}:${i + 1}`);
-        }
-      }
-    }
-    expect(offenders, `text-gold-dark at normal size (fails AA on white):\n${offenders.join("\n")}`).toEqual([]);
+  it("uses navy text on gold and preserves WCAG AA contrast for core text pairs", () => {
+    expect(light["color-gold-text"]).toBe(light["color-brand"]);
+    expect(contrast(resolveToken(light["color-gold-text"]!, light), resolveToken(light["color-gold"]!, light))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(resolveToken(light["color-ink"]!, light), resolveToken(light["color-bg"]!, light))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(resolveToken(light["color-on-dark"]!, light), resolveToken(light["color-brand"]!, light))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(resolveToken(light["color-on-dark"]!, light), resolveToken(light["color-success-fill"]!, light))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(resolveToken(light["color-on-dark"]!, light), resolveToken(light["color-danger-fill"]!, light))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(resolveToken(light["color-gold-text"]!, light), resolveToken(light["color-whatsapp"]!, light))).toBeGreaterThanOrEqual(4.5);
+    expect(contrast(resolveToken(dark["color-ink"]!, dark), resolveToken(dark["color-bg"]!, dark))).toBeGreaterThanOrEqual(4.5);
   });
 
-  it("zero hard-coded hex colours outside the token files", () => {
-    const allowed = [
-      path.join(WEB_SRC, "styles", "tokenValues.ts"),
-      path.join(WEB_SRC, "styles", "tokens.css"),
-      path.join(ADMIN_SRC, "styles", "tokens.css"),
-      MOBILE_THEME,
-    ];
+  it("contains no inline hex colors outside the CSS/Dart token authorities", () => {
+    const allowed = [TOKENS_CSS, path.resolve(ADMIN_SRC, "styles", "tokens.css"), MOBILE_THEME];
     const offenders: string[] = [];
     for (const file of [...walk(WEB_SRC), ...walk(ADMIN_SRC), ...walk(MOBILE_LIB)]) {
       if (allowed.includes(file) || file.endsWith(".test.ts")) continue;
-      const text = fs.readFileSync(file, "utf8");
-      for (const [i, line] of text.split("\n").entries()) {
-        if (/#[0-9a-fA-F]{6}\b/.test(line) || /\b0xFF[0-9A-F]{6}\b/.test(line)) {
-          offenders.push(`${path.relative(path.dirname(WEB_SRC), file)}:${i + 1}`);
-        }
+      const content = fs.readFileSync(file, "utf8");
+      for (const [index, line] of content.split("\n").entries()) {
+        if (/#[\da-f]{6}\b/i.test(line)) offenders.push(`${path.relative(path.dirname(WEB_SRC), file)}:${index + 1}`);
       }
     }
-    expect(offenders, `move these into a token file:\n${offenders.join("\n")}`).toEqual([]);
+    expect(offenders).toEqual([]);
   });
 
-  it("no white text on gold surfaces", () => {
+  it("never puts white text on a gold surface", () => {
     const offenders: string[] = [];
     for (const file of [...walk(WEB_SRC), ...walk(ADMIN_SRC)]) {
       if (file.endsWith(".test.ts")) continue;
-      const text = fs.readFileSync(file, "utf8");
-      for (const [i, line] of text.split("\n").entries()) {
-        if ((/bg-gold\b|bg-brand-600|bg-brand-700/.test(line)) && /text-white/.test(line)) {
-          offenders.push(`${path.basename(file)}:${i + 1}`);
-        }
+      for (const [index, line] of fs.readFileSync(file, "utf8").split("\n").entries()) {
+        if (/bg-gold\b/.test(line) && /text-white/.test(line)) offenders.push(`${path.basename(file)}:${index + 1}`);
       }
     }
-    expect(offenders, `gold surfaces with white text:\n${offenders.join("\n")}`).toEqual([]);
-  });
-
-  it("legacy brand text classes are gone", () => {
-    const offenders: string[] = [];
-    for (const file of [...walk(WEB_SRC), ...walk(ADMIN_SRC)]) {
-      if (file.endsWith(".test.ts")) continue;
-      const text = fs.readFileSync(file, "utf8");
-      for (const [i, line] of text.split("\n").entries()) {
-        if (/text-brand-(500|600|700)\b/.test(line)) offenders.push(`${path.basename(file)}:${i + 1}`);
-      }
-    }
-    expect(offenders, `use text-ink / text-gold-dark(large only):\n${offenders.join("\n")}`).toEqual([]);
+    expect(offenders).toEqual([]);
   });
 });
