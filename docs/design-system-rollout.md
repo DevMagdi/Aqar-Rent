@@ -124,4 +124,4 @@ grep -RInE '(text|bg|border|ring|from|to|via|divide|fill|stroke)-(stone|emerald|
 
 ## 10. PR والدمج
 
-فُتح [PR #10](https://github.com/DevMagdi/Aqar-Rent/pull/10) من الفرع `arena/b8d85831-aqar-rent` إلى `main`. بعد إصلاح ملاحظتي Flutter، نجحت checks المطلوبة: `admin`, `audit`, `e2e`, `lint`, `quality`, `test (postgres)`, `test (sqlite)`, و`web`. تحقق iOS release مُتخطّى حسب إعداد workflow ولا يلزم لطلب الدمج. سيُحدّث هذا القسم إلى حالة الدمج الفعلية بعد إتمامه.
+فُتح [PR #10](https://github.com/DevMagdi/Aqar-Rent/pull/10) من الفرع `arena/b8d85831-aqar-rent` إلى `main`. بعد إصلاح ملاحظتي Flutter، نجحت checks: `admin`, `audit`, `e2e`, `lint`, `quality`, `test (postgres)`, `test (sqlite)`, و`web`. تحقق iOS release مُتخطّى حسب إعداد workflow ولا يلزم لطلب الدمج. حالة الدمج النهائية والـmerge commit موثقان في صفحة PR على GitHub.
