@@ -149,7 +149,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                             ),
                           ),
                           if (photos.length > 1)
-                            Positioned(
+                            PositionedDirectional(
                               bottom: 8,
                               end: 8,
                               child: Row(
@@ -253,8 +253,8 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
               Chip(label: Text(d.furnished)),
               if (d.hasElevator) Chip(label: Text(s('elevator'))),
               if (d.verifiedBadge)
-                const Chip(
-                  avatar: Icon(Icons.verified, size: 16, color: AppColors.success),
+                Chip(
+                  avatar: const Icon(Icons.verified, size: 16, color: AppColors.success),
                   label: Text(s('verified_owner')),
                   backgroundColor: AppColors.successBg,
                 ),
@@ -274,56 +274,64 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
           const SizedBox(height: 16),
         ],
       ),
-      bottomNavigationBar: d == null
-          ? null
-          : SafeArea(
-              top: false,
-              child: Container(
-                padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 14, 10),
-                decoration: BoxDecoration(color: Theme.of(context).colorScheme.surface, border: Border(top: BorderSide(color: Theme.of(context).dividerColor)), boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 16, offset: Offset(0, -4))]),
-                child: Row(
+      bottomNavigationBar: SafeArea(
+        top: false,
+        child: Container(
+          padding: const EdgeInsetsDirectional.fromSTEB(14, 10, 14, 10),
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
+            boxShadow: const [BoxShadow(color: Colors.black12, blurRadius: 16, offset: Offset(0, -4))],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 5,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Expanded(
-                      flex: 5,
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text('${_formatNumber(d.rentMonthly)} ${s('egp')}', style: const TextStyle(fontFamily: 'ElMessiriArabic', fontSize: 21, fontWeight: FontWeight.w700, height: 1.15)),
-                          Text(s('per_month'), style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .68), fontSize: 11)),
-                        ],
-                      ),
+                    Text(
+                      '${_formatNumber(d.rentMonthly)} ${s('egp')}',
+                      style: const TextStyle(fontFamily: 'ElMessiriArabic', fontSize: 21, fontWeight: FontWeight.w700, height: 1.15),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 4,
-                      child: SizedBox(
-                        height: 48,
-                        child: FilledButton.icon(
-                          onPressed: () => _contact('whatsapp'),
-                          icon: const Icon(Icons.chat, size: 18),
-                          label: Text(s('whatsapp')),
-                          style: FilledButton.styleFrom(backgroundColor: AppColors.whatsapp, foregroundColor: AppColors.brandDeep, padding: const EdgeInsets.symmetric(horizontal: 8)),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      flex: 3,
-                      child: SizedBox(
-                        height: 48,
-                        child: FilledButton.icon(
-                          onPressed: () => _contact('call'),
-                          icon: const Icon(Icons.call, size: 17),
-                          label: Text(s('call')),
-                          style: FilledButton.styleFrom(backgroundColor: AppColors.brandDeep, foregroundColor: AppColors.onDark, padding: const EdgeInsets.symmetric(horizontal: 6)),
-                        ),
-                      ),
+                    Text(
+                      s('per_month'),
+                      style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .68), fontSize: 11),
                     ),
                   ],
                 ),
               ),
-            ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 4,
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton.icon(
+                    onPressed: () => _contact('whatsapp'),
+                    icon: const Icon(Icons.chat, size: 18),
+                    label: Text(s('whatsapp')),
+                    style: FilledButton.styleFrom(backgroundColor: AppColors.whatsapp, foregroundColor: AppColors.brandDeep, padding: const EdgeInsets.symmetric(horizontal: 8)),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                flex: 3,
+                child: SizedBox(
+                  height: 48,
+                  child: FilledButton.icon(
+                    onPressed: () => _contact('call'),
+                    icon: const Icon(Icons.call, size: 17),
+                    label: Text(s('call')),
+                    style: FilledButton.styleFrom(backgroundColor: AppColors.brandDeep, foregroundColor: AppColors.onDark, padding: const EdgeInsets.symmetric(horizontal: 6)),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

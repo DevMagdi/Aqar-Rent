@@ -99,7 +99,7 @@ const Map<String, Map<String, String>> _kStrings = {
   'per_month': {'ar': 'شهر', 'en': 'month'},
   'egp': {'ar': 'ج.م', 'en': 'EGP'},
   'discount': {'ar': 'خصم', 'en': 'discount'},
-  'featured': {'ar': 'مميز', 'en': 'Featured'},
+  'featured_plan': {'ar': 'مميز', 'en': 'Featured'},
   'owner_plans': {'ar': 'للمالكين (٣ وحدات فأكثر)', 'en': 'For owners (3+ units)'},
   'office_plans': {'ar': 'للمكاتب العقارية', 'en': 'For real-estate offices'},
   'no_rent_money': {
