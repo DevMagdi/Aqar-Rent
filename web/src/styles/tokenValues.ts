@@ -1,20 +1,25 @@
 /**
- * JS mirror of tokens.css for contexts that cannot resolve CSS variables
- * (server-rendered OG images, standalone /verify page, MapLibre paint props).
- * ENFORCED: `tokens.test.ts` asserts every value here equals tokens.css —
- * tokens.css remains the single source of truth.
+ * JS mirror of tokens.css for non-CSS consumers (OG image, MapLibre paints,
+ * standalone /verify page, e2e assertions).
+ * ENFORCED: tokens.test.ts asserts byte-level equality with tokens.css
+ * (light + dark) and with mobile/lib/core/theme.dart — tokens.css remains
+ * the single source of truth.
  */
 export const TOKENS = {
-  brand: "#16273B",
-  brandDeep: "#0E1728",
-  network: "#243553",
-  gold: "#BDA77E",
-  goldLight: "#E3D2A8",
-  goldDark: "#8F7A52",
-  onDark: "#E8E2D4",
-  bg: "#FAFBFC",
+  brand: "#0F1C2E",
+  brandDeep: "#0B1220",
+  network: "#1D2D45",
+  gold: "#C9A86C",
+  goldLight: "#E7D6AF",
+  goldDark: "#9C814E",
+  onDark: "#EAE7E0",
+  teal: "#0D9488",
+  tealInk: "#0B726A",
+  tealBg: "#E6F5F3",
+  tealOnDark: "#2DD4BF",
+  bg: "#F8F7F4",
   surface: "#FFFFFF",
-  muted: "#687380",
+  muted: "#5C6570",
   success: "#1B5E3A",
   successBg: "#EEF6F0",
   warn: "#8A5A12",
@@ -25,6 +30,24 @@ export const TOKENS = {
   infoBg: "#EDF2F9",
   neutral: "#17565F",
   neutralBg: "#ECF3F4",
-  /** Functional integration colour (WhatsApp brand — not a Mantiq brand colour). */
   whatsapp: "#25D366",
+} as const;
+
+/** Dark-mode overrides (tokens.css `.dark` block). */
+export const TOKENS_DARK = {
+  bg: "#0B1220",
+  surface: "#141C2B",
+  ink: "#E9EDF5",
+  inkStrong: "#F5F8FC",
+  muted: "#9AA4B4",
+  sidebar: "#101A2C",
+  network: "#223149",
+  goldDark: "#D9BE87",
+  teal: "#2DD4BF",
+  tealInk: "#2DD4BF",
+  success: "#5CD6A0",
+  warn: "#E9B44C",
+  danger: "#F28B82",
+  info: "#8AB8EC",
+  neutral: "#7FC9D6",
 } as const;

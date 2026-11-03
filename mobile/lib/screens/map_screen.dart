@@ -8,6 +8,7 @@ import 'package:maplibre_gl/maplibre_gl.dart';
 import '../config.dart';
 import '../models/models.dart';
 import 'listing_detail_screen.dart';
+import '../core/theme.dart';
 
 // Production tile host is injected at build time (--dart-define=MAP_TILES_URL).
 String get _tiles => AppConfig.mapTilesUrl;
@@ -79,7 +80,7 @@ class _MapScreenState extends State<MapScreen> {
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                       decoration: BoxDecoration(
-                        color: const Color(0xFFA93408),
+                        color: AppColors.gold,
                         borderRadius: BorderRadius.circular(999),
                         border: Border.all(color: Colors.white),
                       ),

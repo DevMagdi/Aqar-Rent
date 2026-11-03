@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../api/api_client.dart';
+import '../../core/theme.dart';
 import '../../models/models.dart';
 
 class VerificationScreen extends StatefulWidget {
@@ -134,7 +135,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
             label: Text(_uploading ? 'جارٍ الرفع…' : 'اختيار ورفع مستند'),
           ),
           if (_error != null)
-            Padding(padding: const EdgeInsets.only(top: 8), child: Text('$_error', style: const TextStyle(color: Colors.red))),
+            Padding(padding: const EdgeInsets.only(top: 8), child: Text('$_error', style: const TextStyle(color: AppColors.danger))),
           const SizedBox(height: 16),
           Text('السجل', style: Theme.of(context).textTheme.titleMedium),
           for (final v in _items)
@@ -147,7 +148,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
                   children: [
                     Text(v.rejectReason != null ? 'مرفوض: ${v.rejectReason}' : _statusAr(v.status)),
                     if (v.appealStatus != 'none')
-                      Text('الاعتراض: ${v.appealStatus}', style: const TextStyle(fontSize: 11, color: Color(0xFFB45309))),
+                      Text('الاعتراض: ${v.appealStatus}', style: const TextStyle(fontSize: 11, color: AppColors.warn)),
                     if (v.status == 'rejected' && v.appealStatus == 'none')
                       Padding(
                         padding: const EdgeInsets.only(top: 4),

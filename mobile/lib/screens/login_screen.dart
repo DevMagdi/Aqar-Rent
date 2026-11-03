@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../api/api_client.dart';
 import '../config.dart';
 import '../core/i18n.dart';
+import '../core/theme.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -118,11 +119,11 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 8),
                       Text('${s('login_dev_code')} $devCode',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF0F766E))),
+                          style: const TextStyle(fontSize: 12, color: AppColors.teal)),
                     ],
                     if (_error != null) ...[
                       const SizedBox(height: 10),
-                      Text(_error!, style: const TextStyle(color: Colors.red, fontSize: 13)),
+                      Text(_error!, style: const TextStyle(color: AppColors.danger, fontSize: 13)),
                     ],
                     const SizedBox(height: 14),
                     FilledButton(

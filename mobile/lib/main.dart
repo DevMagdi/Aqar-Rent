@@ -3,6 +3,7 @@
 // offline-aware cache, onboarding, polished Material 3 UI.
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:go_router/go_router.dart';
 
 import 'api/api_client.dart';
@@ -65,6 +66,10 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Fail fast on a misconfigured release build (no dev API, no missing FCM).
   AppConfig.assertReleaseConfig();
+  // premium theme: persisted light/dark override (defaults to system)
+  final storedTheme = await const FlutterSecureStorage().read(key: 'aqar.theme');
+  if (storedTheme == 'dark') appThemeMode.value = ThemeMode.dark;
+  if (storedTheme == 'light') appThemeMode.value = ThemeMode.light;
   await ConnectivityService.instance.init();
   DeepLinkService.instance.attach(_router);
   WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -114,7 +119,9 @@ class _AqarAppState extends State<AqarApp> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: LocaleController.instance,
-      builder: (_, __) => MaterialApp.router(
+      builder: (_, __) => ValueListenableBuilder<ThemeMode>(
+        valueListenable: appThemeMode,
+        builder: (context, themeMode, __) => MaterialApp.router(
         title: s('brand'),
         debugShowCheckedModeBanner: false,
         routerConfig: _router,
@@ -127,7 +134,7 @@ class _AqarAppState extends State<AqarApp> with WidgetsBindingObserver {
         ],
         theme: AppTheme.light(),
         darkTheme: AppTheme.dark(),
-        themeMode: ThemeMode.system,
+        themeMode: themeMode,
         builder: (context, child) => Directionality(
           textDirection: AppStrings.direction,
           child: Stack(
@@ -153,6 +160,7 @@ class _AqarAppState extends State<AqarApp> with WidgetsBindingObserver {
             ],
           ),
         ),
+      ),
       ),
     );
   }

@@ -7,12 +7,15 @@ export function Skeleton({ className = "" }: { className?: string }) {
 
 export function CardSkeleton({ n = 6 }: { n?: number }) {
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3" data-testid="loading-skeleton">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3" data-testid="loading-skeleton">
       {Array.from({ length: n }).map((_, i) => (
-        <div key={i} className="rounded-2xl border border-stone-200 bg-white p-4">
-          <Skeleton className="h-40 w-full" />
-          <Skeleton className="mt-3 h-4 w-3/4" />
-          <Skeleton className="mt-2 h-4 w-1/2" />
+        <div key={i} className="overflow-hidden rounded-[var(--radius-card)] border border-border bg-surface shadow-card">
+          <div className="skeleton aspect-[16/10] w-full" />
+          <div className="space-y-2.5 p-4">
+            <div className="skeleton h-4 w-4/5 rounded-full" />
+            <div className="skeleton h-3.5 w-3/5 rounded-full" />
+            <div className="skeleton h-3 w-1/2 rounded-full" />
+          </div>
         </div>
       ))}
     </div>
@@ -21,10 +24,21 @@ export function CardSkeleton({ n = 6 }: { n?: number }) {
 
 export function EmptyState({ title, hint, action }: { title: string; hint?: string; action?: ReactNode }) {
   return (
-    <div className="rounded-2xl border border-dashed border-stone-300 bg-white px-6 py-12 text-center" data-testid="empty-state">
-      <p className="text-base font-semibold text-stone-700">{title}</p>
-      {hint && <p className="mt-1 text-sm text-stone-500">{hint}</p>}
-      {action && <div className="mt-4 flex justify-center">{action}</div>}
+    <div
+      className="mx-auto max-w-md rounded-[var(--radius-card)] border border-dashed border-border-strong bg-surface px-6 py-12 text-center shadow-card"
+      data-testid="empty-state"
+    >
+      {/* minimal geometric mark: navy frame + gold orbit */}
+      <svg width="96" height="72" viewBox="0 0 96 72" fill="none" aria-hidden className="mx-auto mb-5">
+        <rect x="8" y="14" width="62" height="44" rx="12" stroke="var(--color-brand)" strokeOpacity="0.55" strokeWidth="2" />
+        <rect x="20" y="24" width="62" height="44" rx="12" fill="var(--color-surface)" stroke="var(--color-brand)" strokeWidth="2" />
+        <circle cx="70" cy="18" r="7" fill="var(--color-gold)" />
+        <path d="M34 46h34" stroke="var(--color-gold-dark)" strokeWidth="3" strokeLinecap="round" opacity="0.8" />
+        <path d="M40 54h22" stroke="var(--color-brand)" strokeOpacity="0.4" strokeWidth="3" strokeLinecap="round" />
+      </svg>
+      <p className="text-base font-semibold text-ink">{title}</p>
+      {hint && <p className="mt-1.5 text-sm leading-relaxed text-muted">{hint}</p>}
+      {action && <div className="mt-5 flex justify-center">{action}</div>}
     </div>
   );
 }

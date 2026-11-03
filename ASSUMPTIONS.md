@@ -335,51 +335,51 @@ Every decision the spec left open, made here so review is easy. Business rules
 
 ---
 
-## Phase 5 assumptions & deviations (78–90)
+## Phase 5 assumptions & deviations (91–103)
 
-78. `APP_ENV` stays canonical; `ENVIRONMENT=production` is a pure alias mapping
+91. `APP_ENV` stays canonical; `ENVIRONMENT=production` is a pure alias mapping
     to `prod` (staging/development/test likewise) for deployment tooling.
-79. Prices remain data: 3 packages + 4 subscription plans are seeded
+92. Prices remain data: 3 packages + 4 subscription plans are seeded
     idempotently and are admin-editable; clients never hard-code prices.
-80. `weeks` stays 1..4 for a plain ad (BR-2); 5..52 requires an active package.
-81. Subscription orders reuse the existing Order/Payment pipeline and have
+93. `weeks` stays 1..4 for a plain ad (BR-2); 5..52 requires an active package.
+94. Subscription orders reuse the existing Order/Payment pipeline and have
     `listing_id = NULL`; no auto-charge or stored card — renewal is explicit and
     the UI says so.
-82. No rent, deposit or office commission money is ever held or settled.
-83. Verification levels are derived; legacy `verification_status`/`verified_badge`
+95. No rent, deposit or office commission money is ever held or settled.
+96. Verification levels are derived; legacy `verification_status`/`verified_badge`
     kept for backward compatibility.
-84. Offices get 3 free seats so the free tier is usable; subscriptions raise
+97. Offices get 3 free seats so the free tier is usable; subscriptions raise
     caps/seats; commission is a private optional record.
-85. Contracts are private agreements, never notarised/registered/executive;
+98. Contracts are private agreements, never notarised/registered/executive;
     Egypt has no Ejar-equivalent official registry; `REGISTRY_ADAPTER=none` is
     enforced in prod.
-86. Lawyer sign-off is an external gate on wording, not a missing feature;
+99. Lawyer sign-off is an external gate on wording, not a missing feature;
     templates are complete and no longer marked "draft".
-87. Flutter SDK/build verification is delegated to CI because the sandbox cannot
+100. Flutter SDK/build verification is delegated to CI because the sandbox cannot
     download it; native shells, tests and build scripts are committed.
-88. Store screenshots/video are capture procedures on a device with the SDK,
+101. Store screenshots/video are capture procedures on a device with the SDK,
     documented in `mobile/docs/demo-script.md`.
-89. OpenAPI/Postman artifacts are generated, never hand-edited.
-90. Production config additionally requires Paymob, Twilio, webhook IP
+102. OpenAPI/Postman artifacts are generated, never hand-edited.
+103. Production config additionally requires Paymob, Twilio, webhook IP
     allowlist, bank account and `none` registry adapter; all mock/console
     providers are disabled.
 
-## Design System Migration (91–101)
+## Design System Migration (104–114)
 
-91. **Token files are duplicated per app** (`web/src/styles/tokens.css` +
+104. **Token files are duplicated per app** (`web/src/styles/tokens.css` +
     `admin/src/styles/tokens.css`) because the two frontends build separately
     with no shared package. They are enforced byte-identical by
     `web/src/styles/tokens.test.ts`; the file is the single source of truth —
     zero hex values exist anywhere else in TS/TSX (also test-enforced).
-92. **Legacy utility migration via `@theme inline`**: existing class names map
+105. **Legacy utility migration via `@theme inline`**: existing class names map
     to Mantiq values — `bg-brand-600→gold`, `hover:bg-brand-700→gold-dark`,
     `brand-50/100→gold tints (8%/12%)`, the old `stone-*` greys → navy-tinted
     neutrals, and `emerald/red/amber/sky/violet → success/danger/warn/info/
     neutral` status tokens. This migrated ~190 utility usages without touching
     markup semantics or any e2e selector.
-93. **White-on-gold is banned**: primary buttons are `bg-gold text-brand-deep`
+106. **White-on-gold is banned**: primary buttons are `bg-gold text-brand-deep`
     (≈7.7:1) — every conversion was sweep-checked by the compliance test.
-94. **Gold as text on WHITE fails WCAG AA** (#8F7A52 ≈4.1:1, #BDA77E ≈2.1:1).
+107. **Gold as text on WHITE fails WCAG AA** (#8F7A52 ≈4.1:1, #BDA77E ≈2.1:1).
     Therefore: normal-size accent text = `text-ink` (navy,15:1); gold text is
     only used on DARK chrome (sidebar `text-sidebar-active` on navy ≈7.7:1 ✓);
     `text-gold-dark` is allowed solely for WCAG **large** text (the listing
@@ -389,28 +389,69 @@ Every decision the spec left open, made here so review is easy. Business rules
     — this is the closest compliant form of the spec's "gold label" rule on
     light surfaces; the full gold-label treatment applies on the navy
     sidebars (admin + owner) as specified. Contrast never weakened.
-95. **Owner area got a navy sidebar** (`OwnerShell`) because the spec requires
+108. **Owner area got a navy sidebar** (`OwnerShell`) because the spec requires
     "Admin & Owner Dashboard → full dark navy sidebar + gold accent"; public
     pages keep the lighter header/cards treatment. The indicator uses
     `start-0` / `inset-inline-start` so RTL mirrors correctly.
-96. **`--color-whatsapp` (#25D366)** is a functional integration colour
+109. **`--color-whatsapp` (#25D366)** is a functional integration colour
     (official WhatsApp brand), not a Mantiq palette colour — tokenized anyway
     so the zero-hex rule holds.
-97. **`tokenValues.ts`** mirrors tokens for non-CSS consumers (satori OG
+110. **`tokenValues.ts`** mirrors tokens for non-CSS consumers (satori OG
     images, MapLibre paint properties, the standalone `/verify` page);
     byte-equality with tokens.css is test-enforced.
-98. **Font**: IBM Plex Sans Arabic via `@fontsource` npm packages (network
+111. **Font**: IBM Plex Sans Arabic via `@fontsource` npm packages (network
     policy blocks Google Fonts CDN); loaded at400/500/600/700 for ar+en.
     The Amiri bundle remains only for the backend PDF pipeline.
-99. **Geometry/type scale**: Tailwind radius keys remapped (`2xl/3xl→18px`
+112. **Geometry/type scale**: Tailwind radius keys remapped (`2xl/3xl→18px`
     card radius, `xl` stays12px for buttons/fields), shadows → spec card/pop
     values, type scale `14/22 base,24/32 title,30/36 KPI,13/20 sub`.
-100. **Manual verification is scripted**: `e2e/tests/design-system.spec.ts`
+113. **Manual verification is scripted**: `e2e/tests/design-system.spec.ts`
     asserts computed styles + WCAG ratios on Home (ar/en), search+map, listing
     detail, owner dashboard, checkout, and admin login/dashboard/moderation —
     run with the normal e2e suite (green:10/10).
-101. **Branch naming**: the Arena session branch (`arena/bd1884b8-aqar-rent`) is
+114. **Branch naming**: the Arena session branch (`arena/bd1884b8-aqar-rent`) is
     fixed by the platform, so the PR carries the requested title
     "design: adopt Mantiq design system (navy + gold tokens)" instead of a
     `design/mantiq-tokens` branch (branch creation outside the session branch
     is not possible here).
+
+## Premium Visual Overhaul (unified identity, motion, dark mode) (115–123)
+
+115. **Proposal-first**: exact token values, ratios and derivations were written
+    to `docs/design/premium-tokens.md` **before** implementation; every number
+    in that document is recomputed by the test suite / design e2e assertions.
+116. **Palette locked**: brand `#0F1C2E`, deep `#0B1220`, network `#1D2D45`
+    (derived hover), gold `#C9A86C`, gold-light `#E7D6AF` (derived),
+    gold-dark `#9C814E` (derived —3.7:1, large-text/graphics only), on-dark
+    `#EAE7E0` (derived), teal `#0D9488` with teal-ink `#0B726A` (derived) /
+    teal-bg `#E6F5F3` / teal-on-dark `#2DD4BF`, bg `#F8F7F4`, muted `#5C6570`;
+    status colours unchanged (AA-proven). Dark: bg `#0B1220`, surface
+    `#141C2B` (spec) + derived ink/muted/sidebar/status-on-dark values — all
+    ratios tabled in the proposal doc (≥4.5 text, ≥3 graphics).
+117. **Tokens stay byte-identical across web/admin**; mobile mirrors them in
+    `mobile/lib/core/theme.dart` — equality is enforced by
+    `web/src/styles/tokens.test.ts` (also rejects terracotta/orange leftovers
+    and any hex outside the three token files).
+118. **Gold-text rule reaffirmed**: white-on-gold banned (buttons = gold +
+    `#0F1C2E`/`#0B1220` text ≈7.6:1+); gold on white still2.3:1 → accent text
+    at normal sizes uses ink; `text-gold-dark` limited to WCAG-large text
+    (listing price24px/extrabold) and ≥3:1 graphics — test-enforced.
+119. **Dark mode**: class strategy on `<html>` (`aqar.theme` localStorage +
+    `prefers-color-scheme` bootstrap script to avoid FOUC); Flutter follows
+    system by default with an in-app toggle (persisted). Sidebars flip via
+    token overrides only — zero per-component dark code.
+120. **Motion is CSS-first** (page fade-up, card `scale(1.02)` + layered
+    shadow, press scale, brand shimmer skeletons, toast slide-up) with a
+    `prefers-reduced-motion` kill-switch; Flutter uses `PageTransitionsTheme`
+    + `Hero` on listing images + `AnimatedScale` press.
+121. **Geometry/type upgrade**: cards22 / shells24 / buttons-fields14 / pill999;
+    base15/24 (Arabic line-height), titles26/36, KPI34/42; layered shadows
+    (`--shadow-card/pop/elevate`).
+122. **Screenshots**: the PR carries a text before/after description; visual
+    proof lives in the design e2e suite (`e2e/tests/design-system.spec.ts`
+    computes styles + WCAG ratios on home ar/en, search, detail, dashboard,
+    checkout, admin, dark mode, premium card) — this sandbox cannot capture
+    pixel screenshots, so computed-style evidence is used instead.
+123. **Branch**: platform-fixed `arena/659701e4-aqar-rent` carries the PR with
+    the requested title (no `design/…` branch can be created here; deletion of
+    the session branch is not possible either — its content is in `main`).

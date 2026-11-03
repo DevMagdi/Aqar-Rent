@@ -7,6 +7,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../api/api_client.dart';
 import '../models/models.dart';
+import '../core/theme.dart';
 import '../core/widgets.dart';
 
 class ListingDetailScreen extends StatefulWidget {
@@ -129,16 +130,19 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
               child: SizedBox(
                 height: 240,
                 child: photos.isEmpty
-                    ? const ColoredBox(color: Color(0xFFF5F5F4), child: Center(child: Icon(Icons.home, size: 48, color: Colors.grey)))
+                    ? const ColoredBox(color: AppColors.track, child: Center(child: Icon(Icons.home, size: 48, color: AppColors.muted)))
                     : Stack(
                         fit: StackFit.expand,
                         children: [
-                          CachedNetworkImage(
-                            imageUrl: photos[_galleryIndex].thumbUrl ?? photos[_galleryIndex].url,
-                            fit: BoxFit.cover,
-                            memCacheWidth: 900,
-                            placeholder: (_, __) => const ColoredBox(color: Color(0xFFF5F5F4)),
-                            errorWidget: (_, __, ___) => const ColoredBox(color: Color(0xFFF5F5F4)),
+                          Hero(
+                            tag: "listing-${widget.listingId}",
+                            child: CachedNetworkImage(
+                              imageUrl: photos[_galleryIndex].thumbUrl ?? photos[_galleryIndex].url,
+                              fit: BoxFit.cover,
+                              memCacheWidth: 900,
+                              placeholder: (_, __) => const ColoredBox(color: AppColors.track),
+                              errorWidget: (_, __, ___) => const ColoredBox(color: AppColors.track),
+                            ),
                           ),
                           if (photos.length > 1)
                             Positioned(
@@ -173,9 +177,17 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
               children: [
                 Row(children: [
                   TrustBadge(level: d.trustLevel),
-                  if (d.isFeatured) const Padding(padding: EdgeInsets.only(left: 8), child: Text('★ إعلان مميز', style: TextStyle(color: Color(0xFFD97706), fontSize: 12, fontWeight: FontWeight.w800))),
+                  if (d.isFeatured)
+                    Padding(
+                      padding: const EdgeInsets.only(left: 8),
+                      child: Row(mainAxisSize: MainAxisSize.min, children: const [
+                        Icon(Icons.star_rounded, size: 14, color: AppColors.goldDark),
+                        SizedBox(width: 3),
+                        Text('إعلان مميز', style: TextStyle(color: AppColors.ink, fontSize: 12, fontWeight: FontWeight.w800)),
+                      ]),
+                    ),
                 ]),
-                if (d.trustLabelAr != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(d.trustLabelAr!, style: const TextStyle(fontSize: 12, color: Color(0xFF0F766E)))),
+                if (d.trustLabelAr != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(d.trustLabelAr!, style: const TextStyle(fontSize: 12, color: AppColors.teal))),
                 if (d.trustNoteAr != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(d.trustNoteAr!, style: const TextStyle(fontSize: 10.5, color: Colors.black54))),
                 if (d.officeNameAr != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text('🏢 ${d.officeNameAr}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700))),
               ],
@@ -187,7 +199,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
               Expanded(
                 child: Text(d.title, style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold)),
               ),
-              Text('${d.rentMonthly} جنيه/شهر', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: const Color(0xFFA93408), fontWeight: FontWeight.bold)),
+              Text('${d.rentMonthly} جنيه/شهر', style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.goldDark, fontSize: 24, fontWeight: FontWeight.w800)),
             ],
           ),
           const SizedBox(height: 6),
@@ -205,9 +217,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
               if (d.hasElevator) const Chip(label: Text('مصعد')),
               if (d.verifiedBadge)
                 const Chip(
-                  avatar: Icon(Icons.verified, size: 16, color: Color(0xFF059669)),
+                  avatar: Icon(Icons.verified, size: 16, color: AppColors.success),
                   label: Text('مالك موثّق'),
-                  backgroundColor: Color(0xFFECFDF5),
+                  backgroundColor: AppColors.successBg,
                 ),
             ],
           ),
@@ -233,7 +245,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                   onPressed: () => _contact('whatsapp'),
                   icon: const Icon(Icons.chat),
                   label: const Text('واتساب'),
-                  style: FilledButton.styleFrom(backgroundColor: const Color(0xFF25D366)),
+                  style: FilledButton.styleFrom(backgroundColor: AppColors.whatsapp),
                 ),
               ),
             ],
@@ -244,7 +256,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: _toggleFav,
-                  icon: Icon(_fav ? Icons.favorite : Icons.favorite_border, color: _fav ? Colors.red : null),
+                  icon: Icon(_fav ? Icons.favorite : Icons.favorite_border, color: _fav ? AppColors.danger : null),
                   label: Text(_fav ? 'في المفضلة' : 'أضف للمفضلة'),
                 ),
               ),

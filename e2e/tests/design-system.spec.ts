@@ -7,11 +7,14 @@
 import { expect, test, type Page } from "@playwright/test";
 import { ADMIN, PHONES, adminLogin, makeActiveListing } from "../utils/api";
 
-const GOLD = "rgb(189, 167, 126)"; // #BDA77E
-const GOLD_DARK = "rgb(143, 122, 82)"; // #8F7A52
-const NAVY = "rgb(22, 39, 59)"; // #16273B
-const NAVY_DEEP = "rgb(14, 23, 40)"; // #0E1728
-const BG = "rgb(250, 251, 252)"; // #FAFBFC
+const GOLD = "rgb(201, 168, 108)"; // #C9A86C (premium accent)
+const GOLD_DARK = "rgb(156, 129, 78)"; // #9C814E (focus/graphics on light)
+const NAVY = "rgb(15, 28, 46)"; // #0F1C2E (primary ink / light sidebar)
+const NAVY_DEEP = "rgb(11, 18, 32)"; // #0B1220 (brand-deep / dark bg)
+const BG = "rgb(248, 247, 244)"; // #F8F7F4 (warm off-white)
+const DARK_BG = "rgb(11, 18, 32)"; // #0B1220
+const DARK_SURFACE = "rgb(20, 28, 43)"; // #141C2B
+const DARK_INK = "rgb(233, 237, 245)"; // #E9EDF5
 
 function parseRgb(c: string): [number, number, number, number] {
   const m = c.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/);
@@ -126,7 +129,7 @@ test("Mantiq design system: public web (ar + en)", async ({ page, request }) => 
   const sidebar = page.getByTestId("owner-sidebar");
   await expect(sidebar).toBeVisible();
   const sbBg = await sidebar.evaluate((el) => getComputedStyle(el).backgroundColor);
-  expect(sbBg, "owner sidebar = Deep Navy").toBe(NAVY_DEEP);
+  expect(sbBg, "owner sidebar = primary navy").toBe(NAVY);
   const active = page.getByTestId("side-dashboard");
   await expect(active).toHaveAttribute("aria-current", "page");
   const activeColor = await active.evaluate((el) => getComputedStyle(el).color);
@@ -188,7 +191,7 @@ test("Mantiq design system: checkout + admin console", async ({ page, request })
 
   const adminSidebar = page.getByTestId("admin-sidebar");
   await expect(adminSidebar).toBeVisible();
-  expect(await adminSidebar.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(NAVY_DEEP);
+  expect(await adminSidebar.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(NAVY);
 
   // active dashboard item: gold label + soft-gold bg + indicator
   const dashNav = page.getByTestId("nav-dashboard");
@@ -196,7 +199,7 @@ test("Mantiq design system: checkout + admin console", async ({ page, request })
   const dashColor = await dashNav.evaluate((el) => getComputedStyle(el).color);
   expect(dashColor).toBe(GOLD);
   const dashBg = await dashNav.evaluate((el) => getComputedStyle(el).backgroundColor);
-  expect(contrast(dashColor, over(dashBg, NAVY_DEEP))).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(dashColor, over(dashBg, NAVY))).toBeGreaterThanOrEqual(4.5);
   const adminInd = page.locator('[data-testid="admin-sidebar"] [data-testid="nav-indicator"]');
   await expect(adminInd).toBeVisible();
   expect(await adminInd.evaluate((el) => getComputedStyle(el).width)).toBe("3px");
@@ -216,4 +219,89 @@ test("Mantiq design system: checkout + admin console", async ({ page, request })
   const modInd = page.locator('[data-testid="admin-sidebar"] [data-testid="nav-indicator"]');
   await expect(modInd).toHaveCount(1); // now on moderation (single active)
   await expect(page.getByTestId("nav-moderation")).toHaveAttribute("aria-current", "page");
+});
+
+test("Mantiq dark mode: full support (persisted, AA)", async ({ page }) => {
+  await page.goto("/ar");
+  // explicit dark choice persists across reloads (no flash: init script runs pre-paint)
+  await page.getByTestId("theme-toggle").click();
+  await expect(page.locator("html")).toHaveClass(/dark/);
+  const bodyBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  const bodyFg = await page.evaluate(() => getComputedStyle(document.body).color);
+  expect(bodyBg, "dark bg #0B1220").toBe(DARK_BG);
+  expect(contrast(bodyFg, bodyBg), "AA: ink on dark bg").toBeGreaterThanOrEqual(4.5);
+  await expect(page.getByTestId("search-submit")).toBeVisible();
+  const btnBg = await page.getByTestId("search-submit").evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(btnBg, "gold buttons unchanged in dark").toBe(GOLD);
+  const btnFg = await page.getByTestId("search-submit").evaluate((el) => getComputedStyle(el).color);
+  expect(contrast(btnFg, btnBg)).toBeGreaterThanOrEqual(4.5);
+
+  await page.reload();
+  await expect(page.locator("html"), "preference persisted").toHaveClass(/dark/);
+
+  // surface token on a card
+  await page.goto("/ar/search");
+  const card = page.locator('[data-testid="listing-card"]').first();
+  if ((await card.count()) > 0) {
+    const surface = await card.evaluate((el) => getComputedStyle(el).backgroundColor);
+    expect(surface).toBe(DARK_SURFACE);
+  }
+
+  // back to light
+  await page.getByTestId("theme-toggle").click();
+  await expect(page.locator("html")).not.toHaveClass(/dark/);
+
+  // admin mirrors the same dark system
+  await page.goto("http://localhost:5180/");
+  const adminDark = await page.evaluate(() => document.documentElement.classList.contains("dark"));
+  // fresh origin may default to system (headless = light) → toggle explicitly
+  if (!adminDark) await page.getByTestId("theme-toggle").click();
+  await expect(page.locator("html")).toHaveClass(/dark/);
+  const adminBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
+  expect(adminBg).toBe(DARK_BG);
+  const adminFg = await page.evaluate(() => getComputedStyle(document.body).color);
+  expect(contrast(adminFg, adminBg)).toBeGreaterThanOrEqual(4.5);
+  await page.getByTestId("theme-toggle").click();
+});
+
+test("premium ListingCard: cinematic layout + motion hooks", async ({ page, request }) => {
+  const id = await makeActiveListing(request, PHONES.designOwner, "apiH", `كارد ${Date.now().toString(36)}`);
+  await page.goto(`/ar/search?q=${encodeURIComponent("كارد")}`);
+  const card = page.locator(`[data-listing-id="${id}"]`).first();
+  await expect(card).toBeVisible({ timeout: 30_000 });
+
+  // structure:16:10 media + gradient overlay + dominant price + meta row
+  const media = card.locator(".relative").first();
+  const box = await media.boundingBox();
+  expect(box!.width / box!.height).toBeGreaterThan(1.5); // ≈16:10
+  await expect(card.getByTestId("badge-premium")).toBeVisible(); // "متاح الآن" gradient badge
+  const price = card.locator("p.text-2xl").first();
+  await expect(price).toBeVisible();
+  expect(await price.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(255, 255, 255)"); // on gradient
+  // hover lift (card-lift class → scale + elevate)
+  await expect(card).toHaveClass(/card-lift/);
+  await card.hover();
+  const transform = await card.evaluate((el) => getComputedStyle(el).transform);
+  expect(transform).not.toBe("none"); // scale transition applied
+  // skeleton matches the card shape (delay the client fetch to observe it)
+  await page.goto("/ar/login");
+  await page.getByTestId("input-phone").fill(PHONES.designOwner);
+  await page.getByTestId("btn-send-code").click();
+  await expect(page.getByTestId("otp-form")).toBeVisible();
+  await page.getByTestId("input-code").fill((await page.getByTestId("dev-code-value").innerText()).trim());
+  await page.getByTestId("btn-verify").click();
+  await expect.poll(() => page.evaluate(() => localStorage.getItem("aqar.access"))).toBeTruthy();
+
+  await page.route("**/api/v1/favorites*", async (route) => {
+    await new Promise((r) => setTimeout(r, 1200));
+    await route.continue();
+  });
+  await page.goto("/ar/favorites");
+  await expect(page.getByTestId("loading-skeleton").first().locator(".skeleton").first()).toBeAttached({
+    timeout: 10_000,
+  });
+  await page.unroute("**/api/v1/favorites*");
+  // empty state: illustration + warm microcopy (favorites are empty for this user)
+  await expect(page.getByTestId("empty-state")).toBeVisible({ timeout: 15_000 });
+  await expect(page.getByTestId("empty-state").locator("svg")).toBeVisible();
 });

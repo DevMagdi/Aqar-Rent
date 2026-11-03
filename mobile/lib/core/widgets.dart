@@ -35,8 +35,8 @@ class _ShimmerBoxState extends State<ShimmerBox> with SingleTickerProviderStateM
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(widget.radius),
           color: Color.lerp(
-            const Color(0xFFE7E5E4),
-            const Color(0xFFF5F5F4),
+            AppColors.border,
+            AppColors.track,
             _c.value,
           ),
         ),
@@ -151,7 +151,7 @@ class TrustBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
       decoration: BoxDecoration(
-        color: verified ? AppTheme.teal : const Color(0xFFF5F5F4),
+        color: verified ? AppTheme.teal : AppColors.track,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(

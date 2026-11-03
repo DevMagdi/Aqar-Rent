@@ -5,6 +5,8 @@ import { LOCALES, DEFAULT_LOCALE, dirOf } from "@/lib/i18n";
 import type { Locale } from "@/lib/types";
 import { Providers } from "@/components/Providers";
 import { Header } from "@/components/Header";
+import { themeInitScript } from "@/components/ThemeToggle";
+import { PageTransition } from "@/components/PageTransition";
 import { ConsentBanner } from "@/components/ConsentBanner";
 import { Footer } from "@/components/Footer";
 import "@/app/globals.css";
@@ -52,10 +54,15 @@ export default async function LocaleLayout({
   const l = locale as Locale;
   return (
     <html lang={l} dir={dirOf(l)} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+      </head>
       <body className="min-h-screen bg-stone-50 font-sans text-stone-900 antialiased">
         <Providers locale={l}>
           <Header />
-          <main className="mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6">{children}</main>
+          <main className="mx-auto w-full max-w-7xl px-4 pb-16 pt-6 sm:px-6">
+            <PageTransition>{children}</PageTransition>
+          </main>
           <Footer />
           <ConsentBanner />
         </Providers>

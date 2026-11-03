@@ -11,6 +11,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../../api/api_client.dart';
+import '../../core/theme.dart';
 
 const _rooms = {
   'living_room': 'الصالة',
@@ -335,7 +336,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
                             width: 64,
                             height: 64,
                             child: CachedNetworkImage(imageUrl: '${m['url']}', fit: BoxFit.cover,
-                                errorWidget: (_, __, ___) => const ColoredBox(color: Color(0xFFF5F5F4))),
+                                errorWidget: (_, __, ___) => const ColoredBox(color: AppColors.track)),
                           ),
                         ),
                     ],
@@ -347,7 +348,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
                   onChanged: (v) => setState(() => _data = {..._data, 'comments': {...(_data['comments'] as Map<String, dynamic>? ?? {}), 'note': v}}),
                 ),
                 if (_error != null)
-                  Padding(padding: const EdgeInsets.only(top: 8), child: Text('$_error', style: const TextStyle(color: Colors.red))),
+                  Padding(padding: const EdgeInsets.only(top: 8), child: Text('$_error', style: const TextStyle(color: AppColors.danger))),
                 const SizedBox(height: 12),
                 FilledButton.icon(
                   onPressed: _busy ? null : _confirm,
@@ -392,7 +393,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.close, size: 16, color: Colors.red),
+            icon: const Icon(Icons.close, size: 16, color: AppColors.danger),
             onPressed: () {
               items.removeAt(i);
               _setRoom(r, 'items', items);
@@ -410,13 +411,13 @@ class _HandoverScreenState extends State<HandoverScreen> {
       padding: const EdgeInsets.all(14),
       children: [
         Card(
-          color: const Color(0xFFECFDF5),
+          color: AppColors.successBg,
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('✓ المحضر نهائي وغير قابل للتعديل', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold)),
+                const Text('✓ المحضر نهائي وغير قابل للتعديل', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold)),
                 if (_hash.isNotEmpty)
                   Text('SHA-256: $_hash', style: const TextStyle(fontSize: 10, color: Colors.black54)),
               ],

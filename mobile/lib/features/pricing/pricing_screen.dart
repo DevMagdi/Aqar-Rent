@@ -140,7 +140,7 @@ class _Hero extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(22),
-          gradient: LinearGradient(colors: [AppTheme.brand.withValues(alpha: 0.10), const Color(0xFFEFF6F5)]),
+          gradient: LinearGradient(colors: [AppTheme.brand.withValues(alpha: 0.10), AppColors.tealBg]),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

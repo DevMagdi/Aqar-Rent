@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../api/api_client.dart';
 import '../models/models.dart';
+import '../core/theme.dart';
 
 class NotificationsScreen extends StatefulWidget {
   const NotificationsScreen({super.key});
@@ -65,11 +66,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
                   ),
                 for (final n in _items)
                   Card(
-                    color: n.read ? null : const Color(0xFFFFF7ED),
+                    color: n.read ? null : AppColors.goldTint14,
                     child: ListTile(
                       title: Text(n.title, style: TextStyle(fontWeight: n.read ? FontWeight.normal : FontWeight.bold)),
                       subtitle: Text(n.body),
-                      trailing: n.read ? null : Container(width: 8, height: 8, decoration: const BoxDecoration(color: Color(0xFFA93408), shape: BoxShape.circle)),
+                      trailing: n.read ? null : Container(width: 8, height: 8, decoration: const BoxDecoration(color: AppColors.gold, shape: BoxShape.circle)),
                     ),
                   ),
               ],

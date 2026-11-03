@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../api/api_client.dart';
 import 'contract_detail_screen.dart';
+import '../../core/theme.dart';
 
 class ContractWizardScreen extends StatefulWidget {
   const ContractWizardScreen({super.key});
@@ -174,7 +175,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Card(
-                  color: Color(0xFFFFF7E6),
+                  color: AppColors.warnBg,
                   child: Padding(
                     padding: EdgeInsets.all(8),
                     child: Text('⚖️ اتفاق خاص بين الطرفين: ليس موثّقاً ولا مسجّلاً رسمياً ولا سنداً تنفيذياً، ولا يُغني عن التوثيق الرسمي.', style: TextStyle(fontSize: 12)),
@@ -310,7 +311,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
                 if (_error != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
-                    child: Text('$_error', style: const TextStyle(color: Colors.red, fontSize: 13)),
+                    child: Text('$_error', style: const TextStyle(color: AppColors.danger, fontSize: 13)),
                   ),
                 const SizedBox(height: 8),
                 const Text('بعد الحفظ يؤكد الطرفان برمز تحقق، وبعدها يصبح العقد نهائياً.', style: TextStyle(fontSize: 12, color: Colors.black54)),

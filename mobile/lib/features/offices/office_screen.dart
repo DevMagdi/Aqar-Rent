@@ -110,7 +110,7 @@ class _OfficeScreenState extends State<OfficeScreen> {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
-              color: const Color(0xFF1C1917),
+              color: AppColors.ink,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

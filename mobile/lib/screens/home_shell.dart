@@ -3,6 +3,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
 import '../api/api_client.dart';
 import '../core/biometrics.dart';
 import '../core/i18n.dart';
@@ -11,6 +13,7 @@ import '../features/legal/legal_notice.dart';
 import 'favorites_screen.dart';
 import 'notifications_screen.dart';
 import 'search_screen.dart';
+import '../core/theme.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -32,6 +35,21 @@ class _HomeShellState extends State<HomeShell> {
             tooltip: s('language'),
             icon: const Icon(Icons.language),
             onPressed: () => LocaleController.instance.toggle(),
+          ),
+          ValueListenableBuilder<ThemeMode>(
+            valueListenable: appThemeMode,
+            builder: (context, mode, _) => IconButton(
+              tooltip: mode == ThemeMode.dark ? "الوضع النهاري" : "الوضع الليلي",
+              icon: Icon(mode == ThemeMode.dark ? Icons.light_mode_outlined : Icons.dark_mode_outlined),
+              onPressed: () async {
+                final next = mode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
+                appThemeMode.value = next;
+                await const FlutterSecureStorage().write(
+                  key: "aqar.theme",
+                  value: next == ThemeMode.dark ? "dark" : "light",
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -135,7 +153,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 8),
         Card(
           child: ListTile(
-            leading: const Icon(Icons.verified_user_outlined, color: Color(0xFF0F766E)),
+            leading: const Icon(Icons.verified_user_outlined, color: AppColors.teal),
             title: Text(s('trust_title')),
             subtitle: TrustBadge(level: (me['verification_level'] ?? 'phone') as String),
             trailing: const Icon(Icons.chevron_left),
@@ -185,8 +203,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 },
               ),
               ListTile(
-                leading: const Icon(Icons.logout, color: Colors.red),
-                title: Text(s('logout'), style: const TextStyle(color: Colors.red)),
+                leading: const Icon(Icons.logout, color: AppColors.danger),
+                title: Text(s('logout'), style: const TextStyle(color: AppColors.danger)),
                 onTap: _logout,
               ),
             ],

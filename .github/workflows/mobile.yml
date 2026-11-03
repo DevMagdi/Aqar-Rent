@@ -31,7 +31,18 @@ jobs:
           python scripts/check_mobile.py
       - name: Static analysis
         working-directory: mobile
-        run: flutter analyze --fatal-infos
+        shell: bash
+        run: |
+          set +e
+          flutter analyze --fatal-infos --machine > "$RUNNER_TEMP/flutter-analyze.log" 2>&1
+          status=$?
+          cat "$RUNNER_TEMP/flutter-analyze.log"
+          if [ "$status" -ne 0 ]; then
+            while IFS= read -r diagnostic; do
+              [ -n "$diagnostic" ] && echo "::error::$diagnostic"
+            done < "$RUNNER_TEMP/flutter-analyze.log"
+          fi
+          exit "$status"
       - name: Unit + widget tests
         working-directory: mobile
         run: flutter test --coverage

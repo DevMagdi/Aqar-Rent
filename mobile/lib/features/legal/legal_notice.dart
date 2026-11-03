@@ -27,7 +27,7 @@ class LegalNotice extends StatelessWidget {
             const SizedBox(height: 6),
             Text(
               compact ? s('legal_private_only') : s('legal_body'),
-              style: const TextStyle(fontSize: 11, height: 1.6, color: Color(0xFF78350F)),
+              style: const TextStyle(fontSize: 11, height: 1.6, color: AppColors.warn),
             ),
           ],
         ),
