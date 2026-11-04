@@ -119,7 +119,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 8),
                       Text('${s('login_dev_code')} $devCode',
                           textAlign: TextAlign.center,
-                          style: const TextStyle(fontSize: 12, color: AppColors.teal)),
+                          style: TextStyle(fontSize: 12, color: Theme.of(context).brightness == Brightness.dark ? AppColors.gold : AppColors.verified)),
                     ],
                     if (_error != null) ...[
                       const SizedBox(height: 10),

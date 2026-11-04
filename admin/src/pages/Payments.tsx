@@ -59,7 +59,7 @@ export function Payments() {
       const body: Record<string, unknown> = { reason: reason || "" };
       if (amount.trim()) body.amount = Number(amount);
       await api(`/admin/payments/${target.id}/refund`, { method: "POST", body });
-      toast("Refund issued ✓");
+      toast("Refund issued");
       setTarget(null);
       setAmount("");
       setReason("");

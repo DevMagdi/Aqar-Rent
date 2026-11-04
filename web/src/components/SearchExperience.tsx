@@ -7,7 +7,7 @@ import { ListingCard } from "./ListingCard";
 import { Stagger } from "./motion";
 import { MapSection } from "./MapSection";
 import { EmptyState, ErrorState, CardSkeleton } from "./ui";
-import { useI18n, useToast } from "./Providers";
+import { useI18n } from "./Providers";
 import { api, ApiError } from "@/lib/api";
 import { EMPTY_FILTERS, filtersToQuery, type Filters } from "@/lib/filters";
 import { AMENITY_KEYS, AMENITY_LABEL_KEY, locationName } from "@/lib/utils";
@@ -54,7 +54,6 @@ export function SearchExperience({
 }) {
   const { t } = useI18n();
   const router = useRouter();
-  const toast = useToast();
 
   const [filters, setFilters] = useState<Filters>(initialFilters);
   const [items, setItems] = useState<SearchItem[]>(initial.items);
@@ -81,7 +80,7 @@ export function SearchExperience({
   );
 
   const runSearch = useCallback(
-    async (f: Filters, append = false, from = 0) => {
+    async (f: Filters, append = false) => {
       const seq = ++seqRef.current;
       if (append) setLoadingMore(true);
       else {
@@ -203,9 +202,17 @@ export function SearchExperience({
   return (
     <div className="space-y-4">
       {/* ── Filters ─────────────────────────────────────────────── */}
-      <details open className="group rounded-2xl border border-border bg-surface p-4" data-testid="filters">
-        <summary className="cursor-pointer list-none text-sm font-bold text-ink">
-          {t("filters")} <span className="text-ink">▾</span>
+      <details open className="filter-panel group" data-testid="filters">
+        <summary className="filter-summary">
+          <span className="filter-summary-icon" aria-hidden>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
+              <path d="M4 6h16M7 12h10M10 18h4" strokeLinecap="round" />
+            </svg>
+          </span>
+          <span className="filter-summary-label">{t("filters")}</span>
+          <svg className="filter-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+            <path d="m6 9 6 6 6-6" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </summary>
         <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           <div className="col-span-2 sm:col-span-3 lg:col-span-4">
@@ -428,9 +435,12 @@ export function SearchExperience({
         </button>
       </div>
 
-      <p key={`${items.length}-${loading}`} className="results-crossfade text-sm text-muted" data-testid="results-count">
-        {items.length}
-        {cursor ? "+" : ""} {t("results_count")}
+      <p key={`${items.length}-${loading}`} className="results-crossfade results-meta" data-testid="results-count" aria-live="polite">
+        <strong>
+          {items.length}
+          {cursor ? "+" : ""}
+        </strong>
+        <span>{t("results_count")}</span>
       </p>
 
       {/* ── Results + map (shared state) ───────────────────────── */}
@@ -482,7 +492,7 @@ export function SearchExperience({
               type="button"
               data-testid="search-area"
               onClick={() => applyFilters({ ...filters, bbox: (mapBbox as [number, number, number, number]).map((n) => n.toFixed(5)).join(",") })}
-              className="absolute left-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-surface px-4 py-2 text-sm font-semibold text-ink shadow-lg ring-1 ring-gold-dark hover:bg-brand-50"
+              className="absolute inset-inline-start-1/2 top-4 z-10 -translate-x-1/2 rounded-full bg-surface px-4 py-2 text-sm font-semibold text-ink shadow-lg ring-1 ring-gold-dark hover:bg-gold-tint-8"
             >
               ↖ {t("search_this_area")}
             </button>

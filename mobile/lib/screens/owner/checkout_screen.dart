@@ -29,6 +29,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   double _subtotal = 0;
   double _discount = 0;
   String? _promoMsg;
+  bool _promoOk = false;
   bool _busy = false;
   Plan? _plan;
 
@@ -66,6 +67,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       _subtotal = p.priceEgp * _weeks;
       _discount = 0;
       _promoMsg = null;
+      _promoOk = false;
     });
   }
 
@@ -77,14 +79,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
         if (res['valid'] == true) {
           _discount = (res['discount'] as num).toDouble();
           _subtotal = (res['subtotal'] as num).toDouble();
-          _promoMsg = 'تم تطبيق الخصم ✓';
+          _promoMsg = 'تم تطبيق الخصم';
+          _promoOk = true;
         } else {
           _discount = 0;
           _promoMsg = (res['message'] ?? 'كود غير صالح') as String;
+          _promoOk = false;
         }
       });
     } catch (e) {
-      setState(() => _promoMsg = '$e');
+      setState(() {
+        _promoMsg = '$e';
+        _promoOk = false;
+      });
     }
   }
 
@@ -147,7 +154,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           if (_promoMsg != null)
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: Text(_promoMsg!, style: TextStyle(color: _promoMsg!.contains('✓') ? AppColors.success : AppColors.danger, fontSize: 12)),
+              child: Text(_promoMsg!, style: TextStyle(color: _promoOk ? AppColors.success : AppColors.danger, fontSize: 12)),
             ),
           const SizedBox(height: 16),
           Text('طريقة الدفع', style: Theme.of(context).textTheme.labelLarge),
@@ -294,7 +301,7 @@ class _OrderPayScreenState extends State<OrderPayScreen> {
               color: AppColors.successBg,
               child: ListTile(
                 leading: const Icon(Icons.check_circle, color: AppColors.success),
-                title: const Text('تم الدفع ✓'),
+                title: const Text('تم الدفع'),
                 subtitle: const Text('إعلانك قيد النشر'),
                 trailing: TextButton(onPressed: () => Navigator.pop(context), child: const Text('تم')),
               ),

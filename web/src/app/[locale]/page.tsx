@@ -57,22 +57,42 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
     <div className="home-page space-y-12 sm:space-y-16">
       <section className="home-hero" data-testid="hero">
         <div className="home-hero-content">
-          <p className="home-trust-chip"><span aria-hidden>✓</span>{t("hero_trust_chip")}</p>
+          <p className="home-trust-chip">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.6" aria-hidden className="shrink-0">
+              <path d="M20 6 9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span>{t("hero_trust_chip")}</span>
+          </p>
           <h1 className="home-hero-title font-display">
-            <span className="hero-title-line">{t("hero_title_start")}</span>
+            <span className="hero-title-line">{t("hero_title_start")}</span>{" "}
             <span className="hero-title-line hero-shimmer-word">{t("hero_title_gold")}</span>
           </h1>
           <p className="home-hero-subtitle">{t("hero_sub")}</p>
-          <div className="mt-5 flex flex-wrap gap-3 text-sm text-on-dark/80">
-            <Link href={`/${l}/how-it-works`} className="underline decoration-gold/70 underline-offset-4 hover:text-gold-light">
-              {t("how_it_works")} {l === "ar" ? "←" : "→"}
+          <div className="hero-actions">
+            <Link href={`/${l}/search`} className="hero-btn hero-btn-primary" data-testid="hero-browse">
+              {t("nav_search")}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" aria-hidden className={l === "ar" ? "flip-rtl" : ""}>
+                <path d="M5 12h14M13 6l6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </Link>
-            <Link href={`/${l}/content-rules`} className="underline decoration-gold/70 underline-offset-4 hover:text-gold-light">
-              {t("content_rules")} {l === "ar" ? "←" : "→"}
+            <Link href={`/${l}/owner/new`} className="hero-btn hero-btn-ghost">
+              {t("nav_add")}
             </Link>
+          </div>
+          <div className="hero-links">
+            <Link href={`/${l}/how-it-works`} className="hero-link">{t("how_it_works")}</Link>
+            <span aria-hidden className="hero-link-sep">·</span>
+            <Link href={`/${l}/content-rules`} className="hero-link">{t("content_rules")}</Link>
           </div>
         </div>
         <div className="hero-glow" aria-hidden />
+        <div className="hero-mark" aria-hidden>
+          <svg viewBox="0 0 48 48" fill="none">
+            <path d="M11.5 22.4 24 12.2l12.5 10.2" stroke="var(--color-gold-light)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M15.1 22.2v10.9a2.6 2.6 0 0 0 2.6 2.6h12.6a2.6 2.6 0 0 0 2.6-2.6V22.2" stroke="var(--color-gold)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="24" cy="30.5" r="2.4" fill="var(--color-gold)" />
+          </svg>
+        </div>
       </section>
 
       <div className="home-search-overlap">

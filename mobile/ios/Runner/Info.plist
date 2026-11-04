@@ -36,6 +36,9 @@
   <false/>
   <key>UIViewControllerBasedStatusBarAppearance</key>
   <true/>
+  <!-- Dark status bar content over the navy launch screen. -->
+  <key>UIStatusBarStyle</key>
+  <string>UIStatusBarStyleLightContent</string>
   <key>ITSAppUsesNonExemptEncryption</key>
   <false/>
 

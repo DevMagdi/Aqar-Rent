@@ -1,5 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="14" fill="#a93408"/>
-  <path d="M14 34 32 18l18 16v16a4 4 0 0 1-4 4H18a4 4 0 0 1-4-4V34z" fill="#fff"/>
-  <rect x="27" y="40" width="10" height="10" rx="1.5" fill="#a93408"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" role="img" aria-labelledby="aqar-mark-title">
+  <title id="aqar-mark-title">Aqar Rent</title>
+  <defs>
+    <linearGradient id="aqar-gold" x1="7" y1="3" x2="41" y2="45" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#D8C7A4"/>
+      <stop offset=".55" stop-color="#BDA77E"/>
+      <stop offset="1" stop-color="#86693C"/>
+    </linearGradient>
+  </defs>
+  <rect width="48" height="48" rx="12.5" fill="#16273B"/>
+  <path d="M11.5 22.4 24 12.2l12.5 10.2" fill="none" stroke="url(#aqar-gold)" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M15.1 22.2v10.9a2.6 2.6 0 0 0 2.6 2.6h12.6a2.6 2.6 0 0 0 2.6-2.6V22.2" fill="none" stroke="url(#aqar-gold)" stroke-width="2.7" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M24 27.4c1.95 2.4 3.05 3.9 3.05 5.05a3.05 3.05 0 0 1-6.1 0c0-1.15 1.1-2.65 3.05-5.05Z" fill="#BDA77E"/>
 </svg>

@@ -11,8 +11,14 @@ export function isValidEgPhone(raw: string): boolean {
   return /^01[0125][0-9]{8}$/.test(normalizePhone(raw));
 }
 
+// Money, dates and references use LATIN digits in both locales.
+// Decision (design lead): Arabic-Indic numerals (١٬٠٠٠) hurt scanability of
+// prices in apartment listings — the amounts are compared at a glance and
+// screenshots/contracts must match the payment gateway. Wording stays Arabic.
+const NUMERIC_LOCALE: Record<Locale, string> = { ar: "ar-EG-u-nu-latn", en: "en-EG" };
+
 export function formatMoney(n: number, locale: Locale): string {
-  return new Intl.NumberFormat(locale === "ar" ? "ar-EG" : "en-EG", {
+  return new Intl.NumberFormat(NUMERIC_LOCALE[locale], {
     maximumFractionDigits: 0,
   }).format(n);
 }
@@ -20,7 +26,7 @@ export function formatMoney(n: number, locale: Locale): string {
 export function formatDate(iso: string | null | undefined, locale: Locale): string {
   if (!iso) return "—";
   try {
-    return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-GB", {
+    return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG-u-nu-latn" : "en-GB", {
       year: "numeric",
       month: "short",
       day: "numeric",
@@ -33,7 +39,7 @@ export function formatDate(iso: string | null | undefined, locale: Locale): stri
 export function formatDateTime(iso: string | null | undefined, locale: Locale): string {
   if (!iso) return "—";
   try {
-    return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG" : "en-GB", {
+    return new Intl.DateTimeFormat(locale === "ar" ? "ar-EG-u-nu-latn" : "en-GB", {
       dateStyle: "medium",
       timeStyle: "short",
     }).format(new Date(iso));

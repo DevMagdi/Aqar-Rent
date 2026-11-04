@@ -30,7 +30,8 @@ class _HomeShellState extends State<HomeShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(_index == 0 ? s('brand') : _titles[_index]),
+        toolbarHeight: 64,
+        title: _index == 0 ? const AqarLockup() : Text(_titles[_index]),
         actions: [
           IconButton(
             tooltip: s('language'),
@@ -106,35 +107,60 @@ class _HomeLanding extends StatelessWidget {
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(28),
+            border: Border.all(color: AppColors.gold.withValues(alpha: .28)),
             gradient: LinearGradient(
               begin: AlignmentDirectional.topStart,
               end: AlignmentDirectional.bottomEnd,
-              colors: [AppColors.network, AppColors.brandDeep],
+              colors: [AppColors.brand, AppColors.brandDeep],
             ),
-            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: dark ? .28 : .12), blurRadius: 24, offset: const Offset(0, 12))],
+            boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: dark ? .38 : .16), blurRadius: 28, offset: const Offset(0, 14))],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(s('brand'), style: TextStyle(color: AppColors.goldLight, fontWeight: FontWeight.w700, fontSize: 13)),
-              const SizedBox(height: 12),
+              Row(children: [
+                const AqarMark(size: 34),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    s('brand'),
+                    style: const TextStyle(color: AppColors.onDark, fontFamily: 'ElMessiriArabic', fontWeight: FontWeight.w700, fontSize: 16),
+                  ),
+                ),
+                Icon(Icons.verified, size: 18, color: AppColors.gold),
+              ]),
+              const SizedBox(height: 14),
               Text(s('welcome'), style: const TextStyle(color: AppColors.onDark, fontFamily: 'ElMessiriArabic', fontWeight: FontWeight.w700, fontSize: 27, height: 1.25)),
               const SizedBox(height: 8),
               Text(s('tagline'), style: const TextStyle(color: AppColors.onDark, fontSize: 13, height: 1.65)),
               const SizedBox(height: 20),
-              Material(
-                color: Theme.of(context).colorScheme.surface,
-                borderRadius: BorderRadius.circular(999),
-                child: InkWell(
-                  onTap: onSearch,
+              Semantics(
+                button: true,
+                label: s('search_hint'),
+                child: Material(
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(999),
-                  child: Padding(
-                    padding: const EdgeInsetsDirectional.fromSTEB(16, 10, 10, 10),
-                    child: Row(children: [
-                      Expanded(child: Text(s('nav_search'), maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .68), fontSize: 12))),
-                      const SizedBox(width: 8),
-                      const CircleAvatar(radius: 21, backgroundColor: AppColors.gold, child: Icon(Icons.search, color: AppColors.brand, size: 20)),
-                    ]),
+                  child: InkWell(
+                    onTap: onSearch,
+                    borderRadius: BorderRadius.circular(999),
+                    child: ConstrainedBox(
+                      constraints: const BoxConstraints(minHeight: AppShape.tapMin),
+                      child: Padding(
+                        padding: const EdgeInsetsDirectional.fromSTEB(18, 8, 8, 8),
+                        child: Row(children: [
+                          Expanded(
+                            child: Text(
+                              s('search_hint'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .66), fontSize: 13),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          const CircleAvatar(radius: 20, backgroundColor: AppColors.gold, child: Icon(Icons.search, color: AppColors.brandDeep, size: 20)),
+                        ]),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -154,13 +180,39 @@ class _HomeLanding extends StatelessWidget {
         ]),
         const SizedBox(height: 22),
         Card(
-          child: ListTile(
-            contentPadding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
-            leading: const CircleAvatar(backgroundColor: AppColors.tealBg, child: Icon(Icons.verified_user_outlined, color: AppColors.tealInk)),
-            title: Text(s('trust_title'), style: const TextStyle(fontWeight: FontWeight.w700)),
-            subtitle: Text(s('trust_note'), maxLines: 2, overflow: TextOverflow.ellipsis),
-            trailing: const Icon(Icons.chevron_right),
+          child: InkWell(
             onTap: onSearch,
+            borderRadius: BorderRadius.circular(AppShape.radiusCard),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: AppShape.tapMin),
+              child: Padding(
+                padding: const EdgeInsetsDirectional.fromSTEB(16, 14, 16, 14),
+                child: Row(children: [
+                  Container(
+                    width: 42,
+                    height: 42,
+                    decoration: BoxDecoration(
+                      color: dark ? AppColors.darkGoldTint : AppColors.verifiedBg,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.verifiedBorder),
+                    ),
+                    child: Icon(Icons.verified_user_outlined, color: dark ? AppColors.gold : AppColors.verified, size: 21),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Text(s('trust_title'), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                      const SizedBox(height: 2),
+                      Text(s('trust_note'), maxLines: 2, overflow: TextOverflow.ellipsis, style: TextStyle(fontSize: 12.5, color: appMutedColor(context))),
+                    ]),
+                  ),
+                  Icon(
+                    Directionality.of(context) == TextDirection.rtl ? Icons.chevron_left : Icons.chevron_right,
+                    color: appMutedColor(context),
+                  ),
+                ]),
+              ),
+            ),
           ),
         ),
       ],
@@ -245,10 +297,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
         const SizedBox(height: 8),
         Card(
           child: ListTile(
-            leading: const Icon(Icons.verified_user_outlined, color: AppColors.teal),
+            minTileHeight: AppShape.tapMin,
+            contentPadding: const EdgeInsetsDirectional.fromSTEB(16, 6, 16, 6),
+            leading: Icon(
+              Icons.verified_user_outlined,
+              color: Theme.of(context).brightness == Brightness.dark ? AppColors.gold : AppColors.verified,
+            ),
             title: Text(s('trust_title')),
             subtitle: TrustBadge(level: (me['verification_level'] ?? 'phone') as String),
-            trailing: const Icon(Icons.chevron_left),
+            trailing: Icon(
+              Directionality.of(context) == TextDirection.rtl ? Icons.chevron_left : Icons.chevron_right,
+              color: appMutedColor(context),
+            ),
             onTap: () => context.go('/trust'),
           ),
         ),

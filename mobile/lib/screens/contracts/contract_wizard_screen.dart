@@ -180,7 +180,7 @@ class _ContractWizardScreenState extends State<ContractWizardScreen> {
                   color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkWarnBg : AppColors.warnBg,
                   child: const Padding(
                     padding: EdgeInsets.all(8),
-                    child: Text('⚖️ اتفاق خاص بين الطرفين: ليس موثّقاً ولا مسجّلاً رسمياً ولا سنداً تنفيذياً، ولا يُغني عن التوثيق الرسمي.', style: TextStyle(fontSize: 12)),
+                    child: Text('اتفاق خاص بين الطرفين: ليس موثّقاً ولا مسجّلاً رسمياً ولا سنداً تنفيذياً، ولا يُغني عن التوثيق الرسمي.', style: TextStyle(fontSize: 12)),
                   ),
                 ),
               ],

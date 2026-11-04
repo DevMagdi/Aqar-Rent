@@ -6,6 +6,7 @@ import { makeT } from "@/lib/i18n";
 import { buildListingPath } from "@/lib/utils";
 import { fetchServer } from "@/lib/server";
 import type { Locale, OfficeProfile } from "@/lib/types";
+import { Icon } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 
@@ -64,8 +65,18 @@ export default async function PublicOfficePage({ params }: { params: Promise<{ l
         <h1 className="mt-2 text-3xl font-extrabold">{ar ? office.name_ar : office.name_en}</h1>
         <p className="mt-2 max-w-2xl text-sm text-on-dark">{ar ? office.description_ar : office.description_en}</p>
         <div className="mt-4 flex flex-wrap gap-2 text-xs">
-          {office.verification_status === "verified" && <span className="rounded-full bg-success-fill px-3 py-1 font-bold">✓ {ar ? "بيانات السجل التجاري مراجَعة" : "Commercial register reviewed"}</span>}
-          {office.city && <span className="rounded-full bg-surface/10 px-3 py-1">📍 {office.city}</span>}
+          {office.verification_status === "verified" && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-success-fill px-3 py-1 font-bold">
+              <Icon name="check" size={12} strokeWidth={2.8} />
+              {ar ? "بيانات السجل التجاري مراجَعة" : "Commercial register reviewed"}
+            </span>
+          )}
+          {office.city && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-surface/10 px-3 py-1">
+              <Icon name="pin" size={12} />
+              {office.city}
+            </span>
+          )}
           {office.public_phone && <a className="rounded-full bg-surface/10 px-3 py-1" dir="ltr" href={`tel:${office.public_phone}`}>{office.public_phone}</a>}
         </div>
       </header>
@@ -88,7 +99,8 @@ export default async function PublicOfficePage({ params }: { params: Promise<{ l
         )}
       </section>
       <p className="rounded-2xl border border-warn/20 bg-warn-bg p-4 text-xs leading-relaxed text-warn">
-        ⚖️ {ar
+        <Icon name="scale" size={15} className="me-1.5 inline-block align-[-2px]" />
+        {ar
           ? "مراجعة بيانات المكتب تتم بواسطة فريق المنصة وليست فحصاً حكومياً. أي عمولة بين المكتب والمالك اتفاق خاص لا تحصّله المنصة."
           : "Office data is reviewed by our team, not by a government authority. Any office↔owner commission is a private agreement the platform never collects."}
       </p>

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Badge, Card, Empty, Modal, Spinner, btnDanger, btnGhost, btnPrimary, inputCls } from "@/components/ui";
 import { useShell } from "@/components/Shell";
+import { Icon } from "@/components/Icon";
 
 /** Mirrors backend app/models/enums.py::REJECT_REASONS (no settings API — read-only). */
 export const REJECT_REASONS: [string, string][] = [
@@ -94,7 +95,7 @@ export function Moderation() {
     setBusy(true);
     try {
       await api(`/admin/listings/${detail.id}/approve`, { method: "POST" });
-      toast("Listing approved ✓");
+      toast("Listing approved");
       setDetail(null);
       load();
     } catch (e) {
@@ -154,7 +155,7 @@ export function Moderation() {
         {!rows ? (
           <Spinner />
         ) : rows.length === 0 ? (
-          <Empty text="Queue is empty 🎉" />
+          <Empty text="Queue is empty. Nothing is waiting for review." />
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -236,7 +237,7 @@ export function Moderation() {
             </div>
             <h4 className="font-bold text-ink-strong">{detail.title}</h4>
             <p className="font-semibold text-ink">{detail.rent_monthly.toLocaleString()} EGP/month · {detail.property_type.replace(/_/g, " ")}</p>
-            <p className="text-muted">📍 {detail.address_text}, {detail.district_name || ""} {detail.city_name || ""} {detail.governorate_name || ""}</p>
+            <p className="flex items-center gap-1.5 text-muted"><Icon name="pin" size={13} /> {detail.address_text}, {detail.district_name || ""} {detail.city_name || ""} {detail.governorate_name || ""}</p>
             <p className="whitespace-pre-line rounded-xl bg-bg p-3 text-ink">{detail.description}</p>
             <div className="grid grid-cols-2 gap-2 rounded-xl bg-bg p-3">
               <p>

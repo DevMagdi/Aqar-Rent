@@ -160,7 +160,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
           _hash = (updated['hash'] as String?) ?? '';
           _busy = false;
         });
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('المحضر نهائي ✓')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('المحضر نهائي')));
       }
     } catch (e) {
       if (mounted) setState(() { _error = '$e'; _busy = false; });
@@ -192,7 +192,7 @@ class _HandoverScreenState extends State<HandoverScreen> {
         onProgress: (s, t) {},
       ) as Map<String, dynamic>;
       if (mounted) setState(() => _media = [..._media, res]);
-      _toast('تم رفع الصورة ✓');
+      _toast('تم رفع الصورة');
     } catch (e) {
       _toast('فشل الرفع: $e');
     } finally {
@@ -417,7 +417,11 @@ class _HandoverScreenState extends State<HandoverScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('✓ المحضر نهائي وغير قابل للتعديل', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold)),
+                Row(children: [
+              const Icon(Icons.lock_rounded, size: 15, color: AppColors.success),
+              const SizedBox(width: 6),
+              Expanded(child: Text('المحضر نهائي وغير قابل للتعديل', style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.bold))),
+            ]),
                 if (_hash.isNotEmpty)
                   Text('SHA-256: $_hash', style: TextStyle(fontSize: 10, color: appMutedColor(context))),
               ],

@@ -9,6 +9,7 @@ import { useAuth, useI18n, useToast } from "../Providers";
 import { OtpConfirmModal } from "./OtpConfirmModal";
 import { HandoverEditor } from "./HandoverEditor";
 import { downloadAuthed, type Contract, type Handover } from "@/lib/contracts";
+import { Icon } from "@/components/Icon";
 
 const METHODS = ["card", "fawry", "vodafone_cash", "bank_transfer"] as const;
 
@@ -131,7 +132,8 @@ export function ContractDetail({ contractId }: { contractId: string }) {
 
         {contract.status === "confirmed" && (
           <div className="mt-4 rounded-xl bg-success-bg p-3 text-sm font-semibold text-success" data-testid="confirmed-banner">
-            ✓ {t("contract_confirmed_banner")}
+            <Icon name="check" size={14} strokeWidth={2.8} className="me-1.5 inline-block align-[-2px]" />
+            {t("contract_confirmed_banner")}
             <p className="mt-1 break-all font-mono text-[11px] font-normal" data-testid="terms-hash">
               {t("terms_hash")}: {contract.terms_hash}
             </p>
@@ -142,7 +144,8 @@ export function ContractDetail({ contractId }: { contractId: string }) {
           {contract.parties.map((p) => (
             <div key={p.id} className="rounded-xl bg-bg p-3 text-sm">
               <p className="font-bold text-ink">
-                {p.role === "owner" ? `👤 ${t("party_owner")}` : `🏠 ${t("party_tenant")}`}{" "}
+                <Icon name={p.role === "owner" ? "user" : "home"} size={14} className="me-1.5 inline-block align-[-2px] text-muted" />
+                {p.role === "owner" ? t("party_owner") : t("party_tenant")}{" "}
                 <span className="font-normal text-muted">
                   {(contract.confirmations_log || []).some((e) => e.user_id === p.id) ? "✓✓" : "…"}
                 </span>
@@ -185,9 +188,10 @@ export function ContractDetail({ contractId }: { contractId: string }) {
               type="button"
               data-testid="btn-confirm-contract"
               onClick={() => setOtpFor("contract")}
-              className="rounded-xl bg-success-fill px-4 py-2.5 text-sm font-bold text-on-dark hover:bg-success-fill"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-field)] bg-success-fill px-4 text-sm font-bold text-on-dark"
             >
-              🔑 {t("confirm_with_otp")}
+              <Icon name="key" size={15} />
+              {t("confirm_with_otp")}
             </button>
           )}
           {contract.status === "confirmed" && (
@@ -195,9 +199,10 @@ export function ContractDetail({ contractId }: { contractId: string }) {
               type="button"
               data-testid="btn-contract-pdf"
               onClick={downloadPdf}
-              className="rounded-xl border border-gold px-4 py-2.5 text-sm font-bold text-ink hover:bg-brand-50"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-field)] border border-gold px-4 text-sm font-bold text-ink transition-colors hover:bg-gold-tint-8"
             >
-              ⬇ {t("download_pdf")}
+              <Icon name="download" size={15} />
+              {t("download_pdf")}
             </button>
           )}
         </div>
@@ -210,7 +215,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
               {contract.confirmations_log.map((e, i) => (
                 <li key={i} className="rounded-lg bg-bg px-3 py-1.5 text-xs text-muted">
                   <b>{e.party === "owner" ? t("party_owner") : t("party_tenant")}</b> · {e.at.slice(0, 19).replace("T", " ")} · {e.ip || "-"} ·{" "}
-                  <span className="text-muted">{(e.device || "-").slice(0, 40)}</span> · OTP ✓
+                  <span className="text-muted">{(e.device || "-").slice(0, 40)}</span> · OTP <Icon name="check" size={11} strokeWidth={2.8} className="inline-block align-[-1px] text-success" />
                 </li>
               ))}
             </ul>
@@ -240,7 +245,8 @@ export function ContractDetail({ contractId }: { contractId: string }) {
       )}
       {contract.fee_required && contract.fee_order_status === "paid" && (
         <p className="rounded-xl bg-success-bg p-3 text-sm font-semibold text-success" data-testid="fee-paid">
-          ✓ {t("fee_title")} — {t("paid")}
+          <Icon name="check" size={14} strokeWidth={2.8} className="me-1.5 inline-block align-[-2px]" />
+          {t("fee_title")} — {t("paid")}
         </p>
       )}
       {!contract.fee_required && (
@@ -272,7 +278,10 @@ export function ContractDetail({ contractId }: { contractId: string }) {
               </div>
             ))}
         </dl>
-        <p className="mt-3 rounded-xl bg-warn-bg p-3 text-[11px] text-warn">⚖️ {t("tpl_draft_notice")}</p>
+        <p className="mt-3 flex items-start gap-2 rounded-xl bg-warn-bg p-3 text-[11px] text-warn">
+          <Icon name="scale" size={14} className="mt-0.5 shrink-0" />
+          <span>{t("tpl_draft_notice")}</span>
+        </p>
       </div>
 
       {/* handovers */}
@@ -332,9 +341,10 @@ export function ContractDetail({ contractId }: { contractId: string }) {
                       type="button"
                       data-testid="btn-confirm-existing"
                       onClick={() => setEditor({ kind: h.kind, existing: h })}
-                      className="rounded-lg bg-success-fill px-3 py-1.5 text-xs font-bold text-on-dark"
+                      className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--radius-field)] bg-success-fill px-3 text-xs font-bold text-on-dark"
                     >
-                      🔑 {t("confirm_with_otp")}
+                      <Icon name="key" size={13} className="me-1 inline-block align-[-2px]" />
+                      {t("confirm_with_otp")}
                     </button>
                   )}
                   {h.status === "confirmed" && (
@@ -342,9 +352,10 @@ export function ContractDetail({ contractId }: { contractId: string }) {
                       type="button"
                       data-testid="btn-handover-pdf-row"
                       onClick={() => void downloadAuthed(`/handovers/${h.id}/pdf`, `handover-${h.kind}.pdf`)}
-                      className="rounded-lg border border-gold px-3 py-1.5 text-xs font-bold text-ink"
+                      className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--radius-field)] border border-gold px-3 text-xs font-bold text-ink transition-colors hover:bg-gold-tint-8"
                     >
-                      ⬇ PDF
+                      <Icon name="download" size={13} className="me-1 inline-block align-[-2px]" />
+                      PDF
                     </button>
                   )}
                 </div>
@@ -387,8 +398,8 @@ function ComparisonModal({ pair, handovers, onClose }: { pair: Handover; handove
       <div className="mx-auto max-w-4xl rounded-3xl bg-surface p-5" onClick={(e) => e.stopPropagation()} data-testid="comparison-modal">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-bold text-ink-strong">{t("side_by_side")}</h2>
-          <button type="button" onClick={onClose} aria-label="close" className="rounded-lg p-2 text-muted hover:bg-surface-2">
-            ✕
+          <button type="button" onClick={onClose} aria-label="close" className="icon-button rounded-lg text-muted hover:bg-surface-2">
+            <Icon name="close" size={16} />
           </button>
         </div>
 

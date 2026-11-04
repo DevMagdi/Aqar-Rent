@@ -1,77 +1,84 @@
 // Aqar Rent premium theme — SINGLE SOURCE OF TRUTH for mobile colours.
 // Byte-verified against web tokens by web/src/styles/tokens.test.ts.
-// Light in the base constants; dark in AppColors.dark* (spec: #0B1220/#141C2B).
+// Identity: Mantiq Navy #16273B + Mantiq Gold #BDA77E, navy/gold only.
+// Light in the base constants; dark in AppColors.dark*.
 import 'package:flutter/material.dart';
 
 class AppColors {
   AppColors._();
 
-  /* ── Brand (unified with web tokens) ── */
-  static const brand = Color(0xFF0F1C2E); // primary ink
-  static const brandDeep = Color(0xFF0B1220); // deepest navy / dark bg
-  static const network = Color(0xFF1D2D45); // nav hover
-  static const gold = Color(0xFFC9A86C); // refined warm gold (accent)
-  static const goldLight = Color(0xFFE7D6AF); // gradients
-  static const goldDark = Color(0xFF9C814E); // focus/graphics on light
-  static const onDark = Color(0xFFEAE7E0); // text on navy
+  /* ── Brand: the two hues from the Mantiq logo ── */
+  static const brand = Color(0xFF16273B); // Mantiq Navy — ink and chrome
+  static const brandDeep = Color(0xFF0E1728); // Mantiq Navy Deep — darkest / dark canvas
+  static const network = Color(0xFF1E3349); // derived navy +1: hover/raised navy
+  static const gold = Color(0xFFBDA77E); // Mantiq Gold — the single accent
+  static const goldLight = Color(0xFFD8C7A4); // derived gold +1: gradients, gold on navy
+  static const goldDark = Color(0xFF86693C); // derived gold −1: 5.12:1 text on white
+  static const onDark = Color(0xFFEDE9E0); // derived warm white: 12.49:1 on navy
+  static const goldText = brandDeep; // label on a gold surface (never white)
 
-  /* ── Trust / secondary ── */
-  static const teal = Color(0xFF0D9488);
-  static const tealInk = Color(0xFF0B726A); // teal text on light (5.8:1)
-  static const tealBg = Color(0xFFE6F5F3);
+  /* ── Verified = GOLD (the trust mark), never a second hue ── */
+  static const verified = goldDark; // icon + 12px label on light surfaces
+  static const verifiedStrong = brandDeep; // navy label inside a gold pill
+  static const verifiedBg = Color(0xFFF3EFE8); // gold 18% over white
+  static const verifiedBorder = Color(0x6B86693C); // gold 42% outline
 
   /* ── Surfaces (light) ── */
-  static const bg = Color(0xFFF8F7F4);
+  static const bg = Color(0xFFFAF9F5);
   static const surface = Color(0xFFFFFFFF);
-  static const surface2 = Color(0xFFF2F0EA);
+  static const surface2 = Color(0xFFF3F0E9);
   static const ink = brand;
-  static const muted = Color(0xFF5C6570);
-  static const border = Color(0xFFE3E6EB); // derived rgba(15,28,46,.10)
-  static const track = Color(0xFFE9EAEE); // derived rgba(15,28,46,.08)
-  static const goldTint12 = Color(0xFFF9F4E9); // gold12% on white
-  static const goldTint14 = Color(0xFFF8F2E5); // gold14% on white
+  static const muted = Color(0xFF5B6472);
+  static const border = Color(0xFFE4E1D9); // derived rgba(22,39,59,.10)
+  static const track = Color(0xFFECEAE3); // derived rgba(22,39,59,.07)
+  static const goldTint12 = Color(0xFFF7F2E8); // gold 12% on white
+  static const goldTint14 = Color(0xFFF5EFE4); // gold 14% on white
 
-  /* ── Status (functional, AA-proven) ── */
+  /* ── Status (functional, AA-proven under navy/gold) ── */
   static const success = Color(0xFF1B5E3A);
-  static const successBg = Color(0xFFEEF6F0);
+  static const successBg = Color(0xFFEAF3ED);
   static const warn = Color(0xFF8A5A12);
-  static const warnBg = Color(0xFFFDF6EA);
+  static const warnBg = Color(0xFFFBF3E4);
   static const danger = Color(0xFFA32A22);
-  static const dangerBg = Color(0xFFFDF0EF);
-  static const info = Color(0xFF1F4E8C);
-  static const infoBg = Color(0xFFEDF2F9);
-  static const neutral = Color(0xFF17565F);
-  static const neutralBg = Color(0xFFECF3F4);
+  static const dangerBg = Color(0xFFFBEEED);
+  static const info = Color(0xFF1E4A7A);
+  static const infoBg = Color(0xFFECF1F8);
+  static const neutral = Color(0xFF4A5666);
+  static const neutralBg = Color(0xFFEEF1F4);
 
   static const whatsapp = Color(0xFF25D366); // official integration colour
 
-  /* ── Neutral overlays (not brand colours — scrim + soft shadow) ── */
-  static const overlayScrim = Color(0xBF000000); // image gradient scrim (bottom)
-  static const overlayMid = Color(0x66000000); // gradient mid stop
-  static const shadowSoft = Color(0x40000000); // badge/card soft shadow
+  /* ── Neutral overlays (scrims, not brand colours) ── */
+  static const overlayScrim = Color(0xBF000000);
+  static const overlayMid = Color(0x66000000);
+  static const shadowSoft = Color(0x40000000);
+  static const scrim = Color(0x8C0E1728); // navy scrim for sheets/dialogs
 
-  /* ── Dark mode (spec: bg #0B1220, surface #141C2B) ── */
-  static const darkBg = Color(0xFF0B1220);
-  static const darkSurface = Color(0xFF111B2D);
-  static const darkSurface2 = Color(0xFF16233A);
-  static const darkInk = Color(0xFFEAE7E0); // AA on dark surfaces
-  static const darkInkStrong = Color(0xFFF5F8FC);
-  static const darkMuted = Color(0xFF9AA4B2); //6.8:1
-  static const darkBorder = Color(0x17EAE7E0); // rgba(234,231,224,.09)
-  static const darkTrack = Color(0xFF1E2738); // derived
-  static const darkSidebar = Color(0xFF101A2C);
-  static const darkGoldText = Color(0xFFC9A86C); // aligned gold accent
-  static const darkGoldTint = Color(0xFF2B2A25); // gold14% on dark surface
-  static const darkSuccess = Color(0xFF5CD6A0);
-  static const darkSuccessBg = Color(0xFF17352B);
-  static const darkWarn = Color(0xFFE9B44C);
-  static const darkWarnBg = Color(0xFF3A2F1A);
-  static const darkDanger = Color(0xFFF28B82);
-  static const darkDangerBg = Color(0xFF3A2222);
-  static const darkTeal = Color(0xFF2DD4BF);
+  /* ── Dark mode ── */
+  static const darkBg = Color(0xFF0E1728);
+  static const darkSurface = Color(0xFF17293F);
+  static const darkSurface2 = Color(0xFF1C3049);
+  static const darkInk = Color(0xFFEDE9E0);
+  static const darkInkStrong = Color(0xFFF7F4EE);
+  static const darkMuted = Color(0xFFA3ADB9); // 6.48:1 on the dark surface
+  static const darkBorder = Color(0x1AEDE9E0); // rgba(237,233,224,.10)
+  static const darkTrack = Color(0xFF233750);
+  static const darkSidebar = Color(0xFF0C1727);
+  static const darkGoldText = gold; // 6.31:1 on the dark surface
+  static const darkGoldTint = Color(0xFF2A3242); // gold 16% on the dark surface
+  static const darkSuccess = Color(0xFF6FD3A2);
+  static const darkSuccessBg = Color(0xFF1B3329);
+  static const darkWarn = Color(0xFFE4B263);
+  static const darkWarnBg = Color(0xFF372D1C);
+  static const darkDanger = Color(0xFFF2938A);
+  static const darkDangerBg = Color(0xFF3A2220);
+  static const darkInfo = Color(0xFF8FB6E8);
+  static const darkInfoBg = Color(0xFF1B2A3D);
 }
 
-/// Motion tokens mirror web/src/styles/tokens.css. Keep entrances restrained and GPU-friendly.
+/// Motion tokens mirror web/src/styles/tokens.css. Entrances stay restrained,
+/// serve meaning, animate transform/opacity only, and always check
+/// MediaQuery.disableAnimations.
 class AppMotion {
   AppMotion._();
 
@@ -85,6 +92,18 @@ class AppMotion {
   static const Cubic easeOut = Cubic(0.22, 1, 0.36, 1);
   static const Cubic easeInOut = Cubic(0.65, 0, 0.35, 1);
   static const Cubic easeSpring = Cubic(0.34, 1.3, 0.64, 1);
+}
+
+/// Geometry that must match the web tokens (radius scale) plus mobile-only
+/// touch-target minimums (48dp ≥ the 44px web minimum).
+class AppShape {
+  AppShape._();
+
+  static const double radiusCard = 20;
+  static const double radiusShell = 28;
+  static const double radiusField = 14;
+  static const double tapMin = 48; // Material minimum touch target
+  static const double gutter = 16;
 }
 
 class AqarPageTransitionsBuilder extends PageTransitionsBuilder {
@@ -108,13 +127,11 @@ final ValueNotifier<ThemeMode> appThemeMode = ValueNotifier(ThemeMode.system);
 class AppTheme {
   AppTheme._();
 
-  /* ── Phase-5 compatibility aliases (their screens reference AppTheme.*):
-     mapped to premium values that stay WCAG-AA both as text on light and as
-     backgrounds behind white text — navy/teal-ink/warn instead of the old
-     terracotta palette (removed per the premium overhaul). ── */
-  static const Color brand = AppColors.brand; // was terracotta — now primary navy
+  /* ── Compatibility aliases (screens reference AppTheme.*): mapped to the
+     navy/gold identity; the trust accent is gold. ── */
+  static const Color brand = AppColors.brand;
   static const Color brandDark = AppColors.brandDeep;
-  static const Color teal = AppColors.tealInk; // 5.8:1 text · 5.4:1 under white
+  static const Color accent = AppColors.gold;
   static const Color amber = AppColors.warn;
 
   static ThemeData light() => _base(
@@ -150,8 +167,9 @@ class AppTheme {
     required Color danger,
   }) {
     final isDark = brightness == Brightness.dark;
-    final accent = isDark ? AppColors.gold : AppColors.gold;
-    final onAccent = AppColors.brand; // never white on gold (spec)
+    const accent = AppColors.gold;
+    const onAccent = AppColors.brandDeep; // never white on gold
+    final textTheme = _textTheme(ink);
     return ThemeData(
       useMaterial3: true,
       brightness: brightness,
@@ -160,14 +178,19 @@ class AppTheme {
         brightness: brightness,
         primary: accent,
         onPrimary: onAccent,
-        secondary: isDark ? AppColors.darkTeal : AppColors.tealInk,
-        onSecondary: isDark ? AppColors.brandDeep : Colors.white,
+        secondary: isDark ? AppColors.darkInk : AppColors.brand,
+        onSecondary: isDark ? AppColors.darkBg : AppColors.onDark,
+        tertiary: isDark ? AppColors.darkGoldText : AppColors.goldDark,
+        onTertiary: AppColors.brandDeep,
         error: danger,
         onError: isDark ? AppColors.brandDeep : Colors.white,
         surface: surface,
         onSurface: ink,
         outline: outline,
       ),
+      textTheme: textTheme,
+      // Dynamic Type: text never clips at 200% — let it scale and reflow.
+      typography: Typography.material2021(platform: TargetPlatform.android),
       appBarTheme: AppBarTheme(
         backgroundColor: scaffold,
         foregroundColor: ink,
@@ -187,7 +210,7 @@ class AppTheme {
         shadowColor: Colors.transparent,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(AppShape.radiusCard),
           side: BorderSide(color: outline),
         ),
       ),
@@ -195,34 +218,47 @@ class AppTheme {
         style: FilledButton.styleFrom(
           backgroundColor: accent,
           foregroundColor: onAccent, // gold + deep navy (never white)
-          minimumSize: const Size(0, 46),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          minimumSize: const Size(0, AppShape.tapMin),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppShape.radiusField)),
           textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: isDark ? AppColors.darkGoldText : AppColors.goldDark,
+          minimumSize: const Size(0, AppShape.tapMin),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: ink,
           side: BorderSide(color: outline),
-          minimumSize: const Size(0, 46),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          minimumSize: const Size(0, AppShape.tapMin),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppShape.radiusField)),
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: IconButton.styleFrom(
+          minimumSize: const Size(AppShape.tapMin, AppShape.tapMin),
+          foregroundColor: ink,
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: surface,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShape.radiusField),
           borderSide: BorderSide(color: outline),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(AppShape.radiusField),
           borderSide: BorderSide(color: outline),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppColors.goldDark, width: 2),
+          borderRadius: BorderRadius.circular(AppShape.radiusField),
+          borderSide: BorderSide(color: isDark ? AppColors.gold : AppColors.goldDark, width: 2),
         ),
         labelStyle: TextStyle(color: muted, fontSize: 14),
         hintStyle: TextStyle(color: muted, fontSize: 14),
@@ -238,7 +274,7 @@ class AppTheme {
         backgroundColor: surface,
         indicatorColor: isDark ? AppColors.darkGoldTint : AppColors.goldTint14,
         elevation: 0,
-        height: 68,
+        height: 72, // 48dp targets + label, comfortable label spacing
         iconTheme: WidgetStateProperty.resolveWith(
           (states) => IconThemeData(
             color: states.contains(WidgetState.selected)
@@ -248,8 +284,28 @@ class AppTheme {
         ),
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
       ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: surface,
+        modalBarrierColor: AppColors.scrim,
+        shape: const RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppShape.radiusShell)),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: surface,
+        barrierColor: AppColors.scrim,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppShape.radiusCard)),
+        titleTextStyle: textTheme.titleLarge,
+        contentTextStyle: textTheme.bodyMedium,
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: isDark ? AppColors.darkSurface2 : AppColors.brandDeep,
+        contentTextStyle: const TextStyle(color: AppColors.onDark, fontSize: 14),
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppShape.radiusField)),
+      ),
       dividerTheme: DividerThemeData(color: outline, space: 1),
-      textTheme: _textTheme(ink),
+      progressIndicatorTheme: ProgressIndicatorThemeData(color: isDark ? AppColors.gold : AppColors.goldDark),
       splashFactory: InkSparkle.splashFactory,
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
@@ -288,6 +344,10 @@ class AppTheme {
         'success' => dark ? AppColors.darkSuccess : AppColors.success,
         'warn' => dark ? AppColors.darkWarn : AppColors.warn,
         'danger' => dark ? AppColors.darkDanger : AppColors.danger,
-        _ => dark ? AppColors.darkTeal : AppColors.teal,
+        'info' => dark ? AppColors.darkInfo : AppColors.info,
+        _ => dark ? AppColors.darkMuted : AppColors.neutral,
       };
+
+  /// The verified / trust accent — gold on every surface, in both modes.
+  static Color verifiedColor({required bool dark}) => dark ? AppColors.gold : AppColors.verified;
 }

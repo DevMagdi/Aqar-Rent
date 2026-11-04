@@ -74,7 +74,7 @@ export function LoginView() {
         anonymous: true,
       });
       setSession(res.tokens, res.user);
-      toast.show(`${t("verify")} ✓`);
+      toast.show(t("verify"));
       router.replace(next);
     } catch (e2) {
       setErr(e2 instanceof ApiError ? e2.message : t("error_generic"));

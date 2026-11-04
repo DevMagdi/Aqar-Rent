@@ -3,7 +3,6 @@
 // with progress/retry/reorder, Arabic validation messages, review + submit.
 import dynamic from "next/dynamic";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { compressImage, MAX_PHOTOS, MAX_PHOTO_BYTES, MIN_PHOTOS } from "@/lib/images";
@@ -11,6 +10,7 @@ import { uploadWithProgress } from "@/lib/upload";
 import { useI18n, useToast } from "./Providers";
 import { AMENITY_KEYS, AMENITY_LABEL_KEY } from "@/lib/utils";
 import type { ListingDetail, Location, Media } from "@/lib/types";
+import { Icon } from "./Icon";
 
 const MapPicker = dynamic(() => import("./MapPicker"), { ssr: false, loading: () => <div className="h-72 animate-pulse rounded-2xl bg-surface-2" /> });
 
@@ -114,7 +114,6 @@ function toPayload(f: WizardForm): Record<string, unknown> {
 export function ListingWizard({ locale, editId }: { locale: string; editId?: string }) {
   const { t } = useI18n();
   const toast = useToast();
-  const router = useRouter();
   const isEdit = Boolean(editId);
 
   const [step, setStep] = useState(0);
@@ -473,7 +472,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
   if (submitted) {
     return (
       <div className="mx-auto max-w-xl rounded-3xl border border-success/20 bg-success-bg p-8 text-center" data-testid="wizard-submitted">
-        <p className="text-3xl">✓</p>
+        <Icon name="check" size={40} strokeWidth={2.4} className="text-success" />
         <h1 className="mt-2 text-xl font-bold text-success">{t("submit_review")}</h1>
         <p className="mt-2 text-sm text-success">{t("submit_hint")}</p>
         <Link href={`/${locale}/owner`} className="mt-5 inline-block rounded-xl bg-success-fill px-5 py-2.5 text-sm font-semibold text-on-dark hover:bg-success-fill">
@@ -516,7 +515,12 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
       <p className="mb-3 text-sm font-semibold text-muted">
         {t("step")} {step + 1} {t("of")} {STEPS.length} — <span data-testid="step-name">{t(STEPS[step])}</span>
         {saving && <span className="ms-2 text-xs text-muted">…</span>}
-        {savedTick && <span className="ms-2 text-xs text-success">✓ {t("draft_saved")}</span>}
+        {savedTick && (
+          <span className="ms-2 inline-flex items-center gap-1 text-xs text-success">
+            <Icon name="check" size={12} strokeWidth={2.8} />
+            {t("draft_saved")}
+          </span>
+        )}
       </p>
 
       <div className="rounded-3xl border border-border bg-surface p-5 sm:p-6">
@@ -802,7 +806,7 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={URL.createObjectURL(p.local)} alt="" className="h-full w-full object-cover" />
                     ) : (
-                      "🖼"
+                      <Icon name="image" size={20} className="text-muted" />
                     )}
                   </span>
                   <div className="min-w-0 flex-1">
@@ -816,7 +820,11 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
                       </div>
                     )}
                     {p.status === "error" && <p className="mt-0.5 text-[11px] font-semibold text-danger">{p.error || t("upload_failed")}</p>}
-                    {p.status === "done" && <p className="mt-0.5 text-[11px] text-success">✓</p>}
+                    {p.status === "done" && (
+                      <p className="mt-0.5 text-[11px] text-success">
+                        <Icon name="check" size={11} strokeWidth={2.8} />
+                      </p>
+                    )}
                   </div>
                   <div className="flex items-center gap-1">
                     {p.status === "error" && (
@@ -829,14 +837,14 @@ export function ListingWizard({ locale, editId }: { locale: string; editId?: str
                         {t("upload_retry")}
                       </button>
                     )}
-                    <button type="button" aria-label="up" onClick={() => movePhoto(i, -1)} disabled={i === 0} className="rounded-lg border border-border-strong px-2 py-1 text-xs disabled:opacity-30">
+                    <button type="button" aria-label="up" onClick={() => movePhoto(i, -1)} disabled={i === 0} className="h-8 w-8 rounded-lg border border-border-strong text-xs disabled:opacity-30">
                       ↑
                     </button>
-                    <button type="button" aria-label="down" onClick={() => movePhoto(i, 1)} disabled={i === photos.length - 1} className="rounded-lg border border-border-strong px-2 py-1 text-xs disabled:opacity-30">
+                    <button type="button" aria-label="down" onClick={() => movePhoto(i, 1)} disabled={i === photos.length - 1} className="h-8 w-8 rounded-lg border border-border-strong text-xs disabled:opacity-30">
                       ↓
                     </button>
-                    <button type="button" aria-label={t("remove")} data-testid="photo-remove" onClick={() => removePhoto(p.key)} className="rounded-lg border border-danger/20 px-2 py-1 text-xs text-danger">
-                      ✕
+                    <button type="button" aria-label={t("remove")} data-testid="photo-remove" onClick={() => removePhoto(p.key)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-danger/20 text-danger">
+                      <Icon name="close" size={13} />
                     </button>
                   </div>
                 </li>

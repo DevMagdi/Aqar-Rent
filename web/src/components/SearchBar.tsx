@@ -87,25 +87,31 @@ export function SearchBar({
             <input aria-label={t("max")} type="number" min={0} inputMode="numeric" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} placeholder={t("max")} className={field} />
           </div>
         </fieldset>
-        <button type="submit" data-testid="search-submit" className="btn-primary min-h-12 w-full self-end whitespace-nowrap px-6 text-base lg:w-auto">
+        <button type="submit" data-testid="search-submit" className="btn-primary min-h-12 w-full gap-2 self-end whitespace-nowrap px-6 text-base lg:w-auto">
           {t("nav_search")}
         </button>
       </form>
-      <div className="mt-3 flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium text-muted">{t("quick_filters")}:</span>
-        {chips.map((item) => (
-          <button
-            key={item}
-            type="button"
-            data-testid={`quick-${item}`}
-            onClick={() => { setType(item); submit(undefined, item); }}
-            className={`rounded-full border px-3 py-1.5 text-sm font-medium transition ${
-              type === item ? "border-brand-deep bg-brand-deep text-gold-light" : "border-border-strong bg-surface text-ink hover:border-gold"
-            }`}
-          >
-            {t(`spec.${item}`)}
-          </button>
-        ))}
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <span className="text-xs font-semibold text-muted">{t("quick_filters")}</span>
+        {chips.map((item) => {
+          const active = type === item;
+          return (
+            <button
+              key={item}
+              type="button"
+              data-testid={`quick-${item}`}
+              aria-pressed={active}
+              onClick={() => { setType(item); submit(undefined, item); }}
+              className={`inline-flex min-h-9 items-center rounded-full border px-3.5 py-1.5 text-sm font-medium transition ${
+                active
+                  ? "border-brand-deep bg-brand-deep text-gold-light"
+                  : "border-border-strong bg-surface text-ink hover:border-verified hover:bg-gold-tint-8"
+              }`}
+            >
+              {t(`spec.${item}`)}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

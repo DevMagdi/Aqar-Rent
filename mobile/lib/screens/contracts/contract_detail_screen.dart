@@ -91,7 +91,7 @@ class _ContractDetailScreenState extends State<ContractDetailScreen> {
     try {
       await api.post('/contracts/${widget.contractId}/confirm', data: {'otp_code': code});
       await _load();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم التأكيد ✓')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم التأكيد')));
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
     }
@@ -169,7 +169,11 @@ class _ContractDetailScreenState extends State<ContractDetailScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('✓ العقد مؤكد نهائياً وغير قابل للتعديل', style: TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 13)),
+                            Row(children: [
+                  const Icon(Icons.verified_rounded, size: 16, color: AppColors.success),
+                  const SizedBox(width: 6),
+                  Expanded(child: Text('العقد مؤكد نهائياً وغير قابل للتعديل', style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.bold, fontSize: 13))),
+                ]),
                             if (c['terms_hash'] != null)
                               Text('SHA-256: ${c['terms_hash']}', style: TextStyle(fontSize: 10, color: appMutedColor(context))),
                           ],
@@ -195,7 +199,7 @@ class _ContractDetailScreenState extends State<ContractDetailScreen> {
                     if ('${terms['utilities_responsibility'] ?? ''}'.isNotEmpty) Text('المرافق: ${terms['utilities_responsibility']}'),
                     if ('${terms['termination_terms'] ?? ''}'.isNotEmpty) Text('الإنهاء: ${terms['termination_terms']}'),
                     const SizedBox(height: 8),
-                    Text('⚖️ اتفاق خاص بين الطرفين: ليس موثّقاً ولا مسجّلاً رسمياً ولا سنداً تنفيذياً، ولا يُغني عن التوثيق الرسمي.', style: TextStyle(fontSize: 11, color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkWarn : AppColors.warn)),
+                    Text('اتفاق خاص بين الطرفين: ليس موثّقاً ولا مسجّلاً رسمياً ولا سنداً تنفيذياً، ولا يُغني عن التوثيق الرسمي.', style: TextStyle(fontSize: 11, color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkWarn : AppColors.warn)),
                   ],
                 ),
               ),
@@ -249,7 +253,7 @@ class _ContractDetailScreenState extends State<ContractDetailScreen> {
                     return Card(
                       child: ListTile(
                         title: Text(kind == 'check_in' ? 'تسليم دخول' : 'تسليم خروج'),
-                        subtitle: Text(hStatus == 'confirmed' ? 'مؤكد ✓' : 'مسودة'),
+                        subtitle: Text(hStatus == 'confirmed' ? 'مؤكد' : 'مسودة'),
                         trailing: hStatus == 'confirmed'
                             ? IconButton(
                                 icon: const Icon(Icons.picture_as_pdf, size: 20),

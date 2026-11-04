@@ -57,7 +57,7 @@ class _TrustScreenState extends State<TrustScreen> {
                         const SizedBox(height: 12),
                         Text(
                           (AppStrings.isArabic ? trust['label_ar'] : trust['label_en'] ?? trust['label_ar'] ?? '') as String,
-                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkTeal : AppColors.tealInk),
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900, color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkGoldText : AppColors.verified),
                         ),
                         const SizedBox(height: 8),
                         Text(
@@ -76,7 +76,7 @@ class _TrustScreenState extends State<TrustScreen> {
                   Card(
                     margin: const EdgeInsets.only(bottom: 8),
                     child: ListTile(
-                      leading: Icon(Icons.verified, color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkTeal : AppColors.tealInk),
+                      leading: Icon(Icons.verified, color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkGoldText : AppColors.verified),
                       title: Text((AppStrings.isArabic ? b['label_ar'] : b['label_en'] ?? b['label_ar'] ?? '') as String,
                           style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w700)),
                       subtitle: Text(b['code'] as String? ?? '', style: const TextStyle(fontSize: 10)),

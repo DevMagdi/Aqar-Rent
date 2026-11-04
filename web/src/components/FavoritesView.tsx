@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { EmptyState, CardSkeleton, ErrorState, StatusBadge } from "./ui";
 import { useI18n } from "./Providers";
-import { buildListingPath, formatMoney, locationName, slugify } from "@/lib/utils";
+import { buildListingPath, formatMoney, locationName } from "@/lib/utils";
 import type { FavoritesOutShape } from "./fav-types";
 import type { Location, Locale } from "@/lib/types";
 

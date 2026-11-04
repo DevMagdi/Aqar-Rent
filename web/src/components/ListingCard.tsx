@@ -3,12 +3,13 @@
 // hover lift + image zoom (RTL-safe, isomorphic: takes `locale` as a prop).
 import Image from "next/image";
 import Link from "next/link";
+import { Icon } from "./Icon";
 import { buildListingPath, formatMoney, locationName } from "@/lib/utils";
 import { makeT } from "@/lib/i18n";
 import type { Locale, Location, SearchItem } from "@/lib/types";
 
 /** Premium trust/featured badge — gradient chip, never a flat pill. */
-export function BadgeFeatured({ label, tone = "gold" }: { label: string; tone?: "gold" | "teal" }) {
+export function BadgeFeatured({ label, tone = "gold" }: { label: string; tone?: "gold" | "verified" }) {
   return (
     <span
       data-testid="badge-premium"
@@ -16,7 +17,8 @@ export function BadgeFeatured({ label, tone = "gold" }: { label: string; tone?: 
         tone === "gold" ? "" : "text-on-dark"
       }`}
     >
-      {tone === "gold" ? "✦" : "✓"} {label}
+      <Icon name={tone === "gold" ? "star" : "check"} size={12} strokeWidth={tone === "gold" ? 1.6 : 2.6} />
+      {label}
     </span>
   );
 }
@@ -60,7 +62,7 @@ export function ListingCard({
               style={{ viewTransitionName: `listing-${item.id.replace(/[^a-zA-Z0-9_-]/g, "-")}` }}
             />
           ) : (
-            <div className="grid h-full place-items-center text-4xl text-muted/50">🏙</div>
+            <div className="grid h-full place-items-center text-muted/40"><Icon name="building" size={40} /></div>
           )}
           {/* readability gradient (bottom → transparent) */}
           <div
@@ -81,7 +83,8 @@ export function ListingCard({
               title={locale === "ar" ? item.trust_label_ar || "" : "Verified owner"}
               className="absolute top-2 start-2 inline-flex items-center gap-1 rounded-full border border-on-dark/20 bg-brand-deep/70 px-2.5 py-1 text-[11px] font-bold text-gold-light shadow backdrop-blur"
             >
-              ✓ {t("trust_verified")}
+              <Icon name="check" size={12} strokeWidth={2.8} />
+              {t("trust_verified")}
             </span>
           ) : null}
         </div>
@@ -99,18 +102,28 @@ export function ListingCard({
             <span className="truncate">{[locationName(city, locale), locationName(gov, locale)].filter(Boolean).join("، ") || item.address_text}</span>
           </p>
           {item.office_name_ar ? (
-            <p className="inline-flex max-w-full items-center gap-1 truncate rounded-full bg-teal-bg px-2.5 py-1 text-xs font-semibold text-teal-ink">✓ {item.office_name_ar}</p>
+            <p className="inline-flex max-w-full items-center gap-1 truncate rounded-full border border-verified-border bg-verified-bg px-2.5 py-1 text-xs font-semibold text-verified">
+              <Icon name="check" size={12} strokeWidth={2.8} />
+              {item.office_name_ar}
+            </p>
           ) : null}
           <div className="flex items-center gap-2 border-t border-track pt-2.5 text-xs font-medium text-muted" dir={locale === "ar" ? "rtl" : "ltr"}>
             <span className="rounded-full bg-track px-2 py-0.5 tabular-nums">{item.area_m2.toFixed(0)} م²</span>
-            <span className="rounded-full bg-track px-2 py-0.5 tabular-nums">
-              🛏 {item.bedrooms}
+            <span className="inline-flex items-center gap-1 rounded-full bg-track px-2 py-0.5 tabular-nums">
+              <Icon name="bed" size={13} />
+              {item.bedrooms}
             </span>
-            <span className="rounded-full bg-track px-2 py-0.5 tabular-nums">
-              🛁 {item.bathrooms}
+            <span className="inline-flex items-center gap-1 rounded-full bg-track px-2 py-0.5 tabular-nums">
+              <Icon name="bath" size={13} />
+              {item.bathrooms}
             </span>
             <span className="rounded-full bg-track px-2 py-0.5">{t(`spec.${item.furnished}`)}</span>
-            {item.is_featured && <span className="rounded-full bg-gold-tint-14 px-2 py-0.5 text-ink">★ {t("trust_featured")}</span>}
+            {item.is_featured && (
+              <span className="inline-flex items-center gap-1 rounded-full bg-gold-tint-14 px-2 py-0.5 text-verified-strong">
+                <Icon name="star" size={12} />
+                {t("trust_featured")}
+              </span>
+            )}
           </div>
         </div>
       </Link>

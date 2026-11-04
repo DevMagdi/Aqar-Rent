@@ -4,6 +4,14 @@ import { useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import type { User } from "@/lib/types";
 import { useAuth, useI18n, useToast } from "./Providers";
+import { Icon } from "./Icon";
+
+/** "+201000000101" → "01000000101". */
+function localPhone(phone: string | null | undefined): string {
+  if (!phone) return "";
+  const digits = phone.replace(/\D/g, "");
+  return digits.startsWith("20") ? `0${digits.slice(2)}` : digits;
+}
 
 export function AccountView() {
   const { locale, t } = useI18n();
@@ -48,24 +56,49 @@ export function AccountView() {
     }
   }
 
-  const inputCls = "mt-1 w-full rounded-xl border border-border-strong px-4 py-3 text-sm outline-none focus:border-gold";
+  const inputCls =
+  "mt-1 min-h-11 w-full rounded-[var(--radius-field)] border border-border-strong bg-surface px-4 py-3 text-sm text-ink outline-none transition-colors focus-visible:border-verified";
 
   return (
     <div className="mx-auto max-w-xl space-y-6">
-      <section className="rounded-3xl border border-border bg-surface p-6">
-        <h1 className="text-xl font-bold text-ink-strong">{t("account_title")}</h1>
+      <header className="flex items-center gap-3">
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-gold text-lg font-bold text-gold-text" aria-hidden>
+          {user?.full_name ? (
+            user.full_name.slice(0, 1).toUpperCase()
+          ) : (
+            <Icon name="user" size={20} strokeWidth={2} />
+          )}
+        </span>
+        <div className="min-w-0">
+          <p className="truncate font-display text-lg font-bold text-ink-strong">{user?.full_name || t("account_unnamed")}</p>
+          <p className="text-xs text-muted" dir="ltr">{localPhone(user?.phone)}</p>
+        </div>
+      </header>
+
+      <section className="rounded-[var(--radius-card)] border border-border bg-surface p-6 shadow-card">
+        <h2 className="text-lg font-bold text-ink-strong">{t("account_details")}</h2>
         <form onSubmit={save} className="mt-4 space-y-4" data-testid="account-form">
           <div>
             <label className="text-sm font-semibold text-ink" htmlFor="acc-phone">
               {t("account_phone")}
             </label>
-            <input id="acc-phone" dir="ltr" readOnly value={user?.phone || ""} className={inputCls + " bg-bg text-muted"} />
+            <input id="acc-phone" dir="ltr" readOnly value={localPhone(user?.phone)} className={inputCls + " cursor-not-allowed bg-bg text-muted"} />
+            <p className="mt-1 text-xs text-muted">{t("account_phone_hint")}</p>
           </div>
           <div>
             <label className="text-sm font-semibold text-ink" htmlFor="acc-name">
               {t("account_name")}
             </label>
-            <input id="acc-name" data-testid="input-name" className={inputCls} value={name} onChange={(e) => setName(e.target.value)} maxLength={120} />
+            <input
+              id="acc-name"
+              data-testid="input-name"
+              className={inputCls}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              maxLength={120}
+              autoComplete="name"
+              placeholder={t("account_name_ph")}
+            />
           </div>
           <div>
             <label className="text-sm font-semibold text-ink" htmlFor="acc-lang">
@@ -81,13 +114,13 @@ export function AccountView() {
               {err}
             </p>
           )}
-          <button type="submit" data-testid="btn-save-profile" disabled={busy} className="w-full rounded-xl bg-gold py-3 font-semibold text-gold-text hover:bg-gold-dark disabled:opacity-60">
+          <button type="submit" data-testid="btn-save-profile" disabled={busy} className="btn-primary min-h-11 w-full justify-center disabled:opacity-60">
             {t("save")}
           </button>
         </form>
       </section>
 
-      <section className="rounded-3xl border border-danger/20 bg-danger-bg p-6">
+      <section className="rounded-[var(--radius-card)] border border-danger/25 bg-danger-bg p-6">
         <h2 className="font-bold text-danger">{t("delete_account")}</h2>
         <p className="mt-1 text-sm text-danger">{t("delete_warning")}</p>
         {!confirming ? (
@@ -95,7 +128,7 @@ export function AccountView() {
             type="button"
             data-testid="btn-delete-account"
             onClick={() => setConfirming(true)}
-            className="mt-4 rounded-xl border border-danger/20 bg-surface px-4 py-2.5 text-sm font-semibold text-danger hover:bg-danger-bg"
+            className="mt-4 inline-flex min-h-10 items-center rounded-[var(--radius-field)] border border-danger/30 bg-surface px-4 text-sm font-semibold text-danger transition-colors hover:bg-danger-bg"
           >
             {t("delete_account")}
           </button>
@@ -103,10 +136,10 @@ export function AccountView() {
           <div className="mt-4 space-y-3">
             <p className="text-sm font-semibold text-danger">{t("delete_confirm")}</p>
             <div className="flex gap-2">
-              <button type="button" onClick={() => setConfirming(false)} className="flex-1 rounded-xl border border-border-strong bg-surface py-2.5 text-sm font-semibold text-ink">
+              <button type="button" onClick={() => setConfirming(false)} className="min-h-11 flex-1 rounded-[var(--radius-field)] border border-border-strong bg-surface py-2.5 text-sm font-semibold text-ink">
                 {t("cancel")}
               </button>
-              <button type="button" data-testid="btn-delete-confirm" disabled={busy} onClick={removeAccount} className="flex-1 rounded-xl bg-danger-fill py-2.5 text-sm font-semibold text-on-dark hover:bg-danger-fill disabled:opacity-60">
+              <button type="button" data-testid="btn-delete-confirm" disabled={busy} onClick={removeAccount} className="min-h-11 flex-1 rounded-[var(--radius-field)] bg-danger-fill py-2.5 text-sm font-semibold text-on-dark disabled:opacity-60">
                 {t("confirm_ok")}
               </button>
             </div>

@@ -215,9 +215,9 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
                       ]),
                     ),
                 ]),
-                if (d.trustLabelAr != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(d.trustLabelAr!, style: const TextStyle(fontSize: 12, color: AppColors.teal))),
+                if (d.trustLabelAr != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(d.trustLabelAr!, style: TextStyle(fontSize: 12, color: Theme.of(context).brightness == Brightness.dark ? AppColors.gold : AppColors.verified))),
                 if (d.trustNoteAr != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(d.trustNoteAr!, style: TextStyle(fontSize: 11, color: Theme.of(context).colorScheme.onSurface.withValues(alpha: .68)))),
-                if (d.officeNameAr != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text('🏢 ${d.officeNameAr}', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700))),
+                if (d.officeNameAr != null) Padding(padding: const EdgeInsets.only(top: 4), child: Text(d.officeNameAr!, style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700))),
               ],
             ),
           ),
@@ -235,7 +235,7 @@ class _ListingDetailScreenState extends State<ListingDetailScreen> {
           const SizedBox(height: 12),
           Card(
             child: ListTile(
-              leading: const CircleAvatar(backgroundColor: AppColors.tealBg, child: Icon(Icons.person_outline, color: AppColors.tealInk)),
+              leading: const CircleAvatar(backgroundColor: AppColors.verifiedBg, child: Icon(Icons.person_outline, color: AppColors.verified)),
               title: Text(d.ownerName ?? (d.verifiedBadge ? s('verified_owner') : s('owner')), style: const TextStyle(fontWeight: FontWeight.w700)),
               subtitle: TrustBadge(level: d.trustLevel, compact: true),
               minLeadingWidth: 44,

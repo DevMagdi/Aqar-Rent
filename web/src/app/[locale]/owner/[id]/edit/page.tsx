@@ -7,7 +7,9 @@ export default async function EditListingPage({ params }: { params: Promise<{ lo
   const l = locale === "en" ? "en" : "ar";
   return (
     <RequireAuth>
-      <ListingWizard locale={l} editId={id} />
+      <OwnerShell>
+        <ListingWizard locale={l} editId={id} />
+      </OwnerShell>
     </RequireAuth>
   );
 }

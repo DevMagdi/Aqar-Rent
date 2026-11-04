@@ -1,5 +1,21 @@
 # Premium Visual Overhaul — exact token proposal (analysis → values → code)
 
+> **SUPERSEDED (2026-11) — historical record only.**
+>
+> This was the pre-implementation proposal for the first premium pass. The
+> delivered identity is **Mantiq Navy + Gold only** and is documented in
+> [`brand-identity.md`](./brand-identity.md); the authoritative values live in
+> `web/src/styles/tokens.css` (mirrored byte-for-byte in
+> `admin/src/styles/tokens.css`). Two decisions made here were **reversed**:
+>
+> * the `#0F1C2E` / `#C9A86C` / `#F8F7F4` palette → exact Mantiq
+>   `#16273B` / `#BDA77E` / warm `#FAF9F5`, with derived steps only;
+> * the teal "trust" family (`--color-teal*`) → **removed**; the verified mark
+>   is gold (`#86693C` on light, `#BDA77E` on dark).
+>
+> Everything else below (dark-mode structure, radial hairline rules, type and
+> motion ramp, card anatomy) shipped. Kept for provenance.
+
 > Written BEFORE implementation, per the execution order of the task.
 > Validation: every pair below was computed against WCAG 2.1 AA (4.5:1 normal
 > text, 3:1 large text / UI graphics) — see the ratios column.

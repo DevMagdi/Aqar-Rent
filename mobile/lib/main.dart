@@ -136,8 +136,12 @@ class _AqarAppState extends State<AqarApp> with WidgetsBindingObserver {
         darkTheme: AppTheme.dark(),
         themeMode: themeMode,
         builder: (context, child) {
-          final disableAnimations = MediaQuery.of(context).disableAnimations;
-          return Directionality(
+          final media = MediaQuery.of(context);
+          final disableAnimations = media.disableAnimations;
+          return MediaQuery(
+            // Dynamic Type up to 200% (WCAG 1.4.4); layouts reflow, never clip.
+            data: media.copyWith(textScaler: media.textScaler.clamp(minScaleFactor: 1.0, maxScaleFactor: 2.0)),
+            child: Directionality(
             textDirection: AppStrings.direction,
             child: TickerMode(
               enabled: !disableAnimations,
@@ -169,6 +173,7 @@ class _AqarAppState extends State<AqarApp> with WidgetsBindingObserver {
                 ],
               ),
             ),
+          ),
           );
         },
       ),

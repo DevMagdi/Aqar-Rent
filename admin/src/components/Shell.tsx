@@ -9,24 +9,128 @@ import { BrandMark } from "./BrandMark";
 interface NavItem {
   to: string;
   label: string;
+  icon: string;
   roles: string[];
 }
+
+const ICONS: Record<string, ReactNode> = {
+  grid: (
+    <>
+      <path d="M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z" />
+    </>
+  ),
+  shield: (
+    <>
+      <path d="M12 3 5 6v6c0 4 3 7 7 9 4-2 7-5 7-9V6l-7-3Z" />
+      <path d="m9 12 2 2 4-4" />
+    </>
+  ),
+  badge: (
+    <>
+      <circle cx="12" cy="9" r="5" />
+      <path d="m8.5 13-1 7 4.5-2.5L16.5 20l-1-7" />
+    </>
+  ),
+  flag: (
+    <>
+      <path d="M5 21V4h9l-1 3 6 1v8H9l-1 3H5Z" />
+    </>
+  ),
+  users: (
+    <>
+      <circle cx="9" cy="8" r="3.5" />
+      <path d="M2.5 20a6.5 6.5 0 0 1 13 0" />
+      <path d="M16 5.2a3.5 3.5 0 0 1 0 6.6M18 20a6 6 0 0 0-2-4.5" />
+    </>
+  ),
+  card: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="3" />
+      <path d="M3 10h18" />
+    </>
+  ),
+  bank: (
+    <>
+      <path d="M3 10 12 4l9 6" />
+      <path d="M5 10v8M10 10v8M14 10v8M19 10v8M3 21h18" />
+    </>
+  ),
+  tag: (
+    <>
+      <path d="M12 3H5v7l9 9 7-7-9-9Z" />
+      <circle cx="8.5" cy="7.5" r="1.3" />
+    </>
+  ),
+  layers: (
+    <>
+      <path d="m12 3 9 5-9 5-9-5 9-5Z" />
+      <path d="m3 13 9 5 9-5" />
+    </>
+  ),
+  building: (
+    <>
+      <rect x="4" y="3" width="10" height="18" rx="2" />
+      <path d="M14 9h6v12h-6" />
+      <path d="M7 7h4M7 11h4M7 15h4M17 13h1M17 17h1" />
+    </>
+  ),
+  appeal: (
+    <>
+      <path d="M21 12a9 9 0 1 1-3-6.7" />
+      <path d="M21 4v5h-5" />
+    </>
+  ),
+  scale: (
+    <>
+      <path d="M12 4v16M6 8h12" />
+      <path d="M6 8 3 15h6L6 8ZM18 8l-3 7h6l-3-7Z" />
+    </>
+  ),
+  id: (
+    <>
+      <rect x="3" y="5" width="18" height="14" rx="3" />
+      <circle cx="8.5" cy="11" r="2" />
+      <path d="M5.5 16a3.5 3.5 0 0 1 6 0M14 10h4M14 14h4" />
+    </>
+  ),
+  history: (
+    <>
+      <path d="M3 12a9 9 0 1 0 3-6.7" />
+      <path d="M3 4v5h5" />
+      <path d="M12 8v4l3 2" />
+    </>
+  ),
+  gear: (
+    <>
+      <circle cx="12" cy="12" r="3" />
+      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-2.9 1.2 2 2 0 1 1-4 0 1.7 1.7 0 0 0-2.9-1.2l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1A1.7 1.7 0 0 0 3 15a2 2 0 1 1 0-4 1.7 1.7 0 0 0 1.4-2.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1A1.7 1.7 0 0 0 10 4.6a2 2 0 1 1 4 0 1.7 1.7 0 0 0 2.9 1.2l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1A1.7 1.7 0 0 0 21 11a2 2 0 1 1 0 4Z" />
+    </>
+  ),
+};
+
+function NavIcon({ name }: { name: string }) {
+  return (
+    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="shrink-0 opacity-90">
+      {ICONS[name]}
+    </svg>
+  );
+}
 export const NAV: NavItem[] = [
-  { to: "/", label: "Dashboard", roles: ["super_admin", "finance", "moderator"] },
-  { to: "/moderation", label: "Moderation", roles: ["super_admin", "moderator"] },
-  { to: "/verifications", label: "Verifications", roles: ["super_admin", "moderator"] },
-  { to: "/reports", label: "Reports", roles: ["super_admin", "moderator"] },
-  { to: "/users", label: "Users", roles: ["super_admin", "moderator"] },
-  { to: "/payments", label: "Payments", roles: ["super_admin", "finance"] },
-  { to: "/bank-transfers", label: "Bank transfers", roles: ["super_admin", "finance"] },
-  { to: "/plans", label: "Plans & promos", roles: ["super_admin"] },
-  { to: "/growth-plans", label: "Subscriptions & packages", roles: ["super_admin"] },
-  { to: "/growth-offices", label: "Offices", roles: ["super_admin", "moderator"] },
-  { to: "/growth-appeals", label: "Appeals", roles: ["super_admin", "moderator"] },
-  { to: "/growth-reconciliation", label: "Reconciliation", roles: ["super_admin", "finance"] },
-  { to: "/staff", label: "Staff & roles", roles: ["super_admin"] },
-  { to: "/audit", label: "Audit log", roles: ["super_admin"] },
-  { to: "/settings", label: "Settings", roles: ["super_admin", "moderator", "finance"] },
+  { to: "/", label: "Dashboard", icon: "grid", roles: ["super_admin", "finance", "moderator"] },
+  { to: "/moderation", label: "Moderation", icon: "shield", roles: ["super_admin", "moderator"] },
+  { to: "/verifications", label: "Verifications", icon: "badge", roles: ["super_admin", "moderator"] },
+  { to: "/reports", label: "Reports", icon: "flag", roles: ["super_admin", "moderator"] },
+  { to: "/users", label: "Users", icon: "users", roles: ["super_admin", "moderator"] },
+  { to: "/payments", label: "Payments", icon: "card", roles: ["super_admin", "finance"] },
+  { to: "/bank-transfers", label: "Bank transfers", icon: "bank", roles: ["super_admin", "finance"] },
+  { to: "/plans", label: "Plans & promos", icon: "tag", roles: ["super_admin"] },
+  { to: "/growth-plans", label: "Subscriptions & packages", icon: "layers", roles: ["super_admin"] },
+  { to: "/growth-offices", label: "Offices", icon: "building", roles: ["super_admin", "moderator"] },
+  { to: "/growth-appeals", label: "Appeals", icon: "appeal", roles: ["super_admin", "moderator"] },
+  { to: "/growth-reconciliation", label: "Reconciliation", icon: "scale", roles: ["super_admin", "finance"] },
+  { to: "/staff", label: "Staff & roles", icon: "id", roles: ["super_admin"] },
+  { to: "/audit", label: "Audit log", icon: "history", roles: ["super_admin"] },
+  { to: "/settings", label: "Settings", icon: "gear", roles: ["super_admin", "moderator", "finance"] },
 ];
 
 interface Ctx {
@@ -125,14 +229,15 @@ export function Shell({ children }: { children: ReactNode }) {
                 end={n.to === "/"}
                 data-testid={`nav-${n.to.replace(/\//g, "") || "dashboard"}`}
                 className={({ isActive }) =>
-                  `relative block rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-150 ${
+                  `admin-nav-link relative flex min-h-10 items-center gap-2.5 rounded-[10px] px-3 py-2 text-sm font-medium transition-colors duration-150 ${
                     isActive
                       ? "bg-sidebar-active-bg text-sidebar-active"
                       : "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-text"
                   }`
                 }
               >
-                {n.label}
+                <NavIcon name={n.icon} />
+                <span className="truncate">{n.label}</span>
               </NavLink>
             ))}
           </nav>
@@ -182,8 +287,11 @@ export function Shell({ children }: { children: ReactNode }) {
                 </svg>
               </button>
               <div>
-                <h2 className="text-lg font-bold text-ink-strong">Operations console</h2>
-                <p className="text-xs text-muted">{new Intl.DateTimeFormat("en-GB", { dateStyle: "full" }).format(new Date())}</p>
+                <h2 className="font-display text-lg font-bold text-ink-strong">Operations console</h2>
+                <p className="flex items-center gap-1.5 text-xs text-muted">
+                  <span className="admin-live-dot" aria-hidden />
+                  {new Intl.DateTimeFormat("en-GB", { dateStyle: "full" }).format(new Date())}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-3">
@@ -211,9 +319,10 @@ export function Shell({ children }: { children: ReactNode }) {
                     to={n.to}
                     end={n.to === "/"}
                     onClick={() => setMobileOpen(false)}
-                    className={({ isActive }) => `admin-mobile-nav-item block rounded-xl px-4 py-3 text-sm font-semibold ${isActive ? "bg-sidebar-active-bg text-sidebar-active" : "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-text"}`}
+                    className={({ isActive }) => `admin-mobile-nav-item flex min-h-12 items-center gap-3 rounded-xl px-4 py-3 text-sm font-semibold ${isActive ? "bg-sidebar-active-bg text-sidebar-active" : "text-sidebar-muted hover:bg-sidebar-hover hover:text-sidebar-text"}`}
                   >
-                    {n.label}
+                    <NavIcon name={n.icon} />
+                    <span>{n.label}</span>
                   </NavLink>
                 ))}
               </nav>

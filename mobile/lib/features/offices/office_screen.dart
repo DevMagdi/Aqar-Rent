@@ -134,7 +134,7 @@ class _OfficeScreenState extends State<OfficeScreen> {
                 ? null
                 : () => _run(
                       () => api.post('/offices', data: _officeForm),
-                      AppStrings.isArabic ? 'تم إنشاء المكتب ✓' : 'Office created ✓',
+                      AppStrings.isArabic ? 'تم إنشاء المكتب' : 'Office created',
                     ),
             child: Text(s('office_save')),
           ),
@@ -209,7 +209,7 @@ class _OfficeScreenState extends State<OfficeScreen> {
                       items: [for (final st in _stages) DropdownMenuItem(value: st, child: Text(st, style: const TextStyle(fontSize: 11)))],
                       onChanged: (v) => _run(
                         () => api.patch('/offices/$id/leads/${l['id']}', data: {'stage': v}),
-                        AppStrings.isArabic ? 'تم تحديث المرحلة ✓' : 'Stage updated ✓',
+                        AppStrings.isArabic ? 'تم تحديث المرحلة' : 'Stage updated',
                       ),
                     ),
                   ),
@@ -239,7 +239,7 @@ class _OfficeScreenState extends State<OfficeScreen> {
                     ? null
                     : () => _run(
                           () => api.post('/offices/$id/members', data: _inviteForm),
-                          AppStrings.isArabic ? 'تمت الدعوة ✓' : 'Invited ✓',
+                          AppStrings.isArabic ? 'تمت الدعوة' : 'Invited',
                         ),
                 child: Text(s('add')),
               ),
@@ -273,7 +273,7 @@ class _OfficeScreenState extends State<OfficeScreen> {
                         }
                         _run(
                           () => api.post('/offices/$id/leads', data: body),
-                          AppStrings.isArabic ? 'أُضيف العميل ✓' : 'Lead added ✓',
+                          AppStrings.isArabic ? 'أُضيف العميل' : 'Lead added',
                         );
                       },
                 child: Text(s('add')),

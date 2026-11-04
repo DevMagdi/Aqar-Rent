@@ -7,6 +7,7 @@ import { EmptyState, ErrorState, StatusBadge } from "./ui";
 import { useI18n, useToast } from "./Providers";
 import { formatDate, formatMoney } from "@/lib/utils";
 import type { Locale, OrdersPage as Page } from "@/lib/types";
+import { Icon } from "./Icon";
 
 export function OrdersListView({ locale }: { locale: Locale }) {
   const { t } = useI18n();
@@ -94,7 +95,14 @@ export function OrdersListView({ locale }: { locale: Locale }) {
                   onClick={() => downloadReceipt(o.id)}
                   className="mt-3 rounded-lg border border-border-strong px-3 py-1.5 text-xs font-semibold text-ink hover:bg-bg disabled:opacity-60"
                 >
-                  {dlId === o.id ? "…" : `⬇ ${t("download_receipt")}`}
+                  {dlId === o.id ? (
+                "…"
+              ) : (
+                <>
+                  <Icon name="download" size={14} />
+                  {t("download_receipt")}
+                </>
+              )}
                 </button>
               )}
             </li>

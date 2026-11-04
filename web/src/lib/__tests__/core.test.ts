@@ -123,9 +123,12 @@ describe("i18n", () => {
 });
 
 describe("formatting", () => {
-  it("formats money with Arabic digits in Arabic and Latin digits in English", () => {
-    expect(formatMoney(7500, "ar")).toBe("٧٬٥٠٠");
+  it("formats money with Latin digits in BOTH locales (Arabic words, Latin numerals)", () => {
+    // Decision: prices must be scannable and match the payment gateway /
+    // contract PDFs, so Arabic-Indic numerals are not used for amounts.
+    expect(formatMoney(7500, "ar")).toBe("7,500");
     expect(formatMoney(7500, "en")).toBe("7,500");
+    expect(formatMoney(0, "ar")).toBe("0");
   });
   it("waHref builds an international wa.me link", () => {
     expect(waHref("01001112233", "hi there")).toBe("https://wa.me/201001112233?text=hi%20there");

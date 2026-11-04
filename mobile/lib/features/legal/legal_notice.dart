@@ -20,7 +20,7 @@ class LegalNotice extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(children: [
-              const Text('⚖️', style: TextStyle(fontSize: 14)),
+              Icon(Icons.balance_outlined, size: 16, color: Theme.of(context).brightness == Brightness.dark ? AppColors.gold : AppColors.verified),
               const SizedBox(width: 8),
               Expanded(child: Text(s('legal_title'), style: const TextStyle(fontWeight: FontWeight.w900, fontSize: 12.5))),
             ]),

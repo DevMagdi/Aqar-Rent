@@ -6,6 +6,20 @@ import 'package:flutter/material.dart';
 import 'i18n.dart';
 import 'theme.dart';
 
+/// Dynamic Type policy for the whole app.
+///
+/// Flutter scales text with the OS setting; at 200% the layout must reflow, not
+/// clip. We clamp to the accessibility maximum (2.0×) and mark the app so that
+/// text does not get *smaller* than the user asked for either.
+extension AqarTextScale on BuildContext {
+  static const double maxScale = 2.0;
+
+  TextScaler get aqarTextScaler {
+    final scale = MediaQuery.textScalerOf(this).clamp(minScaleFactor: 1.0, maxScaleFactor: maxScale);
+    return scale;
+  }
+}
+
 class AqarPageRoute<T> extends PageRouteBuilder<T> {
   AqarPageRoute({required WidgetBuilder builder, super.settings, bool disableAnimations = false}) : super(
     pageBuilder: (context, _, __) => builder(context),
@@ -221,6 +235,106 @@ class OfflineBanner extends StatelessWidget {
       );
 }
 
+
+/// The Aqar Rent mark, drawn with geometry (navy tile, gold roof + keyhole).
+/// Mirrors the web `<BrandMark />` and the launcher icon, so the logo is the
+/// same object everywhere and never depends on a font being loaded.
+class AqarMark extends StatelessWidget {
+  const AqarMark({super.key, this.size = 36, this.tile = true});
+  final double size;
+  final bool tile;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: size,
+      height: size,
+      child: CustomPaint(painter: _AqarMarkPainter(tile: tile)),
+    );
+  }
+}
+
+class _AqarMarkPainter extends CustomPainter {
+  _AqarMarkPainter({required this.tile});
+  final bool tile;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final unit = size.width / 48;
+    if (tile) {
+      final rect = Rect.fromLTWH(0, 0, size.width, size.height);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(rect, Radius.circular(12.5 * unit)),
+        Paint()..color = AppColors.brandDeep,
+      );
+    }
+    final gold = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.7 * unit
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..color = AppColors.gold;
+    final goldLight = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.7 * unit
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..color = AppColors.goldLight;
+
+    Offset at(double x, double y) => Offset(x * unit, y * unit);
+    final roof = Path()
+      ..moveTo(11.5 * unit, 22.4 * unit)
+      ..lineTo(24 * unit, 12.2 * unit)
+      ..lineTo(36.5 * unit, 22.4 * unit);
+    canvas.drawPath(roof, goldLight);
+
+    final body = Path()
+      ..moveTo(15.1 * unit, 22.2 * unit)
+      ..lineTo(15.1 * unit, 30.7 * unit)
+      ..quadraticBezierTo(15.1 * unit, 35.7 * unit, 20.2 * unit, 35.7 * unit)
+      ..lineTo(27.8 * unit, 35.7 * unit)
+      ..quadraticBezierTo(32.9 * unit, 35.7 * unit, 32.9 * unit, 30.7 * unit)
+      ..lineTo(32.9 * unit, 22.2 * unit);
+    canvas.drawPath(body, gold);
+
+    canvas.drawCircle(at(24, 30.5), 3.05 * unit, Paint()..color = AppColors.gold);
+    canvas.drawCircle(at(24, 29.9), 1.05 * unit, Paint()..color = AppColors.brandDeep);
+  }
+
+  @override
+  bool shouldRepaint(covariant _AqarMarkPainter oldDelegate) => oldDelegate.tile != tile;
+}
+
+/// Wordmark + mark lockup used in the app bar.
+class AqarLockup extends StatelessWidget {
+  const AqarLockup({super.key, this.showWordmark = true, this.size = 32});
+  final bool showWordmark;
+  final double size;
+
+  @override
+  Widget build(BuildContext context) {
+    final ink = Theme.of(context).brightness == Brightness.dark ? AppColors.darkInk : AppColors.ink;
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        AqarMark(size: size),
+        if (showWordmark) ...[
+          const SizedBox(width: 10),
+          Text(
+            s('brand'),
+            style: TextStyle(
+              fontFamily: 'ElMessiriArabic',
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: ink,
+            ),
+          ),
+        ],
+      ],
+    );
+  }
+}
+
 class TrustBadge extends StatelessWidget {
   const TrustBadge({super.key, required this.level, this.compact = false});
   final String level;
@@ -229,8 +343,9 @@ class TrustBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final verified = level == 'ownership' || level == 'premium';
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final foreground = verified ? (dark ? AppColors.brandDeep : AppColors.onDark) : (dark ? AppColors.darkMuted : AppColors.muted);
-    final background = verified ? (dark ? AppColors.darkTeal : AppColors.tealInk) : (dark ? AppColors.darkTrack : AppColors.track);
+    // Verified = a gold pill with navy text (12.49:1) in both modes.
+    final foreground = verified ? AppColors.brandDeep : (dark ? AppColors.darkMuted : AppColors.muted);
+    final background = verified ? AppColors.gold : (dark ? AppColors.darkTrack : AppColors.track);
     if (!verified && compact) return const SizedBox.shrink();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),

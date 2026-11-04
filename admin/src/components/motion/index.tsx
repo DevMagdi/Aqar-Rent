@@ -109,7 +109,7 @@ export interface CountUpProps {
 export function CountUp({ value, locale = "en", suffix = "", decimals = 0, duration = 900, className = "" }: CountUpProps) {
   const raw = typeof value === "number" ? value : Number(String(value).replace(/[^\d.-]/g, ""));
   const target = Number.isFinite(raw) ? raw : 0;
-  const formatter = useMemo(() => new Intl.NumberFormat(locale === "ar" ? "ar-EG-u-nu-arab" : "en-EG", {
+  const formatter = useMemo(() => new Intl.NumberFormat(locale === "ar" ? "ar-EG-u-nu-latn" : "en-EG", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   }), [decimals, locale]);

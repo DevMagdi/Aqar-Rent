@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { fetchServer } from "@/lib/server";
-import { buildListingPath, locationName, slugify } from "@/lib/utils";
+import { buildListingPath, locationName } from "@/lib/utils";
 import type { Location, SearchResult } from "@/lib/types";
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";

@@ -38,7 +38,7 @@ export function BankTransfers() {
     setBusy(true);
     try {
       await api(`/admin/bank-transfers/${target.id}/approve`, { method: "POST" });
-      toast("Transfer approved — ad live ✓");
+      toast("Transfer approved — ad live");
       setTarget(null);
       load();
     } catch (e) {

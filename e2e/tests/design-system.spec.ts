@@ -7,14 +7,16 @@
 import { expect, test, type Page } from "@playwright/test";
 import { ADMIN, PHONES, adminLogin, makeActiveListing } from "../utils/api";
 
-const GOLD = "rgb(201, 168, 108)"; // #C9A86C (premium accent)
-const GOLD_DARK = "rgb(156, 129, 78)"; // #9C814E (focus/graphics on light)
-const NAVY = "rgb(15, 28, 46)"; // #0F1C2E (primary ink / light sidebar)
-const NAVY_DEEP = "rgb(11, 18, 32)"; // #0B1220 (brand-deep / dark bg)
-const BG = "rgb(248, 247, 244)"; // #F8F7F4 (warm off-white)
-const DARK_BG = "rgb(11, 18, 32)"; // #0B1220
-const DARK_SURFACE = "rgb(20, 28, 43)"; // #141C2B
-const DARK_INK = "rgb(233, 237, 245)"; // #E9EDF5
+// Exact Mantiq identity values (see docs/design/brand-identity.md).
+const GOLD = "rgb(189, 167, 126)"; // #BDA77E Mantiq Gold
+const GOLD_DARK = "rgb(134, 105, 60)"; // #86693C derived gold-dark (5.12:1 on white)
+const GOLD_LIGHT = "rgb(216, 199, 164)"; // #D8C7A4 derived gold-light
+const NAVY = "rgb(22, 39, 59)"; // #16273B Mantiq Navy
+const NAVY_DEEP = "rgb(14, 23, 40)"; // #0E1728 Mantiq Navy Deep
+const BG = "rgb(250, 249, 245)"; // #FAF9F5 derived warm canvas
+const DARK_BG = "rgb(14, 23, 40)"; // #0E1728
+const DARK_SURFACE = "rgb(23, 41, 63)"; // #17293F derived dark surface
+const DARK_INK = "rgb(237, 233, 224)"; // #EDE9E0
 
 function parseRgb(c: string): [number, number, number, number] {
   const m = c.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/);
@@ -85,17 +87,18 @@ test("Mantiq design system: public web (ar + en)", async ({ page, request }) => 
   await expect(page.getByTestId("results-count")).toBeVisible();
   await expect(page.getByTestId("maplibre")).toBeAttached();
 
-  // ── Active nav indicator (header) — inline-start, gold,3px ─────────────
-  const ind = page.getByTestId("nav-indicator").first();
-  await expect(ind).toBeVisible();
-  const indBg = await ind.evaluate((el) => getComputedStyle(el).backgroundColor);
-  // light-chrome header: indicator = gold-dark (gold on white is only2.1:1 —
-  // graphics need3:1; the gold label rule applies to dark chrome sidebars)
-  expect(indBg).toBe(GOLD_DARK);
-  const indW = await ind.evaluate((el) => getComputedStyle(el).width);
-  expect(indW).toBe("3px");
-  const indStart = await ind.evaluate((el) => getComputedStyle(el).insetInlineStart);
-  expect(["0px", "auto", "auto 0px"].some((v) => indStart === v) || parseFloat(indStart || "0") === 0).toBeTruthy();
+  // ── Active nav state (header) — gold tint + navy label, AA ──────────────
+  const activeNav = page.locator('.site-main-nav a[aria-current="page"]').first();
+  await expect(activeNav).toBeVisible();
+  const navFg = await activeNav.evaluate((el) => getComputedStyle(el).color);
+  const navBg = await activeNav.evaluate((el) => getComputedStyle(el).backgroundColor);
+  expect(contrast(navFg, over(navBg, "rgb(255, 255, 255)"))).toBeGreaterThanOrEqual(4.5);
+
+  // ── Verified mark is GOLD everywhere (never a second hue) ──────────────
+  const verifiedCss = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue("--color-verified").trim(),
+  );
+  expect(verifiedCss.toUpperCase()).toBe("#86693C");
 
   // ── Listing detail (created for real) ─────────────────────────────────
   const detailId = await makeActiveListing(request, PHONES.journeyOwner, "apiG", `ديزاين ${Date.now().toString(36)}`);
@@ -194,7 +197,7 @@ test("Mantiq design system: checkout + admin console", async ({ page, request })
   expect(await adminSidebar.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(NAVY);
 
   // active dashboard item: gold label + soft-gold bg + indicator
-  const dashNav = page.getByTestId("nav-dashboard");
+  const dashNav = page.locator('[data-testid="admin-sidebar"] a[aria-current="page"]').first();
   await expect(dashNav).toHaveAttribute("aria-current", "page");
   const dashColor = await dashNav.evaluate((el) => getComputedStyle(el).color);
   expect(dashColor).toBe(GOLD);
@@ -203,14 +206,15 @@ test("Mantiq design system: checkout + admin console", async ({ page, request })
   const adminInd = page.locator('[data-testid="admin-sidebar"] [data-testid="nav-indicator"]');
   await expect(adminInd).toBeVisible();
   expect(await adminInd.evaluate((el) => getComputedStyle(el).width)).toBe("3px");
-  // indicator sits on the inline-start edge (LTR: left)
+  // the rail is a single shared element translated to the active row; it must
+  // sit on that row's inline-start edge (LTR: left)
   const geo = await adminInd.evaluate((el) => {
     const ind = el.getBoundingClientRect();
-    const link = el.closest("a")!.getBoundingClientRect();
-    return { gap: ind.left - link.left };
+    const link = document.querySelector('[data-testid="admin-sidebar"] a[aria-current="page"]')!.getBoundingClientRect();
+    const rtl = getComputedStyle(document.documentElement).direction === "rtl";
+    return { gap: rtl ? link.right - ind.right : ind.left - link.left };
   });
-  // indicator flush with the ACTIVE ITEM's inline-start edge (RTL uses right)
-  expect(geo.gap, "indicator flush to item inline-start").toBeLessThan(2);
+  expect(geo.gap, "indicator flush to the active row's inline-start").toBeLessThan(2);
 
   // moderation queue renders with the same selectors
   await page.getByTestId("nav-moderation").click();
@@ -218,7 +222,7 @@ test("Mantiq design system: checkout + admin console", async ({ page, request })
   await expect(page.getByTestId("moderation-search")).toBeVisible();
   const modInd = page.locator('[data-testid="admin-sidebar"] [data-testid="nav-indicator"]');
   await expect(modInd).toHaveCount(1); // now on moderation (single active)
-  await expect(page.getByTestId("nav-moderation")).toHaveAttribute("aria-current", "page");
+  await expect(page.locator('[data-testid="admin-sidebar"] a[aria-current="page"]')).toHaveCount(1);
 });
 
 test("Mantiq dark mode: full support (persisted, AA)", async ({ page }) => {
@@ -226,9 +230,13 @@ test("Mantiq dark mode: full support (persisted, AA)", async ({ page }) => {
   // explicit dark choice persists across reloads (no flash: init script runs pre-paint)
   await page.getByTestId("theme-toggle").click();
   await expect(page.locator("html")).toHaveClass(/dark/);
+  // theme swap animates for ~160ms: wait for the canvas colour to settle
+  await expect
+    .poll(() => page.evaluate(() => getComputedStyle(document.body).backgroundColor))
+    .toBe(DARK_BG);
   const bodyBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
   const bodyFg = await page.evaluate(() => getComputedStyle(document.body).color);
-  expect(bodyBg, "dark bg #0B1220").toBe(DARK_BG);
+  expect(bodyBg, "dark canvas #0E1728").toBe(DARK_BG);
   expect(contrast(bodyFg, bodyBg), "AA: ink on dark bg").toBeGreaterThanOrEqual(4.5);
   await expect(page.getByTestId("search-submit")).toBeVisible();
   const btnBg = await page.getByTestId("search-submit").evaluate((el) => getComputedStyle(el).backgroundColor);
@@ -250,6 +258,10 @@ test("Mantiq dark mode: full support (persisted, AA)", async ({ page }) => {
   // back to light
   await page.getByTestId("theme-toggle").click();
   await expect(page.locator("html")).not.toHaveClass(/dark/);
+  // let the light swap (and its transition) finish before leaving the origin
+  await expect
+    .poll(() => page.evaluate(() => getComputedStyle(document.body).backgroundColor))
+    .toBe(BG);
 
   // admin mirrors the same dark system
   await page.goto("http://localhost:5180/");
@@ -257,8 +269,11 @@ test("Mantiq dark mode: full support (persisted, AA)", async ({ page }) => {
   // fresh origin may default to system (headless = light) → toggle explicitly
   if (!adminDark) await page.getByTestId("theme-toggle").click();
   await expect(page.locator("html")).toHaveClass(/dark/);
+  // the console animates the theme swap (~160ms) — wait for the colour to land
+  await expect
+    .poll(() => page.evaluate(() => getComputedStyle(document.body).backgroundColor))
+    .toBe(DARK_BG);
   const adminBg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);
-  expect(adminBg).toBe(DARK_BG);
   const adminFg = await page.evaluate(() => getComputedStyle(document.body).color);
   expect(contrast(adminFg, adminBg)).toBeGreaterThanOrEqual(4.5);
   await page.getByTestId("theme-toggle").click();
@@ -277,7 +292,8 @@ test("premium ListingCard: cinematic layout + motion hooks", async ({ page, requ
   await expect(card.getByTestId("badge-premium")).toBeVisible(); // "متاح الآن" gradient badge
   const price = card.locator("p.text-2xl").first();
   await expect(price).toBeVisible();
-  expect(await price.evaluate((el) => getComputedStyle(el).color)).toBe("rgb(255, 255, 255)"); // on gradient
+  // price sits ON the image gradient: warm on-dark (#EDE9E0), AA against the scrim
+  expect(await price.evaluate((el) => getComputedStyle(el).color)).toBe(DARK_INK);
   // hover lift (card-lift class → scale + elevate)
   await expect(card).toHaveClass(/card-lift/);
   await card.hover();

@@ -2,7 +2,7 @@
 // Client providers: locale (i18n) + auth session + toasts.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { DEFAULT_LOCALE, dirOf, makeT } from "@/lib/i18n";
+import { dirOf, makeT } from "@/lib/i18n";
 import type { Locale, User } from "@/lib/types";
 import { clearTokens, readUser, saveTokens, saveUser } from "@/lib/api";
 

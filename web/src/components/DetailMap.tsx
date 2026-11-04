@@ -7,6 +7,7 @@ import { api, ApiError } from "@/lib/api";
 import { useAuth, useI18n, useToast } from "./Providers";
 import type { Geo, ListingDetail } from "@/lib/types";
 import { clientTokenColor } from "@/lib/clientColor";
+import { Icon } from "./Icon";
 
 const TILES = process.env.NEXT_PUBLIC_MAP_TILES_URL || "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
 const TILE_NAME = process.env.NEXT_PUBLIC_MAP_STYLE_NAME || "OpenStreetMap";
@@ -20,7 +21,7 @@ function style(): maplibregl.StyleSpecification {
 }
 
 export function DetailMap({ geo, address, listingId }: { geo: Geo; address: string; listingId: string }) {
-  const { locale, t } = useI18n();
+  const { t } = useI18n();
   const { user } = useAuth();
   const toast = useToast();
   const holder = useRef<HTMLDivElement | null>(null);
@@ -108,7 +109,10 @@ export function DetailMap({ geo, address, listingId }: { geo: Geo; address: stri
 
   return (
     <section aria-label={t("map")} className="rounded-2xl border border-border bg-surface p-3">
-      <p className="mb-2 text-sm font-semibold text-ink">📍 {address}</p>
+      <p className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-ink">
+        <Icon name="pin" size={14} className="text-muted" />
+        {address}
+      </p>
       <div ref={holder} className="h-56 w-full overflow-hidden rounded-xl" data-testid="detail-map" />
       <div className="mt-2 flex items-center justify-between gap-2">
         <p className="text-xs text-muted">{revealed ? t("show_exact") : t("approx_location")}</p>
@@ -118,9 +122,10 @@ export function DetailMap({ geo, address, listingId }: { geo: Geo; address: stri
             data-testid="btn-exact-location"
             disabled={busy}
             onClick={revealExact}
-            className="rounded-lg border border-gold px-3 py-1.5 text-xs font-semibold text-ink hover:bg-brand-50 disabled:opacity-60"
+            className="inline-flex min-h-9 items-center gap-1.5 rounded-[var(--radius-field)] border border-gold px-3 text-xs font-semibold text-ink transition-colors hover:bg-gold-tint-8 disabled:opacity-60"
           >
-            {user ? t("show_exact") : `🔒 ${t("login_exact")}`}
+            <Icon name={user ? "pin" : "lock"} size={13} />
+            {user ? t("show_exact") : t("login_exact")}
           </button>
         )}
       </div>

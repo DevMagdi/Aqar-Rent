@@ -66,6 +66,7 @@ const Map<String, Map<String, String>> _kStrings = {
   'biometric_fallback': {'ar': 'المتابعة برمز التحقق', 'en': 'Continue with OTP'},
   'nav_home': {'ar': 'الرئيسية', 'en': 'Home'},
   'nav_search': {'ar': 'بحث', 'en': 'Search'},
+  'search_hint': {'ar': 'ابحث بالمنطقة أو المدينة أو نوع الوحدة', 'en': 'Search by area, city or property type'},
   'quick_filters': {'ar': 'تصفّح حسب النوع', 'en': 'Browse by type'},
   'spec_apartment': {'ar': 'شقة', 'en': 'Apartment'},
   'spec_studio': {'ar': 'استوديو', 'en': 'Studio'},
