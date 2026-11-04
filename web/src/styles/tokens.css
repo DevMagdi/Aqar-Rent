@@ -1,79 +1,103 @@
-/* Unified Aqar Rent design tokens. This file is the palette authority. */
+/* ============================================================================
+ * Aqar Rent · Mantiq design tokens — THE palette authority for web + admin.
+ * ----------------------------------------------------------------------------
+ * Rules enforced by src/styles/tokens.test.ts:
+ *   · Only two brand hues exist: Mantiq Navy and Mantiq Gold (exact values).
+ *   · Every derived value below is listed in docs/design/brand-identity.md
+ *     with its reason and its measured WCAG ratio.
+ *   · admin/src/styles/tokens.css must stay byte-identical to this file.
+ *   · No component may hard-code a hex value; utilities read these variables.
+ *
+ * Exact brand values (must not drift):
+ *   Mantiq Navy      #16273B
+ *   Mantiq Navy Deep #0E1728
+ *   Mantiq Gold      #BDA77E
+ * ==========================================================================*/
 :root {
-  /* Brand */
-  --color-brand: #0F1C2E;
-  --color-brand-deep: #0B1220;
-  --color-network: #1D2D45;
-  --color-gold: #C9A86C;
-  --color-gold-light: #E7D6AF;
-  --color-gold-dark: #9C814E;
-  --color-gold-text: #0F1C2E;
-  --color-on-dark: #EAE7E0;
+  /* ── Brand: the only two hues ─────────────────────────────────────────── */
+  --color-brand: #16273B;        /* Mantiq Navy — ink, chrome, primary surface   */
+  --color-brand-deep: #0E1728;   /* Mantiq Navy Deep — darkest navy, dark canvas */
+  --color-network: #1E3349;      /* derived: navy +1 step lightness (hover/fill)  */
+  --color-gold: #BDA77E;         /* Mantiq Gold — the single accent              */
+  --color-gold-light: #D8C7A4;   /* derived: gold +1 step (gradients, on-navy)   */
+  --color-gold-dark: #86693C;    /* derived: gold −1 step → 5.12:1 on white      */
+  --color-gold-text: #0E1728;    /* navy-on-gold label (8.79:1) — never white    */
+  --color-on-dark: #EDE9E0;      /* derived warm white → 12.49:1 on navy          */
+  --color-focus: #86693C;        /* focus ring on light chrome (5.12:1)          */
 
-  /* Trust and surfaces */
-  --color-teal: #0D9488;
-  --color-teal-ink: #0B726A;
-  --color-teal-bg: #E6F5F3;
-  --color-teal-on-dark: #2DD4BF;
-  --color-bg: #F8F7F4;
+  /* ── Surfaces ─────────────────────────────────────────────────────────── */
+  --color-bg: #FAF9F5;           /* derived warm off-white (not clinical grey)   */
   --color-surface: #FFFFFF;
-  --color-surface-2: #F2F0EA;
-  --color-ink: var(--color-brand);
-  --color-ink-strong: var(--color-brand-deep);
-  --color-muted: #5C6570;
-  --color-border: rgba(15, 28, 46, 0.10);
-  --color-border-strong: rgba(15, 28, 46, 0.16);
-  --color-track: rgba(15, 28, 46, 0.08);
+  --color-surface-2: #F3F0E9;    /* derived: bg −1 step (chips, tables)          */
+  --color-ink: #16273B;          /* = brand                                       */
+  --color-ink-strong: #0E1728;   /* = brand-deep                                  */
+  --color-muted: #5B6472;        /* derived slate-navy → 5.98:1 on white          */
+  --color-border: rgba(22, 39, 59, 0.10);
+  --color-border-strong: rgba(22, 39, 59, 0.18);
+  --color-track: rgba(22, 39, 59, 0.07);
 
-  /* Permanent dark sidebar */
-  --color-sidebar: var(--color-brand);
-  --color-sidebar-text: var(--color-on-dark);
-  --color-sidebar-active: var(--color-gold);
-  --color-sidebar-active-bg: rgba(201, 168, 108, 0.14);
-  --color-sidebar-hover: var(--color-network);
-  --color-sidebar-muted: rgba(234, 231, 224, 0.62);
+  /* ── Navy chrome (sidebar, header on scroll, footer) ──────────────────── */
+  --color-sidebar: #16273B;
+  --color-sidebar-text: #EDE9E0;
+  --color-sidebar-active: #BDA77E;
+  --color-sidebar-active-bg: rgba(189, 167, 126, 0.14);
+  --color-sidebar-hover: #1E3349;
+  --color-sidebar-muted: rgba(237, 233, 224, 0.64);
 
-  /* Status colors retain their AA-tested semantic pairs */
-  --color-success: #1B5E3A;
+  /* ── Gold tints: ≤14% opacity, decoration only ───────────────────────── */
+  --color-gold-tint-8: rgba(189, 167, 126, 0.08);
+  --color-gold-tint-12: rgba(189, 167, 126, 0.12);
+  --color-gold-tint-14: rgba(189, 167, 126, 0.14);
+
+  /* ── Verified (the trust mark) — always GOLD ──────────────────────────── */
+  --color-verified: #86693C;         /* gold-dark: icon + 12px label on white   */
+  --color-verified-strong: #16273B;  /* navy text inside a gold pill            */
+  --color-verified-bg: rgba(189, 167, 126, 0.18);
+  --color-verified-border: rgba(134, 105, 60, 0.42);
+  --color-verified-on-dark: #BDA77E;
+
+  /* ── Functional status colours: allowed, but tuned under navy/gold ────── */
+  --color-success: #1B5E3A;      /* 6.6:1 on white                                */
   --color-success-fill: #1B5E3A;
-  --color-success-bg: #EEF6F0;
-  --color-warn: #8A5A12;
-  --color-warn-bg: #FDF6EA;
+  --color-success-bg: #EAF3ED;
+  --color-warn: #8A5A12;         /* amber-navy, the closest hue to gold           */
+  --color-warn-bg: #FBF3E4;
   --color-danger: #A32A22;
   --color-danger-fill: #A32A22;
-  --color-danger-bg: #FDF0EF;
-  --color-info: #1F4E8C;
-  --color-info-bg: #EDF2F9;
-  --color-neutral: #17565F;
-  --color-neutral-bg: #ECF3F4;
-  --color-whatsapp: #25D366;
+  --color-danger-bg: #FBEEED;
+  --color-info: #1E4A7A;         /* navy-leaning blue: functional info only       */
+  --color-info-bg: #ECF1F8;
+  --color-neutral: #4A5666;      /* muted navy: functional neutral                */
+  --color-neutral-bg: #EEF1F4;
+  --color-whatsapp: #25D366;     /* official integration colour (functional only) */
 
-  --color-gold-tint-8: rgba(201, 168, 108, 0.08);
-  --color-gold-tint-12: rgba(201, 168, 108, 0.12);
-  --color-gold-tint-14: rgba(201, 168, 108, 0.14);
-  --color-hero-chip-border: rgba(231, 214, 175, 0.28);
-  --color-hero-chip-bg: rgba(11, 18, 32, 0.42);
+  /* ── Hero decoration ──────────────────────────────────────────────────── */
+  --color-hero-chip-border: rgba(216, 199, 164, 0.30);
+  --color-hero-chip-bg: rgba(14, 23, 40, 0.42);
+  --color-scrim: rgba(14, 23, 40, 0.55);
 
-  /* Typography */
+  /* ── Typography ───────────────────────────────────────────────────────── */
   --font-sans: "IBM Plex Sans Arabic", "IBM Plex Sans", system-ui, sans-serif;
   --font-display: "El Messiri", "IBM Plex Sans Arabic", system-ui, sans-serif;
   --text-base-size: 15px;
   --text-base-line: 1.7;
+  --tracking-tight: -0.02em;
+  --tracking-eyebrow: 0.10em;
 
-  /* Geometry and elevation */
-  --radius-card: 18px;
+  /* ── Geometry & elevation (navy-tinted, layered) ──────────────────────── */
+  --radius-card: 20px;
   --radius-shell: 28px;
-  --radius-field: 12px;
+  --radius-field: 14px;
   --radius-pill: 999px;
   --radius-phone: 44px;
-  --shadow-card: 0 1px 2px rgba(15, 28, 46, 0.06), 0 12px 32px -12px rgba(15, 28, 46, 0.18);
-  --shadow-pop: 0 16px 40px -12px rgba(15, 28, 46, 0.22);
-  --shadow-elevate: 0 22px 48px -18px rgba(15, 28, 46, 0.28);
+  --shadow-card: 0 1px 2px rgba(14, 23, 40, 0.05), 0 12px 30px -16px rgba(14, 23, 40, 0.20);
+  --shadow-pop: 0 16px 44px -14px rgba(14, 23, 40, 0.24);
+  --shadow-elevate: 0 24px 52px -22px rgba(14, 23, 40, 0.32);
   --shadow-image-text: 0 1px 3px rgba(0, 0, 0, 0.6);
   --transition-fast: 150ms;
   --transition-card: 250ms;
 
-  /* Motion system: shared by web, admin, and mirrored in Flutter AppMotion. */
+  /* ── Motion: meaning-driven, transform/opacity only ───────────────────── */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
   --ease-spring: cubic-bezier(0.34, 1.3, 0.64, 1);
@@ -84,85 +108,130 @@
   --dur-hero: 900ms;
   --stagger: 60ms;
   --rise: 16px;
+
+  /* ── Layout rhythm ────────────────────────────────────────────────────── */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+  --space-8: 64px;
+  --tap-min: 44px;          /* web pointer target                             */
+  --tap-min-mobile: 48px;   /* Flutter / touch target (mirrored in theme.dart) */
 }
 
 /* Legacy .dark class stays supported; data-theme is the public theme contract. */
 .dark,
 :root[data-theme="dark"] {
   color-scheme: dark;
-  --color-brand: #EAE7E0;
-  --color-brand-deep: #0B1220;
-  --color-network: #223149;
-  --color-gold-dark: #C9A86C;
-  --color-on-dark: #EAE7E0;
-  --color-teal: #2DD4BF;
-  --color-teal-ink: #2DD4BF;
-  --color-teal-bg: rgba(45, 212, 191, 0.16);
-  --color-teal-on-dark: #2DD4BF;
-  --color-bg: #0B1220;
-  --color-surface: #111B2D;
-  --color-surface-2: #16233A;
-  --color-ink: #EAE7E0;
-  --color-ink-strong: #F5F8FC;
-  --color-muted: #9AA4B2;
-  --color-border: rgba(234, 231, 224, 0.09);
-  --color-border-strong: rgba(234, 231, 224, 0.16);
-  --color-track: rgba(234, 231, 224, 0.08);
-  --color-sidebar: #0B1220;
-  --color-sidebar-text: #EAE7E0;
-  --color-sidebar-active: #C9A86C;
-  --color-sidebar-active-bg: rgba(201, 168, 108, 0.14);
-  --color-sidebar-hover: #1D2D45;
-  --color-sidebar-muted: rgba(234, 231, 224, 0.62);
-  --color-success: #5CD6A0;
-  --color-success-bg: rgba(92, 214, 160, 0.16);
-  --color-warn: #E9B44C;
-  --color-warn-bg: rgba(233, 180, 76, 0.16);
-  --color-danger: #F28B82;
-  --color-danger-bg: rgba(242, 139, 130, 0.16);
-  --color-info: #8AB8EC;
-  --color-info-bg: rgba(138, 184, 236, 0.16);
-  --color-neutral: #7FC9D6;
-  --color-neutral-bg: rgba(127, 201, 214, 0.16);
-  --color-gold-tint-8: rgba(201, 168, 108, 0.10);
-  --color-gold-tint-12: rgba(201, 168, 108, 0.14);
-  --color-gold-tint-14: rgba(201, 168, 108, 0.18);
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
-  --shadow-pop: 0 16px 40px -12px rgba(0, 0, 0, 0.68);
-  --shadow-elevate: 0 22px 48px -18px rgba(0, 0, 0, 0.75);
+  --color-brand: #EDE9E0;        /* "brand" reads as foreground on dark chrome    */
+  --color-brand-deep: #0E1728;
+  --color-network: #22374F;      /* derived: navy hover on dark canvas            */
+  --color-gold: #BDA77E;
+  --color-gold-light: #D8C7A4;
+  --color-gold-dark: #BDA77E;    /* gold is already AA (6.3:1) on dark surfaces   */
+  --color-gold-text: #0E1728;
+  --color-on-dark: #EDE9E0;
+  --color-focus: #D8C7A4;        /* light gold ring, 9.5:1 on dark                 */
+
+  --color-bg: #0E1728;
+  --color-surface: #17293F;      /* derived: navy +1 lightness                    */
+  --color-surface-2: #1C3049;
+  --color-ink: #EDE9E0;
+  --color-ink-strong: #F7F4EE;
+  --color-muted: #A3ADB9;        /* 6.48:1 on surface                             */
+  --color-border: rgba(237, 233, 224, 0.10);
+  --color-border-strong: rgba(237, 233, 224, 0.18);
+  --color-track: rgba(237, 233, 224, 0.08);
+
+  --color-sidebar: #0C1727;
+  --color-sidebar-text: #EDE9E0;
+  --color-sidebar-active: #BDA77E;
+  --color-sidebar-active-bg: rgba(189, 167, 126, 0.16);
+  --color-sidebar-hover: #1E3349;
+  --color-sidebar-muted: rgba(237, 233, 224, 0.64);
+
+  --color-gold-tint-8: rgba(189, 167, 126, 0.10);
+  --color-gold-tint-12: rgba(189, 167, 126, 0.14);
+  --color-gold-tint-14: rgba(189, 167, 126, 0.18);
+
+  --color-verified: #BDA77E;
+  --color-verified-strong: #0E1728;
+  --color-verified-bg: rgba(189, 167, 126, 0.16);
+  --color-verified-border: rgba(189, 167, 126, 0.45);
+  --color-verified-on-dark: #BDA77E;
+
+  --color-success: #6FD3A2;
+  --color-success-bg: rgba(111, 211, 162, 0.16);
+  --color-warn: #E4B263;
+  --color-warn-bg: rgba(228, 178, 99, 0.16);
+  --color-danger: #F2938A;
+  --color-danger-bg: rgba(242, 147, 138, 0.16);
+  --color-info: #8FB6E8;
+  --color-info-bg: rgba(143, 182, 232, 0.16);
+  --color-neutral: #A9B4C2;
+  --color-neutral-bg: rgba(169, 180, 194, 0.16);
+
+  --color-hero-chip-bg: rgba(14, 23, 40, 0.55);
+  --color-scrim: rgba(6, 11, 20, 0.66);
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.38), 0 12px 30px -16px rgba(0, 0, 0, 0.62);
+  --shadow-pop: 0 16px 44px -14px rgba(0, 0, 0, 0.70);
+  --shadow-elevate: 0 24px 52px -22px rgba(0, 0, 0, 0.78);
 }
 
+/* System preference is honoured unless the user explicitly picked a theme. */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]):not(.light) {
     color-scheme: dark;
-    --color-brand: #EAE7E0;
-    --color-bg: #0B1220;
-    --color-surface: #111B2D;
-    --color-surface-2: #16233A;
-    --color-ink: #EAE7E0;
-    --color-ink-strong: #F5F8FC;
-    --color-muted: #9AA4B2;
-    --color-border: rgba(234, 231, 224, 0.09);
-    --color-border-strong: rgba(234, 231, 224, 0.16);
-    --color-track: rgba(234, 231, 224, 0.08);
-    --color-gold-dark: #C9A86C;
-    --color-teal: #2DD4BF;
-    --color-teal-ink: #2DD4BF;
-    --color-teal-bg: rgba(45, 212, 191, 0.16);
-    --color-success: #5CD6A0;
-    --color-success-bg: rgba(92, 214, 160, 0.16);
-    --color-warn: #E9B44C;
-    --color-warn-bg: rgba(233, 180, 76, 0.16);
-    --color-danger: #F28B82;
-    --color-danger-bg: rgba(242, 139, 130, 0.16);
-    --color-info: #8AB8EC;
-    --color-info-bg: rgba(138, 184, 236, 0.16);
-    --color-neutral: #7FC9D6;
-    --color-neutral-bg: rgba(127, 201, 214, 0.16);
-    --color-sidebar: #0B1220;
-    --color-sidebar-hover: #1D2D45;
-    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35), 0 12px 32px -12px rgba(0, 0, 0, 0.6);
-    --shadow-pop: 0 16px 40px -12px rgba(0, 0, 0, 0.68);
-    --shadow-elevate: 0 22px 48px -18px rgba(0, 0, 0, 0.75);
+    --color-brand: #EDE9E0;
+    --color-brand-deep: #0E1728;
+    --color-network: #22374F;
+    --color-gold: #BDA77E;
+    --color-gold-light: #D8C7A4;
+    --color-gold-dark: #BDA77E;
+    --color-gold-text: #0E1728;
+    --color-on-dark: #EDE9E0;
+    --color-focus: #D8C7A4;
+    --color-bg: #0E1728;
+    --color-surface: #17293F;
+    --color-surface-2: #1C3049;
+    --color-ink: #EDE9E0;
+    --color-ink-strong: #F7F4EE;
+    --color-muted: #A3ADB9;
+    --color-border: rgba(237, 233, 224, 0.10);
+    --color-border-strong: rgba(237, 233, 224, 0.18);
+    --color-track: rgba(237, 233, 224, 0.08);
+    --color-sidebar: #0C1727;
+    --color-sidebar-text: #EDE9E0;
+    --color-sidebar-active: #BDA77E;
+    --color-sidebar-active-bg: rgba(189, 167, 126, 0.16);
+    --color-sidebar-hover: #1E3349;
+    --color-sidebar-muted: rgba(237, 233, 224, 0.64);
+    --color-gold-tint-8: rgba(189, 167, 126, 0.10);
+    --color-gold-tint-12: rgba(189, 167, 126, 0.14);
+    --color-gold-tint-14: rgba(189, 167, 126, 0.18);
+    --color-verified: #BDA77E;
+    --color-verified-strong: #0E1728;
+    --color-verified-bg: rgba(189, 167, 126, 0.16);
+    --color-verified-border: rgba(189, 167, 126, 0.45);
+    --color-verified-on-dark: #BDA77E;
+    --color-success: #6FD3A2;
+    --color-success-bg: rgba(111, 211, 162, 0.16);
+    --color-warn: #E4B263;
+    --color-warn-bg: rgba(228, 178, 99, 0.16);
+    --color-danger: #F2938A;
+    --color-danger-bg: rgba(242, 147, 138, 0.16);
+    --color-info: #8FB6E8;
+    --color-info-bg: rgba(143, 182, 232, 0.16);
+    --color-neutral: #A9B4C2;
+    --color-neutral-bg: rgba(169, 180, 194, 0.16);
+    --color-hero-chip-bg: rgba(14, 23, 40, 0.55);
+    --color-scrim: rgba(6, 11, 20, 0.66);
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.38), 0 12px 30px -16px rgba(0, 0, 0, 0.62);
+    --shadow-pop: 0 16px 44px -14px rgba(0, 0, 0, 0.70);
+    --shadow-elevate: 0 24px 52px -22px rgba(0, 0, 0, 0.78);
   }
 }

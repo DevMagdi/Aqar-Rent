@@ -6,6 +6,7 @@ import { MobileContactDock } from "@/components/MobileContactDock";
 import { Reveal, Stagger } from "@/components/motion";
 import { DetailMap } from "@/components/DetailMap";
 import { Gallery } from "@/components/Gallery";
+import { Icon } from "@/components/Icon";
 import { ListingCard } from "@/components/ListingCard";
 import { FavoriteButton, ReportButton, ShareButton } from "@/components/ListingActions";
 import { Pill } from "@/components/ui";
@@ -154,20 +155,23 @@ export default async function ListingPage({ params }: { params: Promise<Params> 
               </Pill>
               {d.verified_badge && (
                 <span data-testid="verified-badge" className="inline-flex items-center gap-1 rounded-full bg-success-bg px-2.5 py-0.5 text-xs font-bold text-success">
-                  ✓ {t("verified_owner")}
+                  <Icon name="check" size={12} strokeWidth={2.8} />
+                  {t("verified_owner")}
                 </span>
               )}
               {d.is_featured && (
                 <span className="inline-flex items-center gap-1 rounded-full bg-warn-bg px-2.5 py-0.5 text-xs font-bold text-warn">
-                  ★ {l === "ar" ? "إعلان مميز" : "Featured"}
+                  <Icon name="star" size={12} />
+                  {l === "ar" ? "إعلان مميز" : "Featured"}
                 </span>
               )}
               {d.office && (
                 <Link
                   href={`/${l}/offices/${d.office.slug}`}
-                  className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-bold text-ink hover:underline"
+                  className="inline-flex items-center gap-1 rounded-full bg-gold-tint-14 px-2.5 py-0.5 text-xs font-bold text-ink hover:underline"
                 >
-                  🏢 {l === "ar" ? d.office.name_ar : d.office.name_en}
+                  <Icon name="building" size={13} />
+                  {l === "ar" ? d.office.name_ar : d.office.name_en}
                 </Link>
               )}
             </div>
@@ -188,8 +192,9 @@ export default async function ListingPage({ params }: { params: Promise<Params> 
               </p>
               <ul className="mt-2 flex flex-wrap gap-1.5">
                 {d.trust.badges.map((b) => (
-                  <li key={b.code} className="rounded-full bg-surface px-2.5 py-1 text-[11px] font-semibold text-success">
-                    ✓ {l === "ar" ? b.label_ar : b.label_en}
+                  <li key={b.code} className="inline-flex items-center gap-1 rounded-full bg-surface px-2.5 py-1 text-[11px] font-semibold text-success">
+                    <Icon name="check" size={11} strokeWidth={2.8} />
+                    {l === "ar" ? b.label_ar : b.label_en}
                   </li>
                 ))}
               </ul>
@@ -231,7 +236,7 @@ export default async function ListingPage({ params }: { params: Promise<Params> 
               <ul className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3" data-testid="amenities">
                 {amenityEntries.map(([k]) => (
                   <li key={k} className="flex items-center gap-2 rounded-xl bg-bg px-3 py-2 text-sm text-ink">
-                    <span className="text-success">✓</span>{" "}
+                    <Icon name="check" size={13} strokeWidth={2.8} className="text-success" />{" "}
                     {AMENITY_LABEL_KEY[k] ? t(AMENITY_LABEL_KEY[k]) : k.replace(/_/g, " ")}
                   </li>
                 ))}

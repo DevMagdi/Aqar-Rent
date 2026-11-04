@@ -61,7 +61,7 @@ export function Plans() {
           priority_weight: Number(pf.priority_weight),
         },
       });
-      toast("Plan created ✓");
+      toast("Plan created");
       setPlanModal(false);
       setPf({ name: "", price_egp: "500", duration_days: "7", priority_weight: "0" });
       load();
@@ -105,7 +105,7 @@ export function Plans() {
           expires_at: prf.expires_at ? new Date(prf.expires_at).toISOString() : null,
         },
       });
-      toast("Promo created ✓");
+      toast("Promo created");
       setPromoModal(false);
       setPrf({ code: "", type: "percent", value: "10", max_uses: "", expires_at: "" });
       load();

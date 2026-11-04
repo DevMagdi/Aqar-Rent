@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Mantiq identity: navy + gold only. Mirrors web/src/styles/tokens.css. -->
 <resources>
-    <color name="brand">#FFA93408</color>
-    <color name="splash_background">#FFFAFAF9</color>
+    <color name="brand_navy">#FF16273B</color>
+    <color name="brand_navy_deep">#FF0E1728</color>
+    <color name="brand_gold">#FFBDA77E</color>
+    <!-- Launcher icon background (adaptive icon) -->
+    <color name="brand">@color/brand_navy_deep</color>
+    <!-- Splash: same navy in light and dark, so there is no white flash -->
+    <color name="splash_background">@color/brand_navy_deep</color>
 </resources>

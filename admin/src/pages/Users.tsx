@@ -44,7 +44,7 @@ export function Users() {
     setBusy(true);
     try {
       await api(`/admin/users/${target.id}`, { method: "PATCH", body });
-      toast(`${label} ✓`);
+      toast(`${label}`);
       setTarget(null);
       load();
     } catch (e) {

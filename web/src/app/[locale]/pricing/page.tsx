@@ -5,6 +5,7 @@ import { ErrorState } from "@/components/ui";
 import { makeT } from "@/lib/i18n";
 import { fetchServer } from "@/lib/server";
 import type { Locale, Pricing } from "@/lib/types";
+import { Icon } from "@/components/Icon";
 
 export const dynamic = "force-dynamic";
 
@@ -59,12 +60,12 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
     );
   }
 
-  const money = (n: number) => `${n.toLocaleString(ar ? "ar-EG" : "en-EG")} ${ar ? "ج.م" : "EGP"}`;
+  const money = (n: number) => `${n.toLocaleString(ar ? "ar-EG-u-nu-latn" : "en-EG")} ${ar ? "ج.م" : "EGP"}`;
   const name = (arName: string, enName: string) => (ar ? arName : enName);
 
   return (
     <div className="space-y-10" dir={ar ? "rtl" : "ltr"}>
-      <header className="rounded-3xl bg-gradient-to-br from-brand-50 via-white to-success p-6 sm:p-10">
+      <header className="page-hero-soft rounded-3xl p-6 sm:p-10">
         <p className="text-xs font-bold uppercase tracking-widest text-ink">
           {ar ? "أسعار شفافة · بلا مفاجآت" : "Transparent pricing · no surprises"}
         </p>
@@ -84,7 +85,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
             ar ? "أسعار من قاعدة البيانات" : "DB-backed prices",
           ].map((x) => (
             <span key={x} className="rounded-full border border-brand-200 bg-surface px-3 py-1.5 text-xs font-semibold text-ink">
-              ✓ {x}
+              <Icon name="check" size={13} strokeWidth={2.6} className="text-verified" /> {x}
             </span>
           ))}
         </div>
@@ -147,7 +148,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
             <article key={p.id} className="relative rounded-2xl border border-border bg-surface p-5 shadow-sm">
               {p.is_featured && (
                 <span className="absolute -top-3 end-4 rounded-full bg-gold px-3 py-1 text-[11px] font-bold text-gold-text">
-                  ★ {ar ? "مميز" : "Featured"}
+                  <Icon name="star" size={12} /> {ar ? "مميز" : "Featured"}
                 </span>
               )}
               <h3 className="font-bold text-ink-strong">{name(p.name_ar, p.name_en)}</h3>
@@ -198,7 +199,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
                       {Object.entries(s.features)
                         .filter(([, on]) => on)
                         .map(([key]) => (
-                          <li key={key}>✓ {FEATURE_LABELS[key]?.[l] || key}</li>
+                          <li key={key} className="flex items-start gap-2"><Icon name="check" size={14} strokeWidth={2.6} className="mt-0.5 text-verified" /><span>{FEATURE_LABELS[key]?.[l] || key}</span></li>
                         ))}
                       {Object.keys(s.features).length === 0 && (
                         <li>{ar ? "المزايا الأساسية" : "Core features"}</li>
@@ -239,7 +240,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
       </section>
 
       <p className="rounded-2xl border border-warn/20 bg-warn-bg p-4 text-xs leading-relaxed text-warn">
-        ⚖️{" "}
+        <Icon name="scale" size={14} className="me-1.5 inline-block" />{" "}
         {ar
           ? "جميع المبالغ المعروضة مقابل خدمات المنصة فقط (إعلانات، باقات، اشتراكات، تحقق مميز اختياري، حزم عقود). لا تُعد المنصة طرفاً في عقد الإيجار، وعقودها اتفاقات خاصة ليست موثّقة ولا سندات تنفيذية ولا تُغني عن التسجيل الرسمي."
           : "All amounts are for platform services only (ads, packages, subscriptions, optional premium verification, contract packages). The platform is not a party to any lease; its contracts are private agreements — not notarized, not executive instruments, and no substitute for official registration."}

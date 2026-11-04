@@ -8,6 +8,7 @@ import { ErrorState } from "./ui";
 import { useI18n, useToast } from "./Providers";
 import { formatMoney } from "@/lib/utils";
 import type { Locale, MeListing, Order, Plan, PromoValidate } from "@/lib/types";
+import { Icon } from "./Icon";
 
 const METHODS = ["card", "fawry", "vodafone_cash", "bank_transfer"] as const;
 
@@ -97,7 +98,7 @@ function CheckoutInner({ locale }: { locale: Locale }) {
         <div className="h-40 animate-pulse rounded-2xl bg-track" />
       ) : (
         <>
-          <section className="rounded-2xl border border-border bg-surface p-5">
+          <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-card">
             <h2 className="text-sm font-bold text-ink">{t("weeks")}</h2>
             <div className="mt-3 flex gap-2" data-testid="weeks-picker">
               {[1, 2, 3, 4].map((w) => (
@@ -110,8 +111,8 @@ function CheckoutInner({ locale }: { locale: Locale }) {
                     setWeeks(w);
                     setPromoResult(null);
                   }}
-                  className={`flex-1 rounded-xl border px-3 py-3 text-sm font-bold ${
-                    weeks === w ? "border-gold bg-brand-50 text-ink" : "border-border-strong text-muted"
+                  className={`flex-1 rounded-[var(--radius-field)] border px-3 py-3 text-sm font-bold transition ${
+                    weeks === w ? "border-verified bg-gold-tint-8 text-ink shadow-card" : "border-border-strong text-muted hover:border-verified"
                   }`}
                 >
                   {w} {t("week")}
@@ -127,13 +128,14 @@ function CheckoutInner({ locale }: { locale: Locale }) {
               </label>
               <div className="mt-1 flex gap-2">
                 <input id="promo" data-testid="input-promo" className={inputCls} value={promo} onChange={(e) => setPromo(e.target.value.toUpperCase())} placeholder="SAVE10" />
-                <button type="button" data-testid="btn-apply-promo" onClick={applyPromo} className="rounded-xl border border-border-strong px-4 text-sm font-semibold text-ink hover:bg-bg">
+                <button type="button" data-testid="btn-apply-promo" onClick={applyPromo} className="icon-button rounded-[var(--radius-field)] border border-border-strong px-4 text-sm font-semibold text-ink hover:bg-bg">
                   {t("apply")}
                 </button>
               </div>
               {promoResult?.valid && (
                 <p className="mt-2 text-xs font-semibold text-success" data-testid="promo-applied">
-                  ✓ {promoResult.code} — {formatMoney(promoResult.discount, locale)}
+                  <Icon name="check" size={13} strokeWidth={2.8} className="me-1.5 inline-block align-[-2px]" />
+          {promoResult.code} — {formatMoney(promoResult.discount, locale)}
                 </p>
               )}
               {promoResult && !promoResult.valid && (
@@ -157,7 +159,7 @@ function CheckoutInner({ locale }: { locale: Locale }) {
             </dl>
           </section>
 
-          <section className="rounded-2xl border border-border bg-surface p-5">
+          <section className="rounded-[var(--radius-card)] border border-border bg-surface p-5 shadow-card">
             <h2 className="text-sm font-bold text-ink">{t("method_card")}</h2>
             <div className="mt-3 grid gap-2 sm:grid-cols-2" data-testid="methods">
               {METHODS.map((m) => (
@@ -167,8 +169,8 @@ function CheckoutInner({ locale }: { locale: Locale }) {
                   data-testid={`method-${m}`}
                   aria-pressed={method === m}
                   onClick={() => setMethod(m)}
-                  className={`rounded-xl border px-4 py-3 text-sm font-semibold text-start ${
-                    method === m ? "border-gold bg-brand-50 text-ink" : "border-border-strong text-muted"
+                  className={`rounded-[var(--radius-field)] border px-4 py-3 text-sm font-semibold text-start transition ${
+                    method === m ? "border-verified bg-gold-tint-8 text-ink shadow-card" : "border-border-strong text-muted hover:border-verified"
                   }`}
                 >
                   {t(`method_${m}`)}

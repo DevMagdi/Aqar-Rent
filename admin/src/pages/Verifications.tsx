@@ -54,7 +54,7 @@ export function Verifications() {
         method: "POST",
         body: { decision, reason: reason.trim() || null, reason_code: reasonCode || null },
       });
-      toast(decision === "approve" ? "Verification approved ✓" : "Verification rejected");
+      toast(decision === "approve" ? "Verification approved" : "Verification rejected");
       setViewer(null);
       setReason("");
       setReasonCode("");

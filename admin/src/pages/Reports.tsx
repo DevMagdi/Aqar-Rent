@@ -45,7 +45,7 @@ export function Reports() {
     setBusy(true);
     try {
       await api(`/admin/reports/${target.id}/action`, { method: "POST", body: { action, note: note || null } });
-      toast(`Report ${action.replace(/_/g, " ")} ✓`);
+      toast(`Report ${action.replace(/_/g, " ")}`);
       setTarget(null);
       setNote("");
       load();

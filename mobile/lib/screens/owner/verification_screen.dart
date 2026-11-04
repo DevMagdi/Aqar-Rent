@@ -66,7 +66,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
         fields: {'doc_type': _docType},
       );
       await _load();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم رفع المستند ✓')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم رفع المستند')));
     } catch (e) {
       if (mounted) setState(() => _error = '$e');
     } finally {
@@ -95,7 +95,7 @@ class _VerificationScreenState extends State<VerificationScreen> {
     try {
       await api.post('/me/verification/${v.id}/appeal', data: {'note': ctrl.text.trim()});
       await _load();
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إرسال الاعتراض ✓')));
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم إرسال الاعتراض')));
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('$e')));
     }

@@ -420,22 +420,33 @@ Every decision the spec left open, made here so review is easy. Business rules
 115. **Proposal-first**: exact token values, ratios and derivations were written
     to `docs/design/premium-tokens.md` **before** implementation; every number
     in that document is recomputed by the test suite / design e2e assertions.
-116. **Palette locked**: brand `#0F1C2E`, deep `#0B1220`, network `#1D2D45`
-    (derived hover), gold `#C9A86C`, gold-light `#E7D6AF` (derived),
-    gold-dark `#9C814E` (derived —3.7:1, large-text/graphics only), on-dark
-    `#EAE7E0` (derived), teal `#0D9488` with teal-ink `#0B726A` (derived) /
-    teal-bg `#E6F5F3` / teal-on-dark `#2DD4BF`, bg `#F8F7F4`, muted `#5C6570`;
-    status colours unchanged (AA-proven). Dark: bg `#0B1220`, surface
-    `#141C2B` (spec) + derived ink/muted/sidebar/status-on-dark values — all
-    ratios tabled in the proposal doc (≥4.5 text, ≥3 graphics).
+116. **Palette locked — CORRECTED to exact Mantiq values (supersedes the
+    earlier proposal)**. Identity is **Navy + Gold only**; the teal family is
+    gone and the verified badge is gold.
+    * Navy `#16273B` (15.14:1 on white), Navy Deep `#0E1728` (17.92:1),
+      network/hover `#1E3349` (derived, same hue +1 step).
+    * Gold `#BDA77E` (6.48 on navy; **2.34 on white → never text on light**),
+      gold-light `#D8C7A4` (derived, 9.10 on navy), gold-dark/focus/verified
+      `#86693C` (derived, **5.12 on white**), on-dark `#EDE9E0` (derived,
+      12.49 on navy), muted `#5B6472` (5.5 on canvas).
+    * Canvas `#FAF9F5` (derived warm off-white), surface `#FFFFFF`.
+    * Dark: canvas `#0E1728`, surface `#17293F` (derived), ink `#EDE9E0`
+      (12.9 on surface), muted `#A3ADB9` (6.3), gold `#BDA77E` (6.31).
+    * Status colours stay functional-only (success/warn/danger/info/neutral)
+      and are tuned to sit under navy/gold; they never carry brand meaning.
+    * Verification is mechanical: `web/src/styles/tokens.test.ts` asserts the
+      exact hexes and every contrast pair, and
+      `e2e/tests/design-system.spec.ts` asserts the computed CSS values in a
+      real browser (light + dark, ar + en).
 117. **Tokens stay byte-identical across web/admin**; mobile mirrors them in
     `mobile/lib/core/theme.dart` — equality is enforced by
     `web/src/styles/tokens.test.ts` (also rejects terracotta/orange leftovers
     and any hex outside the three token files).
-118. **Gold-text rule reaffirmed**: white-on-gold banned (buttons = gold +
-    `#0F1C2E`/`#0B1220` text ≈7.6:1+); gold on white still2.3:1 → accent text
-    at normal sizes uses ink; `text-gold-dark` limited to WCAG-large text
-    (listing price24px/extrabold) and ≥3:1 graphics — test-enforced.
+118. **Gold-text rule reaffirmed**: navy-on-gold only (buttons = gold +
+    `#0E1728` text = 8.0:1; never white on gold). Gold on white is 2.34:1, so
+    gold is never text on a light surface — labels use ink, `text-verified`
+    (gold-dark `#86693C`, 5.12:1) carries the gold note, and `text-gold-dark`
+    is limited to WCAG-large text and ≥3:1 graphics. Test-enforced.
 119. **Dark mode**: class strategy on `<html>` (`aqar.theme` localStorage +
     `prefers-color-scheme` bootstrap script to avoid FOUC); Flutter follows
     system by default with an in-app toggle (persisted). Sidebars flip via

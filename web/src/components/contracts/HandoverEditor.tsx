@@ -1,7 +1,7 @@
 "use client";
 // Handover editor: create/edit check-in or check-out (rooms, items, meters,
 // keys, inventory, comments) with media upload (progress + retry) and OTP confirm.
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { uploadWithProgress } from "@/lib/upload";
 import { useI18n, useToast } from "../Providers";
@@ -17,6 +17,7 @@ import {
   type HandoverItem,
   type HandoverRoom,
 } from "@/lib/contracts";
+import { Icon } from "@/components/Icon";
 
 export function HandoverEditor({
   contractId,
@@ -152,14 +153,15 @@ export function HandoverEditor({
             {kind === "check_in" ? t("new_checkin") : t("new_checkout")}
             {existing?.hash ? ` · ${existing.hash.slice(0, 12)}…` : ""}
           </h2>
-          <button type="button" onClick={onClose} aria-label="close" className="rounded-lg p-2 text-muted hover:bg-surface-2">
-            ✕
+          <button type="button" onClick={onClose} aria-label="close" className="icon-button rounded-lg text-muted hover:bg-surface-2">
+            <Icon name="close" size={16} />
           </button>
         </div>
 
         {isConfirmed && (
           <p className="mt-3 rounded-xl bg-success-bg p-3 text-sm font-semibold text-success" data-testid="handover-confirmed-banner">
-            ✓ {t("handover_confirmed_banner")}
+            <Icon name="check" size={14} strokeWidth={2.8} className="me-1.5 inline-block align-[-2px]" />
+            {t("handover_confirmed_banner")}
           </p>
         )}
 
@@ -372,8 +374,9 @@ export function HandoverEditor({
                 <div className="flex items-center justify-between gap-2">
                   <span className="truncate">{u.name}</span>
                   {u.error ? (
-                    <button type="button" onClick={() => setUploads((p) => p.filter((x) => x.key !== u.key))} className="font-bold text-danger">
-                      {u.error} ✕
+                    <button type="button" onClick={() => setUploads((p) => p.filter((x) => x.key !== u.key))} className="inline-flex items-center gap-1 font-bold text-danger">
+                      {u.error}
+                      <Icon name="close" size={13} />
                     </button>
                   ) : (
                     <span className="font-semibold text-ink">{u.pct}%</span>
@@ -436,9 +439,10 @@ export function HandoverEditor({
               type="button"
               data-testid="btn-handover-pdf"
               onClick={() => void downloadAuthed(`/handovers/${handoverId}/pdf`, `handover-${kind}.pdf`)}
-              className="rounded-xl bg-gold px-4 py-2.5 text-sm font-bold text-gold-text hover:bg-gold-dark"
+              className="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-field)] bg-gold px-4 text-sm font-bold text-gold-text transition-colors hover:bg-gold-dark"
             >
-              ⬇ {t("download_handover_pdf")}
+              <Icon name="download" size={15} />
+              {t("download_handover_pdf")}
             </button>
           )}
         </div>

@@ -244,7 +244,7 @@ class _ListingWizardScreenState extends State<ListingWizardScreen> {
     try {
       await api.post('/listings/$_listingId/submit', data: {});
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الإرسال للمراجعة ✓')));
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('تم الإرسال للمراجعة')));
         Navigator.pushReplacement(context, AqarPageRoute(disableAnimations: MediaQuery.of(context).disableAnimations, builder: (_) => const OwnerDashboardScreen()));
       }
     } catch (e) {

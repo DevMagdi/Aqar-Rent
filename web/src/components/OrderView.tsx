@@ -6,7 +6,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { uploadWithProgress } from "@/lib/upload";
 import { ErrorState, StatusBadge } from "./ui";
-import { useAuth, useI18n, useToast } from "./Providers";
+import { useI18n, useToast } from "./Providers";
 import { formatDateTime, formatMoney } from "@/lib/utils";
 import type { BankReceipt, Locale, Order } from "@/lib/types";
 
@@ -19,7 +19,6 @@ const MOCK_PAY =
 
 export function OrderView({ locale, orderId }: { locale: Locale; orderId: string }) {
   const { t } = useI18n();
-  const { user } = useAuth();
   const toast = useToast();
   const [order, setOrder] = useState<Order | null>(null);
   const [err, setErr] = useState<string | null>(null);
@@ -121,15 +120,20 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
   // ── result screens ──────────────────────────────────────────────────
   if (order.status === "paid") {
     return (
-      <div className="mx-auto max-w-lg rounded-3xl border border-success/20 bg-success-bg p-8 text-center" data-testid="payment-success">
-        <p className="text-4xl">🎉</p>
-        <h1 className="mt-3 text-2xl font-bold text-success">{t("checkout_success")}</h1>
-        <p className="mt-2 text-sm text-success">{t("checkout_success_sub")}</p>
-        <p className="mt-3 text-xs text-success">
+      <div className="mx-auto max-w-lg rounded-[var(--radius-shell)] border border-verified-border bg-surface p-8 text-center shadow-card" data-testid="payment-success">
+        <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-verified-bg text-verified" aria-hidden>
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
+            <circle cx="12" cy="12" r="9" />
+            <path d="m8.5 12 2.5 2.5 4.5-5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+        <h1 className="mt-4 font-display text-2xl font-bold text-ink-strong">{t("checkout_success")}</h1>
+        <p className="mt-2 text-sm text-muted">{t("checkout_success_sub")}</p>
+        <p className="mt-3 text-sm font-semibold text-success">
           {t("order_ref")}: <b data-testid="order-total">{formatMoney(order.total, locale)}</b>
         </p>
         <div className="mt-6 flex justify-center gap-3">
-          <Link href={`/${locale}/owner`} className="rounded-xl bg-success-fill px-5 py-2.5 text-sm font-semibold text-on-dark hover:bg-success-fill">
+          <Link href={`/${locale}/owner`} className="btn-primary px-5 py-2.5 text-sm">
             {t("dashboard_title")}
           </Link>
           <Link href={`/${locale}/owner/orders`} className="rounded-xl border border-success/20 bg-surface px-5 py-2.5 text-sm font-semibold text-success">
@@ -143,8 +147,13 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
   if (order.status === "failed") {
     return (
       <div className="mx-auto max-w-lg rounded-3xl border border-danger/20 bg-danger-bg p-8 text-center" data-testid="payment-failed">
-        <p className="text-4xl">⚠️</p>
-        <h1 className="mt-3 text-2xl font-bold text-danger">{t("checkout_failed")}</h1>
+        <span className="mx-auto grid h-16 w-16 place-items-center rounded-full bg-danger-bg text-danger" aria-hidden>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 7.5v5.5M12 16.2v.2" strokeLinecap="round" />
+          </svg>
+        </span>
+        <h1 className="mt-4 font-display text-2xl font-bold text-danger">{t("checkout_failed")}</h1>
         <p className="mt-2 text-sm text-danger">{t("checkout_failed_sub")}</p>
         <Link
           href={`/${locale}/owner/checkout?listing=${order.listing_id}`}

@@ -56,10 +56,14 @@
   --color-info-bg: var(--color-info-bg);
   --color-neutral: var(--color-neutral);
   --color-neutral-bg: var(--color-neutral-bg);
-  --color-teal: var(--color-teal);
-  --color-teal-ink: var(--color-teal-ink);
-  --color-teal-bg: var(--color-teal-bg);
-  --color-teal-on-dark: var(--color-teal-on-dark);
+  /* The trust/verified mark is GOLD (navy+gold identity; no second hue). */
+  --color-verified: var(--color-verified);
+  --color-verified-strong: var(--color-verified-strong);
+  --color-verified-bg: var(--color-verified-bg);
+  --color-verified-border: var(--color-verified-border);
+  --color-verified-on-dark: var(--color-verified-on-dark);
+  --color-focus: var(--color-focus);
+  --color-scrim: var(--color-scrim);
   --color-whatsapp: var(--color-whatsapp);
   /* Legacy utility colors stay token-backed; semantic fills remain dark enough for light text. */
   --color-brand-50: var(--color-gold-tint-8);
@@ -67,8 +71,8 @@
   --color-brand-200: var(--color-border-strong);
   --color-brand-400: var(--color-gold-dark);
   --color-brand-500: var(--color-gold);
-  --color-brand-600: var(--color-gold);
-  --color-brand-700: var(--color-gold-dark);
+  --color-brand-600: var(--color-gold-dark);
+  --color-brand-700: var(--color-brand);
   --color-brand-800: var(--color-ink-strong);
   --color-brand-900: var(--color-ink-strong);
   --color-stone-50: var(--color-bg);
@@ -298,7 +302,7 @@ input, select, textarea { border-radius: var(--radius-field); }
 button { min-height: 44px; }
 .kpi-stat { position: relative; overflow: hidden; box-shadow: var(--shadow-card); }
 .kpi-stat::before { position: absolute; inset-block: 0; inset-inline-start: 0; width: 3px; content: ""; background: var(--color-gold); }
-.eyebrow { color: var(--color-teal-ink); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.eyebrow { color: var(--color-verified); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
 @media (max-width: 1023px) { main { padding-block-end: 92px !important; } }
 [data-testid="admin-sidebar"] nav a, nav.fixed a { display: flex; min-height: 44px; align-items: center; }
 
@@ -348,8 +352,8 @@ html[data-js="true"] .home-hero-title .hero-title-line { animation: aqar-hero-ri
 html[data-js="true"] .home-hero-title .hero-title-line:first-child { animation-delay: 180ms; }
 html[data-js="true"] .home-hero-title .hero-title-line:nth-child(2) { animation-delay: 260ms; }
 .hero-shimmer-word { position: relative; display: inline-block; overflow: hidden; }
-.hero-shimmer-word::after { position: absolute; inset-block: 0; inset-inline-start: -70%; width: 55%; content: ""; background: linear-gradient(90deg, transparent, rgba(255,255,255,.24), transparent); transform: translateX(-120%); animation: aqar-hero-sweep 900ms var(--ease-out) 260ms both; pointer-events: none; }
-@keyframes aqar-hero-sweep { to { transform: translateX(360%); } }
+.hero-shimmer-word::after { position: absolute; inset-block-end: -2px; inset-inline: 0; height: 2px; content: ""; border-radius: 2px; background: linear-gradient(90deg, transparent, var(--color-gold), transparent); transform: scaleX(0); transform-origin: 0 50%; animation: aqar-hero-rule 700ms var(--ease-out) 420ms both; pointer-events: none; }
+@keyframes aqar-hero-rule { to { transform: scaleX(1); } }
 html[data-js="true"] .home-hero-subtitle { animation: aqar-hero-rise 480ms var(--ease-out) 360ms both; }
 html[data-js="true"] .home-search-overlap { animation: aqar-hero-search 420ms var(--ease-out) 480ms both; }
 .home-search-overlap :is(input, select) { border: 1px solid var(--color-border-strong); transition: border-color var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
@@ -363,13 +367,12 @@ html[data-hidden] .hero-glow { animation-play-state: paused; }
 :dir(rtl) .site-header nav a.site-nav-link::after { transform-origin: right center; }
 .site-header nav a.site-nav-link:hover::after, .site-header nav a.site-nav-link:focus-visible::after { transform: scaleX(1); }
 .nav-sliding-indicator { position: absolute; inset-inline-start: 0; inset-block-end: .25rem; z-index: 2; width: var(--nav-width, 0px); height: 2px; border-radius: 999px; background: var(--color-gold-dark); transform: translateX(var(--nav-offset, 0px)); transition: transform var(--dur-base) var(--ease-out), opacity var(--dur-fast) var(--ease-out); pointer-events: none; }
-.mobile-nav-scrim { position: fixed; inset: 0; z-index: 48; background: rgb(11 18 32 / .42); animation: aqar-fade-in 160ms var(--ease-out) both; }
+.mobile-nav-scrim { position: fixed; inset: 0; z-index: 48; background: var(--color-scrim); animation: aqar-fade-in 160ms var(--ease-out) both; }
 .mobile-nav-drawer { animation: aqar-drawer-in 280ms var(--ease-out) both; }
 @keyframes aqar-fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes aqar-drawer-in { from { opacity: 0; transform: translateX(12%); } to { opacity: 1; transform: translateX(0); } }
 :dir(rtl) .mobile-nav-drawer { animation-name: aqar-drawer-in-rtl; }
-:dir(rtl) .hero-shimmer-word::after { animation-name: aqar-hero-sweep-rtl; }
-@keyframes aqar-hero-sweep-rtl { from { transform: translateX(120%); } to { transform: translateX(-360%); } }
+:dir(rtl) .hero-shimmer-word::after { transform-origin: 100% 50%; }
 @keyframes aqar-drawer-in-rtl { from { opacity: 0; transform: translateX(-12%); } to { opacity: 1; transform: translateX(0); } }
 .theme-icon { transition: transform var(--dur-base) var(--ease-in-out), opacity var(--dur-fast) var(--ease-out); }
 html.theme-switching *, html.theme-switching *::before, html.theme-switching *::after { transition-property: color, background-color, border-color, fill, stroke; transition-duration: var(--dur-fast); transition-timing-function: var(--ease-out); }
@@ -429,7 +432,7 @@ thead { position: sticky; inset-block-start: 0; z-index: 2; backdrop-filter: blu
 }
 @keyframes aqar-fade-out { to { opacity: 0; } }
 .mobile-menu-presence { position: absolute; inset-block-start: 100%; inset-inline: 0; z-index: 50; }
-.mobile-nav-scrim { position: fixed; inset: 0; z-index: 48; width: 100%; height: 100%; min-height: 100%; border: 0; background: rgb(11 18 32 / .42); }
+.mobile-nav-scrim { position: fixed; inset: 0; z-index: 48; width: 100%; height: 100%; min-height: 100%; border: 0; background: var(--color-scrim); }
 .mobile-nav-drawer { inset-block-start: 0; z-index: 50; }
 .mobile-nav-item { opacity: 0; animation: aqar-hero-reveal var(--dur-base) var(--ease-out) both; }
 .mobile-nav-item:nth-child(2) { animation-delay: 40ms; } .mobile-nav-item:nth-child(3) { animation-delay: 80ms; } .mobile-nav-item:nth-child(4) { animation-delay: 120ms; } .mobile-nav-item:nth-child(5) { animation-delay: 160ms; } .mobile-nav-item:nth-child(6) { animation-delay: 200ms; } .mobile-nav-item:nth-child(7) { animation-delay: 240ms; } .mobile-nav-item:nth-child(n+8) { animation-delay: 280ms; }
@@ -439,7 +442,7 @@ thead { position: sticky; inset-block-start: 0; z-index: 2; backdrop-filter: blu
 @keyframes aqar-sidebar-in-rtl { from { opacity: 0; transform: translateX(12px); } to { opacity: 1; transform: translateX(0); } }
 html[data-js="true"] .admin-nav > a { opacity: 0; animation: aqar-hero-reveal var(--dur-base) var(--ease-out) both; }
 .admin-nav > a:nth-of-type(2) { animation-delay: 30ms; } .admin-nav > a:nth-of-type(3) { animation-delay: 60ms; } .admin-nav > a:nth-of-type(4) { animation-delay: 90ms; } .admin-nav > a:nth-of-type(5) { animation-delay: 120ms; } .admin-nav > a:nth-of-type(6) { animation-delay: 150ms; } .admin-nav > a:nth-of-type(7) { animation-delay: 180ms; } .admin-nav > a:nth-of-type(n+8) { animation-delay: 210ms; }
-.nav-shared-indicator { position: absolute; inset-inline-start: 0; inset-block-start: 0; z-index: 2; width: 3px; height: var(--indicator-height, 0px); border-radius: 999px; background: var(--color-gold); transform: translateY(var(--indicator-y, 0px)); transition: transform var(--dur-base) var(--ease-out), opacity var(--dur-fast) var(--ease-out); pointer-events: none; }
+.nav-shared-indicator { position: absolute; inset-inline-start: 0.5rem; inset-block-start: 0; z-index: 2; width: 3px; height: var(--indicator-height, 0px); border-radius: 999px; background: var(--color-gold); transform: translateY(var(--indicator-y, 0px)); transition: transform var(--dur-base) var(--ease-out), opacity var(--dur-fast) var(--ease-out); pointer-events: none; }
 .admin-header { box-shadow: 0 1px 0 var(--color-border); backdrop-filter: blur(14px); }
 .kpi-hint { opacity: 0; animation: aqar-fade-in var(--dur-fast) var(--ease-out) 900ms both; }
 body > #root, #root { min-height: 100vh; }
@@ -461,7 +464,7 @@ body > #root, #root { min-height: 100vh; }
 }
 
 .admin-mobile-presence { position: fixed; inset: 0; z-index: 60; }
-.admin-mobile-scrim { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: rgb(5 12 22 / .58); opacity: 0; transition: opacity var(--dur-base) var(--ease-out); }
+.admin-mobile-scrim { position: fixed; inset: 0; width: 100%; height: 100%; border: 0; background: var(--color-scrim); opacity: 0; transition: opacity var(--dur-base) var(--ease-out); }
 .admin-mobile-drawer { position: fixed; inset-block: 0; inset-inline-start: 0; z-index: 1; display: flex; width: min(88vw, 320px); flex-direction: column; background: var(--color-sidebar); color: var(--color-sidebar-text); box-shadow: var(--shadow-pop); transform: translateX(calc(-100% - 12px)); transition: transform var(--dur-base) var(--ease-out); }
 .admin-mobile-presence[data-presence="enter"] .admin-mobile-scrim { opacity: 1; }
 .admin-mobile-presence[data-presence="enter"] .admin-mobile-drawer { transform: translateX(0); }
@@ -495,3 +498,44 @@ body > #root, #root { min-height: 100vh; }
   .admin-login-art-mark, .admin-login-card, .admin-login-card .brand-mark-fill, .admin-login-card .brand-mark-outline, .login-error, .login-spinner { animation: none !important; opacity: 1 !important; stroke-dashoffset: 0 !important; transform: none !important; }
 }
 .admin-login-card .brand-wordmark { color: var(--color-ink-strong); }
+
+/* Soft navy→gold wash for page headers (replaces the old success-green
+   gradient; keeps the identity to navy + gold with a warm canvas). */
+.page-hero-soft {
+  border: 1px solid var(--color-border);
+  background:
+    radial-gradient(ellipse at 92% -10%, var(--color-gold-tint-14), transparent 58%),
+    linear-gradient(140deg, var(--color-surface), var(--color-surface-2));
+}
+.home-cta { background: linear-gradient(120deg, var(--color-gold-light), var(--color-gold) 62%, var(--color-gold-dark)); }
+.home-cta, .home-cta .eyebrow { color: var(--color-gold-text); }
+
+/* ── Staff console login: identity-led left panel ───────────────────────── */
+.admin-login-art {
+  background:
+    radial-gradient(120% 90% at 20% 20%, color-mix(in srgb, var(--color-gold) 12%, var(--color-sidebar)), var(--color-sidebar) 62%),
+    var(--color-brand-deep);
+}
+.admin-login-art-inner { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 48px; text-align: center; }
+.admin-login-art-wordmark { font-family: var(--font-display); font-size: 34px; font-weight: 700; color: var(--color-on-dark); }
+.admin-login-art-tagline { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--color-gold); }
+.admin-login-art-points { margin-block-start: 18px; display: grid; gap: 10px; font-size: 13px; color: var(--color-sidebar-muted); text-align: start; }
+.admin-login-art-points li { display: flex; gap: 10px; align-items: flex-start; }
+.admin-login-art-points li::before { content: ""; flex: none; width: 6px; height: 6px; margin-block-start: 7px; border-radius: 50%; background: var(--color-gold); }
+.admin-login-card { border: 1px solid var(--color-border); }
+
+/* ── Staff console chrome ──────────────────────────────────────────────── */
+.admin-nav-link:hover svg { opacity: 1; }
+.admin-nav-link[aria-current="page"] svg { opacity: 1; }
+.admin-live-dot {
+  width: 7px; height: 7px; border-radius: 50%; flex: none;
+  background: var(--color-success);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-success) 18%, transparent);
+}
+/* KPI cards: quiet gold rail replaces the heavy left border */
+.kpi-stat { box-shadow: none; }
+.kpi-stat::before { content: ""; position: absolute; }
+#root .kpi-stat { position: relative; overflow: hidden; }
+#root .kpi-stat > p:first-child { letter-spacing: .08em; }
+.admin-sidebar nav { scrollbar-width: thin; }
+.admin-sidebar .admin-nav { gap: 2px; display: flex; flex-direction: column; }

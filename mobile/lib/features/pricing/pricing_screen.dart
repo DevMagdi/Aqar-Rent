@@ -88,7 +88,7 @@ class _PricingScreenState extends State<PricingScreen> {
               if ((p['discount'] as num? ?? 0) > 0)
                 Text('${p['subtotal']}', style: TextStyle(fontSize: 11, decoration: TextDecoration.lineThrough, color: appMutedColor(context))),
               if (p['is_featured'] == true)
-                Text('★ ${s('featured_plan')}', style: TextStyle(fontSize: 10, color: AppTheme.statusColor('warn', dark: Theme.of(context).brightness == Brightness.dark))),
+                Text('${s('featured_plan')}', style: TextStyle(fontSize: 10, color: AppTheme.statusColor('warn', dark: Theme.of(context).brightness == Brightness.dark))),
             ],
           ),
         ),
@@ -143,7 +143,7 @@ class _Hero extends StatelessWidget {
           gradient: LinearGradient(
             colors: Theme.of(context).brightness == Brightness.dark
                 ? [AppColors.darkGoldTint, AppColors.darkSurface]
-                : [AppColors.goldTint12, AppColors.tealBg],
+                : [AppColors.goldTint12, AppColors.verifiedBg],
           ),
         ),
         child: Column(
@@ -168,7 +168,7 @@ class _Hero extends StatelessWidget {
           color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSurface2 : AppColors.surface,
           borderRadius: BorderRadius.circular(20),
         ),
-        child: Text('✓ $text', style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700)),
+        child: Text(text, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700)),
       );
 }
 

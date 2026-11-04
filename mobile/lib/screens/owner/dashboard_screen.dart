@@ -109,7 +109,7 @@ class _OwnerDashboardScreenState extends State<OwnerDashboardScreen> {
                                       ),
                                     const SizedBox(height: 6),
                                     Text(
-                                      '👁 ${stats['view_count'] ?? 0} مشاهدات · ☎ ${stats['contact_count'] ?? 0} اتصال · ⏳ ${stats['days_left'] ?? '—'} يوم',
+                                      '${stats['view_count'] ?? 0} مشاهدات · ${stats['contact_count'] ?? 0} اتصال · ${stats['days_left'] ?? '—'} يوم',
                                       style: TextStyle(fontSize: 12, color: appMutedColor(context)),
                                     ),
                                     const SizedBox(height: 8),

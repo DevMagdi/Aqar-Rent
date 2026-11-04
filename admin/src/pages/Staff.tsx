@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Badge, Card, Spinner } from "@/components/ui";
 import { useShell } from "@/components/Shell";
+import { Icon } from "@/components/Icon";
 
 interface AuditRow {
   id: string;
@@ -60,7 +61,7 @@ export function StaffPage() {
                   <td className="p-2 font-semibold text-ink">{m.capability}</td>
                   {[m.super_admin, m.finance, m.moderator].map((v, i) => (
                     <td key={i} className="p-2 text-center">
-                      {v ? <span className="text-success">✓</span> : <span className="text-muted">—</span>}
+                      {v ? <Icon name="check" size={15} strokeWidth={2.8} className="text-success" /> : <span className="text-muted">—</span>}
                     </td>
                   ))}
                 </tr>

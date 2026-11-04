@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatedPresence } from "./motion";
 import type { Media } from "@/lib/types";
+import { Icon } from "./Icon";
 
 export function Gallery({ media, title, listingId }: { media: Media[]; title: string; listingId?: string }) {
   const [idx, setIdx] = useState<number | null>(null);
@@ -42,7 +43,7 @@ export function Gallery({ media, title, listingId }: { media: Media[]; title: st
   if (photos.length === 0) {
     return (
       <div className="grid aspect-[4/3] place-items-center rounded-2xl bg-surface-2 text-muted" data-testid="gallery-empty">
-        🏙
+        <Icon name="image" size={42} />
       </div>
     );
   }
@@ -99,8 +100,8 @@ export function Gallery({ media, title, listingId }: { media: Media[]; title: st
           className="lightbox fixed inset-0 z-[900] flex items-center justify-center bg-brand-deep/90 p-4"
           onClick={close}
         >
-          <button type="button" aria-label="close" onClick={close} className="absolute top-4 end-4 rounded-full bg-surface/10 p-3 text-on-dark">
-            ✕
+          <button type="button" aria-label="close" onClick={close} className="icon-button absolute top-4 end-4 rounded-full bg-surface/10 text-on-dark">
+            <Icon name="close" size={18} />
           </button>
           <button
             type="button"

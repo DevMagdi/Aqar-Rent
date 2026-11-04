@@ -171,9 +171,11 @@ class _ListingCardState extends State<ListingCard> {
                             ],
                             if (item.officeNameAr != null && item.officeNameAr!.isNotEmpty) ...[
                               const SizedBox(width: 6),
+                              Icon(Icons.apartment_rounded, size: 12, color: dark ? AppColors.darkMuted : AppColors.muted),
+                              const SizedBox(width: 3),
                               Flexible(
                                 child: Text(
-                                  "🏢 ${item.officeNameAr}",
+                                  item.officeNameAr!,
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(fontSize: 11, color: dark ? AppColors.darkMuted : AppColors.muted),
@@ -205,8 +207,8 @@ class _ListingCardState extends State<ListingCard> {
                       runSpacing: 6,
                       children: [
                         _MetaPill(label: "${item.areaM2.toStringAsFixed(0)} م²", dark: dark),
-                        _MetaPill(label: "🛏 ${item.bedrooms}", dark: dark),
-                        _MetaPill(label: "🛁 ${item.bathrooms}", dark: dark),
+                        _MetaPill(label: "${item.bedrooms}", icon: Icons.king_bed_outlined, dark: dark),
+                        _MetaPill(label: "${item.bathrooms}", icon: Icons.bathtub_outlined, dark: dark),
                         _MetaPill(
                           label: item.furnished == "furnished" ? "مفروش" : item.furnished == "semi" ? "شبه مفروش" : "غير مفروش",
                           dark: dark,
@@ -226,9 +228,10 @@ class _ListingCardState extends State<ListingCard> {
 }
 
 class _MetaPill extends StatelessWidget {
-  const _MetaPill({required this.label, required this.dark});
+  const _MetaPill({required this.label, required this.dark, this.icon});
   final String label;
   final bool dark;
+  final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
@@ -238,14 +241,20 @@ class _MetaPill extends StatelessWidget {
         color: dark ? AppColors.darkTrack : AppColors.track,
         borderRadius: BorderRadius.circular(999),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 11.5,
-          fontWeight: FontWeight.w600,
-          color: dark ? AppColors.darkMuted : AppColors.muted,
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        if (icon != null) ...[
+          Icon(icon, size: 12.5, color: dark ? AppColors.darkMuted : AppColors.muted),
+          const SizedBox(width: 3),
+        ],
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 11.5,
+            fontWeight: FontWeight.w600,
+            color: dark ? AppColors.darkMuted : AppColors.muted,
+          ),
         ),
-      ),
+      ]),
     );
   }
 }
@@ -264,21 +273,25 @@ class _PremiumBadge extends StatelessWidget {
         gradient: LinearGradient(
           colors: gold
               ? [AppColors.gold, AppColors.goldLight]
-              : [AppColors.tealInk, AppColors.success],
+              : [AppColors.goldLight, AppColors.gold],
         ),
         borderRadius: BorderRadius.circular(999),
         boxShadow: const [
           BoxShadow(color: AppColors.shadowSoft, blurRadius: 6, offset: Offset(0, 2)),
         ],
       ),
-      child: Text(
-        gold ? "✦ $label" : "✓ $label",
+      child: Row(mainAxisSize: MainAxisSize.min, children: [
+        Icon(gold ? Icons.star_rounded : Icons.check_rounded, size: 12, color: AppColors.brandDeep),
+        const SizedBox(width: 3),
+        Text(
+        label,
         style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w800,
-          color: gold ? AppColors.brand : AppColors.onDark,
+          color: AppColors.brandDeep, // navy on gold — never white on gold
         ),
       ),
+      ]),
     );
   }
 }

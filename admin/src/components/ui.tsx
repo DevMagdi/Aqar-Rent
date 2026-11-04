@@ -1,6 +1,7 @@
 // Shared admin UI primitives: token surfaces, calm entrance, and accessible micro-interactions.
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatedPresence, CountUp, Reveal } from "@/components/motion";
+import { Icon } from "./Icon";
 
 export function Badge({ status, children }: { status?: string; children?: ReactNode }) {
   const value = status || "";
@@ -149,7 +150,9 @@ export function Modal({ title, children, onClose, footer }: { title: string; chi
         <div ref={dialogRef} tabIndex={-1} className="surface-card w-full max-w-lg p-5 shadow-pop" onClick={(event) => event.stopPropagation()}>
           <div className="mb-3 flex items-center justify-between">
             <h3 className="text-lg font-bold text-ink-strong">{title}</h3>
-            <button type="button" aria-label="close" onClick={requestClose} className="press rounded-lg p-1.5 text-muted hover:bg-track">✕</button>
+            <button type="button" aria-label="close" onClick={requestClose} className="press grid h-9 w-9 place-items-center rounded-lg text-muted hover:bg-track">
+              <Icon name="close" size={16} />
+            </button>
           </div>
           <div className="max-h-[70vh] overflow-y-auto">{children}</div>
           {footer && <div className="mt-4 flex justify-end gap-2">{footer}</div>}

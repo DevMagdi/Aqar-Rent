@@ -47,7 +47,10 @@ export default async function VerifyPage({ params }: { params: Promise<{ ref: st
               </p>
             ) : data?.valid ? (
               <div data-testid="verify-valid" style={{ marginTop: 20 }}>
-                <p style={{ fontSize: 30, margin: 0 }}>✅</p>
+                <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="var(--color-verified)" strokeWidth="1.6" aria-hidden style={{ margin: "0 auto" }}>
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="m8.5 12 2.5 2.5 4.5-5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
                 <p style={{ fontWeight: 700, color: "var(--color-success)", fontSize: 18, margin: "6px 0" }}>عقد صحيح ومؤكد · Valid confirmed contract</p>
                 <dl style={{ fontSize: 14, color: "var(--color-ink)", lineHeight: 2 }}>
                   <div>
@@ -68,7 +71,10 @@ export default async function VerifyPage({ params }: { params: Promise<{ ref: st
               </div>
             ) : (
               <div data-testid="verify-invalid" style={{ marginTop: 20 }}>
-                <p style={{ fontSize: 30, margin: 0 }}>⛔</p>
+                <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="var(--color-danger)" strokeWidth="1.6" strokeLinecap="round" aria-hidden>
+                  <circle cx="12" cy="12" r="9" />
+                  <path d="M7.5 7.5l9 9" />
+                </svg>
                 <p style={{ fontWeight: 700, color: "var(--color-danger)", fontSize: 18, margin: "6px 0" }}>غير موجود أو غير مؤكد بعد · Not found or not confirmed</p>
               </div>
             )}

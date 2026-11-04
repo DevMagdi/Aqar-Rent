@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { useI18n, useToast } from "../Providers";
 import type { Contract, ContractTerms } from "@/lib/contracts";
+import { Icon } from "@/components/Icon";
 
 interface ListingOption {
   id: string;
@@ -199,8 +200,9 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
                 ))}
               </select>
             </div>
-            <p className="rounded-xl bg-warn-bg p-3 text-xs text-warn" data-testid="tpl-notice">
-              ⚖️ {t("tpl_draft_notice")}
+            <p className="flex items-start gap-2 rounded-xl bg-warn-bg p-3 text-xs text-warn" data-testid="tpl-notice">
+              <Icon name="scale" size={14} className="mt-0.5 shrink-0" />
+              <span>{t("tpl_draft_notice")}</span>
             </p>
           </div>
         )}
@@ -281,8 +283,9 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
                 </div>
               </>
             )}
-            <p className="sm:col-span-2 rounded-xl bg-bg p-3 text-[11px] text-muted">
-              🔒 {locale === "ar" ? "تُخزَّن الأرقام الوطنية مشفَّرة ولا تظهر إلا للطرفين." : "National IDs are stored encrypted and visible only to the two parties."}
+            <p className="flex items-start gap-2 rounded-xl bg-bg p-3 text-[11px] text-muted sm:col-span-2">
+              <Icon name="lock" size={13} className="mt-0.5 shrink-0" />
+              <span>{locale === "ar" ? "تُخزَّن الأرقام الوطنية مشفَّرة ولا تظهر إلا للطرفين." : "National IDs are stored encrypted and visible only to the two parties."}</span>
             </p>
           </div>
         )}
@@ -381,7 +384,10 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
                 </div>
               ))}
             </dl>
-            <p className="rounded-xl bg-warn-bg p-3 text-xs text-warn">⚖️ {t("tpl_draft_notice")}</p>
+            <p className="flex items-start gap-2 rounded-xl bg-warn-bg p-3 text-xs text-warn">
+              <Icon name="scale" size={14} className="mt-0.5 shrink-0" />
+              <span>{t("tpl_draft_notice")}</span>
+            </p>
             <p className="rounded-xl bg-bg p-3 text-xs text-muted">
               {locale === "ar" ? "بعد الحفظ سيُطلب تأكيد الطرفين برمز تحقق، وبعدها يصبح العقد نهائياً." : "After saving, both parties confirm with an OTP — then the contract becomes final."}
             </p>

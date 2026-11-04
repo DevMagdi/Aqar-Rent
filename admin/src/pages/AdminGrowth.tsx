@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api";
 import { Badge, Card, Empty, Spinner, btnGhost, btnPrimary, inputCls } from "@/components/ui";
 import { useShell } from "@/components/Shell";
+import { Icon } from "@/components/Icon";
 
 interface SubPlan {
   id: string;
@@ -117,7 +118,7 @@ export function PlansPackages() {
           features: { analytics: true },
         },
       });
-      plans.toast("Subscription plan created ✓");
+      plans.toast("Subscription plan created");
       plans.load();
     } catch (e) {
       plans.toast((e as Error).message, "err");
@@ -134,7 +135,7 @@ export function PlansPackages() {
           priority_weight: Number(pkg.priority_weight),
         },
       });
-      packages.toast("Ad package created ✓");
+      packages.toast("Ad package created");
       packages.load();
     } catch (e) {
       packages.toast((e as Error).message, "err");
@@ -184,7 +185,7 @@ export function PlansPackages() {
                 {packages.data.map((p) => (
                   <tr key={p.id} className="border-t border-border">
                     <td className="font-mono text-xs">{p.code}</td><td>{p.weeks}</td><td>{p.discount_pct}%</td>
-                    <td>{p.total} EGP</td><td>{p.priority_weight}</td><td>{p.is_featured ? "★" : "—"}</td>
+                    <td>{p.total} EGP</td><td>{p.priority_weight}</td><td>{p.is_featured ? <Icon name="star" size={13} className="text-verified" /> : "—"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -213,7 +214,7 @@ export function OfficesAdmin() {
   async function decide(id: string, decision: string) {
     try {
       await api(`/admin/growth/offices/${id}/decision`, { method: "POST", body: { decision, note: note || undefined } });
-      toast(`Office ${decision} ✓`);
+      toast(`Office ${decision}`);
       load();
     } catch (e) {
       toast((e as Error).message, "err");
@@ -252,7 +253,7 @@ export function AppealsAdmin() {
   async function decide(docId: string, decision: string) {
     try {
       await api(`/admin/growth/appeals/${docId}/decision`, { method: "POST", body: { decision, note } });
-      toast(decision === "approve" ? "Appeal accepted → document reopened ✓" : "Appeal rejected");
+      toast(decision === "approve" ? "Appeal accepted — document reopened" : "Appeal rejected");
       load();
     } catch (e) {
       toast((e as Error).message, "err");
@@ -290,13 +291,21 @@ export function Reconciliation() {
       <Card title="Daily reconciliation">
         {recon.busy || !recon.data ? <Spinner /> : (
           <div className="grid gap-3 sm:grid-cols-3">
-            <div><p className="text-xs text-muted">Consistent</p><p className="text-lg font-bold">{recon.data.consistent ? "✓ yes" : "✗ NO"}</p></div>
+            <div><p className="text-xs text-muted">Consistent</p><p className="flex items-center gap-1.5 text-lg font-bold">
+              <Icon name={recon.data.consistent ? "check" : "close"} size={18} strokeWidth={2.6} className={recon.data.consistent ? "text-success" : "text-danger"} />
+              {recon.data.consistent ? "yes" : "NO"}
+            </p></div>
             <div><p className="text-xs text-muted">Paid orders</p><p className="text-lg font-bold">{recon.data.paid_orders}</p></div>
             <div><p className="text-xs text-muted">Total paid</p><p className="text-lg font-bold">{recon.data.total_paid_egp} EGP</p></div>
             <div className="sm:col-span-3"><p className="text-xs text-muted">Captured payments / webhooks / refunds</p><p className="text-sm font-semibold">{recon.data.captured_payments} / {recon.data.gateway_webhooks} / {recon.data.refunded_orders}</p></div>
             {recon.data.mismatches.length > 0 && (
               <div className="rounded-lg bg-danger-bg p-3 text-xs text-danger sm:col-span-3">
-                {recon.data.mismatches.map((m) => <p key={m}>⚠ {m}</p>)}
+                {recon.data.mismatches.map((m) => (
+                <p key={m} className="flex items-start gap-1.5">
+                  <Icon name="warn" size={13} className="mt-0.5 text-warn" />
+                  <span>{m}</span>
+                </p>
+              ))}
               </div>
             )}
           </div>

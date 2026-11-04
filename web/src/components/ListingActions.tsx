@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, ApiError } from "@/lib/api";
 import { useAuth, useI18n, useToast } from "./Providers";
+import { Icon } from "./Icon";
 
 const REPORT_REASONS = ["fraud", "broker", "duplicate", "wrong_info", "scam", "inappropriate", "other"];
 
@@ -58,7 +59,8 @@ export function FavoriteButton({ listingId }: { listingId: string }) {
         fav ? "border-danger/20 bg-danger-bg text-danger" : "border-border-strong bg-surface text-ink hover:border-brand-400"
       }`}
     >
-      {fav ? "♥" : "♡"} {fav ? t("favorite_remove") : t("favorite_add")}
+      <Icon name="heart" size={16} />
+      {fav ? t("favorite_remove") : t("favorite_add")}
     </button>
   );
 }
@@ -91,10 +93,10 @@ export function ShareButton({ title }: { title: string }) {
         }
       }}
       className="flex items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface px-4 py-3 text-sm font-semibold text-ink hover:border-brand-400"
-      // eslint-disable-next-line react/no-unknown-property
       data-href={href || undefined}
     >
-      🔗 {t("share")}
+      <Icon name="link" size={16} />
+      {t("share")}
     </button>
   );
 }
@@ -135,7 +137,8 @@ export function ReportButton({ listingId }: { listingId: string }) {
         onClick={() => setOpen(true)}
         className="flex items-center justify-center gap-2 rounded-xl border border-border-strong bg-surface px-4 py-3 text-sm font-semibold text-muted hover:border-danger/20 hover:text-danger"
       >
-        ⚑ {t("report")}
+        <Icon name="flag" size={16} />
+      {t("report")}
       </button>
       {open && (
         <div role="dialog" aria-modal="true" aria-label={t("report_title")} className="fixed inset-0 z-[900] grid place-items-center bg-brand-deep/50 p-4" onClick={() => setOpen(false)}>

@@ -7,6 +7,7 @@ import { api, ApiError } from "@/lib/api";
 import { useAuth, useI18n, useToast } from "./Providers";
 import { normalizePhone, telHref, waHref } from "@/lib/utils";
 import type { ContactInfo } from "@/lib/types";
+import { Icon } from "./Icon";
 
 export function ContactBox({ listingId, ownerName, variant = "default" }: { listingId: string; ownerName?: string | null; variant?: "default" | "dock" }) {
   const dock = variant === "dock";
@@ -44,7 +45,8 @@ export function ContactBox({ listingId, ownerName, variant = "default" }: { list
         </p>
         <div className="flex gap-2">
           <a href={telHref(phone)} className={`press focus-ring flex-1 rounded-xl px-3 py-2.5 text-center text-sm font-bold transition-colors duration-150 ${dock ? "bg-brand text-on-dark hover:bg-network" : "bg-success text-on-dark hover:bg-success/90"}`} data-testid={dock ? "btn-call-dock-link" : undefined}>
-            ☎ {t("call")}
+            <Icon name="phone" size={15} />
+            {t("call")}
           </a>
           <a
             href={waHref(phone, t("contact_owner"))}
@@ -86,7 +88,8 @@ export function ContactBox({ listingId, ownerName, variant = "default" }: { list
         onClick={() => reveal("call")}
         className={`press focus-ring rounded-xl px-3 py-3 text-sm font-bold transition-colors duration-150 disabled:opacity-60 ${dock ? "bg-brand text-on-dark hover:bg-network" : "bg-success text-on-dark hover:bg-success/90"}`}
       >
-        ☎ {t("call")}
+        <Icon name="phone" size={15} />
+        {t("call")}
       </button>
       <button
         type="button"
