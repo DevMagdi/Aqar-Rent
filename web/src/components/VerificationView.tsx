@@ -105,7 +105,7 @@ export function VerificationView() {
             type="submit"
             data-testid="btn-upload-doc"
             disabled={!file || busy}
-            className="w-full rounded-xl bg-gold py-3 font-semibold text-gold-text hover:bg-gold-dark disabled:opacity-50"
+            className="w-full py-3 font-semibold disabled:opacity-50 btn-primary"
           >
             {busy ? t("uploading") : t("upload_doc")}
           </button>

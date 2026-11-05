@@ -115,7 +115,7 @@ export function LoginView() {
               type="submit"
               data-testid="btn-send-code"
               disabled={busy}
-              className="mt-5 w-full rounded-xl bg-gold py-3 font-semibold text-gold-text hover:bg-gold-dark disabled:opacity-60"
+              className="mt-5 w-full py-3 font-semibold disabled:opacity-60 btn-primary"
             >
               {busy ? t("loading") : t("send_code")}
             </button>
@@ -154,7 +154,7 @@ export function LoginView() {
               type="submit"
               data-testid="btn-verify"
               disabled={busy}
-              className="mt-5 w-full rounded-xl bg-gold py-3 font-semibold text-gold-text hover:bg-gold-dark disabled:opacity-60"
+              className="mt-5 w-full py-3 font-semibold disabled:opacity-60 btn-primary"
             >
               {busy ? t("loading") : t("verify")}
             </button>

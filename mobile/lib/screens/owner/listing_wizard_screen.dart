@@ -523,7 +523,7 @@ class _MiniMapState extends State<_MiniMap> {
   @override
   Widget build(BuildContext context) {
     return ClipRRect(
-      borderRadius: BorderRadius.circular(12),
+      borderRadius: BorderRadius.circular(AppShape.radiusField),
       child: MapLibreMap(
         styleString: jsonEncode(_style),
         initialCameraPosition: CameraPosition(target: LatLng(widget.lat, widget.lng), zoom: 13),

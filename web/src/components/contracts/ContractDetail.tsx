@@ -178,7 +178,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
               data-testid="btn-request-confirmation"
               disabled={busy}
               onClick={requestConfirmation}
-              className="rounded-xl bg-gold px-4 py-2.5 text-sm font-bold text-gold-text hover:bg-gold-dark disabled:opacity-60"
+              className="px-4 py-2.5 text-sm font-bold disabled:opacity-60 btn-primary"
             >
               {t("request_confirmation")}
             </button>
@@ -237,7 +237,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
                 </option>
               ))}
             </select>
-            <button type="button" data-testid="btn-pay-fee" disabled={busy} onClick={payFee} className="rounded-xl bg-gold px-4 py-2.5 text-sm font-bold text-gold-text hover:bg-gold-dark disabled:opacity-60">
+            <button type="button" data-testid="btn-pay-fee" disabled={busy} onClick={payFee} className="px-4 py-2.5 text-sm font-bold disabled:opacity-60 btn-primary">
               {t("pay_fee")}
             </button>
           </div>
@@ -294,7 +294,7 @@ export function ContractDetail({ contractId }: { contractId: string }) {
                 type="button"
                 data-testid="btn-new-checkin"
                 onClick={() => setEditor({ kind: "check_in" })}
-                className="rounded-xl bg-gold px-3 py-2 text-xs font-bold text-gold-text hover:bg-gold-dark"
+                className="px-3 py-2 text-xs font-bold btn-primary"
               >
                 + {t("new_checkin")}
               </button>

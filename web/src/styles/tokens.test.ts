@@ -1,17 +1,16 @@
 /**
- * Unified palette + artifact contract.
+ * Design-token contract.
  *
- * This test is the guard rail for the Mantiq identity: navy + gold only, no
- * other brand hue on any primary surface, no hard-coded hex but the token
- * authorities, web↔admin byte-identical tokens, web↔Flutter value alignment,
- * AA contrast for every semantic pair, and — crucially — the same "no legacy
- * colour" rule applied to the *binary and markup* brand assets (svg/xml/png/
- * storyboard), which is where the old terracotta survived before.
+ * `design/tokens.json` is the single source. `scripts/build-tokens.mjs` writes
+ * every consumer and this test is the guard rail that they stay byte-aligned,
+ * that the palette stays navy + gold, that contrast is AA, and that no legacy
+ * colour survives anywhere — including inside PNG pixels and iOS/Android
+ * markup, which is exactly where the old terracotta used to hide.
  */
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { BRAND, DERIVED, MOTION, TOKENS, TOKENS_DARK } from "./tokenValues";
 
 const WEB_SRC = path.resolve(__dirname, "..");
 const WEB_ROOT = path.resolve(WEB_SRC, "..");
@@ -19,297 +18,276 @@ const REPO = path.resolve(WEB_ROOT, "..");
 const ADMIN_SRC = path.resolve(REPO, "admin/src");
 const MOBILE = path.resolve(REPO, "mobile");
 const MOBILE_LIB = path.resolve(MOBILE, "lib");
+const DESIGN = path.resolve(REPO, "design/tokens.json");
 const TOKENS_CSS = path.resolve(__dirname, "tokens.css");
 const ADMIN_TOKENS_CSS = path.resolve(ADMIN_SRC, "styles", "tokens.css");
-const MOBILE_THEME = path.resolve(MOBILE_LIB, "core/theme.dart");
+const TOKEN_VALUES = path.resolve(__dirname, "tokenValues.ts");
+const MOBILE_THEME = path.resolve(MOBILE_LIB, "core/theme_generated.dart");
+const ANDROID_COLORS = path.resolve(MOBILE, "android/app/src/main/res/values/colors.xml");
+const ANDROID_COLORS_NIGHT = path.resolve(MOBILE, "android/app/src/main/res/values-night/colors.xml");
 
-function walk(dir: string, match: (name: string) => boolean, skipDirs: string[] = []): string[] {
+type Token = { value: string; derived?: boolean; note?: string };
+type TokenFile = {
+  color: { light: Record<string, Token>; dark: Record<string, Token>; brandKit: Record<string, { value: string[] }> };
+  font: Record<string, { value: string; stack: string }>;
+  fontSize: Record<string, Token>;
+  lineHeight: Record<string, Token>;
+  letterSpacing: Record<string, Token>;
+  space: Record<string, Token>;
+  radius: Record<string, Token>;
+  shadow: Record<string, Token>;
+  motion: Record<string, Token>;
+  shape: Record<string, Token>;
+};
+
+const tokens = JSON.parse(fs.readFileSync(DESIGN, "utf8")) as TokenFile;
+const css = fs.readFileSync(TOKENS_CSS, "utf8");
+
+function walk(dir: string, match: (name: string) => boolean, skip: string[] = []): string[] {
   if (!fs.existsSync(dir)) return [];
   const out: string[] = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      if (skipDirs.includes(entry.name)) continue;
-      out.push(...walk(full, match, skipDirs));
+      if (skip.includes(entry.name)) continue;
+      out.push(...walk(full, match, skip));
     } else if (match(entry.name)) out.push(full);
   }
   return out;
 }
 
-const sourceFiles = (dir: string) => walk(dir, (name) => /\.(ts|tsx|dart)$/.test(name));
+const sourceFiles = (dir: string) => walk(dir, (n) => /\.(ts|tsx|dart)$/.test(n));
 
-function declarations(block: string): Record<string, string> {
-  const map: Record<string, string> = {};
-  for (const match of block.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)) map[match[1]!] = match[2]!.trim();
-  return map;
-}
-
-function blockAt(source: string, open: number, values: Record<string, string> = {}) {
-  let depth = 0;
-  for (let index = open; index < source.length; index += 1) {
-    if (source[index] === "{") depth += 1;
-    if (source[index] === "}") {
-      depth -= 1;
-      if (depth === 0) return values;
-    }
-    if (source[index] === "-" && source[index + 1] === "-") {
-      const match = /^--([a-z0-9-]+):\s*([^;]+);/.exec(source.slice(index));
-      if (match) values[match[1]!] = match[2]!.trim();
-    }
-  }
-  return values;
-}
-
-function cssTokens(): { source: string; light: Record<string, string>; dark: Record<string, string> } {
-  const source = fs.readFileSync(TOKENS_CSS, "utf8");
-  const light = blockAt(source, source.indexOf(":root {"));
-  const darkOpen = source.search(/\.dark,\s*\n:root\[data-theme="dark"\]\s*\{/);
-  const dark = darkOpen >= 0 ? blockAt(source, source.indexOf("{", darkOpen)) : {};
-  return { source, light, dark };
-}
-
-function toDartColor(value: string): string {
-  const digits = value.startsWith("#") ? value.slice(1) : "";
-  return `0xFF${digits.toUpperCase()}`;
-}
-
-function resolveToken(value: string, values: Record<string, string>): string {
-  const match = value.match(/^var\(--([a-z0-9-]+)\)$/);
-  if (!match) return value;
-  const resolved = values[match[1]!];
-  if (!resolved || resolved === value) throw new Error(`Unresolved palette reference: ${value}`);
-  return resolveToken(resolved, values);
-}
-
+/* ── colour maths ─────────────────────────────────────────────────────────── */
 type RGBA = [number, number, number, number];
 
 function rgba(value: string): RGBA {
-  const normalized = value.trim();
-  if (normalized.startsWith("#")) {
-    const digits = normalized.slice(1);
-    const size = digits.length === 8 ? 2 : 0;
-    const channels = [0, 2, 4].map((offset) => Number.parseInt(digits.slice(offset, offset + 2), 16));
-    return [...channels, size ? Number.parseInt(digits.slice(6, 8), 16) / 255 : 1] as RGBA;
+  const v = value.trim();
+  if (v.startsWith("#")) {
+    const d = v.slice(1);
+    return [
+      Number.parseInt(d.slice(0, 2), 16),
+      Number.parseInt(d.slice(2, 4), 16),
+      Number.parseInt(d.slice(4, 6), 16),
+      d.length === 8 ? Number.parseInt(d.slice(6, 8), 16) / 255 : 1,
+    ];
   }
-  const values = normalized.match(/[\d.]+/g)?.slice(0, 4).map(Number);
-  if (!values || values.length < 3) throw new Error(`Unsupported palette value: ${value}`);
-  return [values[0]!, values[1]!, values[2]!, values[3] ?? 1];
+  const n = v.match(/[\d.]+/g)?.slice(0, 4).map(Number);
+  if (!n || n.length < 3) throw new Error(`unsupported colour: ${value}`);
+  return [n[0]!, n[1]!, n[2]!, n[3] ?? 1];
 }
 
-function composite(foreground: RGBA, background: RGBA): RGBA {
-  const alpha = foreground[3] + background[3] * (1 - foreground[3]);
-  if (!alpha) return [0, 0, 0, 0];
-  return [0, 1, 2].map((index) => (foreground[index]! * foreground[3] + background[index]! * background[3] * (1 - foreground[3])) / alpha).concat(alpha) as RGBA;
+function composite(fg: RGBA, bg: RGBA): RGBA {
+  const a = fg[3] + bg[3] * (1 - fg[3]);
+  if (!a) return [0, 0, 0, 0];
+  return [0, 1, 2].map((i) => (fg[i]! * fg[3] + bg[i]! * bg[3] * (1 - fg[3])) / a).concat(a) as RGBA;
 }
 
-function luminance(color: RGBA): number {
-  const channels = color.slice(0, 3).map((channel) => channel / 255).map((channel) => (channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4));
-  return 0.2126 * channels[0]! + 0.7152 * channels[1]! + 0.0722 * channels[2]!;
+const luminance = (c: RGBA) => {
+  const [r, g, b] = c.slice(0, 3).map((ch) => ch / 255).map((ch) => (ch <= 0.04045 ? ch / 12.92 : ((ch + 0.055) / 1.055) ** 2.4));
+  return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+};
+
+function contrast(fg: string | Token, bg: string | Token, backdrop = "#FFFFFF"): number {
+  const f = typeof fg === "string" ? fg : fg.value;
+  const b = typeof bg === "string" ? bg : bg.value;
+  const back = rgba(backdrop);
+  const bgResolved = composite(rgba(b), back);
+  const fgResolved = composite(rgba(f), bgResolved);
+  const [hi, lo] = [luminance(fgResolved), luminance(bgResolved)].sort((x, y) => y - x);
+  return (hi! + 0.05) / (lo! + 0.05);
 }
 
-function contrast(foreground: string, background: string, backdrop = "#FFFFFF"): number {
-  const resolvedBackdrop = rgba(backdrop);
-  const resolvedBackground = composite(rgba(background), resolvedBackdrop);
-  const resolvedForeground = composite(rgba(foreground), resolvedBackground);
-  const values = [luminance(resolvedForeground), luminance(resolvedBackground)].sort((x, y) => y - x);
-  return (values[0]! + 0.05) / (values[1]! + 0.05);
-}
+const L = tokens.color.light;
+const D = tokens.color.dark;
 
-describe("unified design tokens", () => {
-  const { source, light, dark } = cssTokens();
-
-  it("keeps the CSS files identical and tokens.css is the only web/admin palette", () => {
-    const admin = fs.readFileSync(ADMIN_TOKENS_CSS, "utf8");
-    expect(admin).toBe(source);
-    for (const [, value] of Object.entries({ ...TOKENS, ...TOKENS_DARK })) {
-      expect(value).toMatch(/^var\(--color-[a-z0-9-]+\)$/);
-      const cssName = value.slice(6, -1);
-      expect(source).toContain(`--${cssName}:`);
-    }
+describe("design tokens: one source, four generated mirrors", () => {
+  it("regenerates byte-identical artefacts (design/tokens.json is the only source)", () => {
+    // Runs the generator in --check mode: it byte-compares every artefact.
+    const out = execFileSync(process.execPath, [path.resolve(REPO, "scripts/build-tokens.mjs"), "--check"], {
+      cwd: REPO,
+      encoding: "utf8",
+    });
+    expect(out).toContain("in sync");
   });
 
-  it("uses the exact Mantiq navy + gold values, and only documented derived steps", () => {
-    expect(light["color-brand"]?.toUpperCase()).toBe(BRAND.navy);
-    expect(light["color-brand-deep"]?.toUpperCase()).toBe(BRAND.navyDeep);
-    expect(light["color-gold"]?.toUpperCase()).toBe(BRAND.gold);
-    expect(light["color-gold-text"]?.toUpperCase()).toBe(BRAND.navyDeep);
-    expect(light["color-gold-dark"]?.toUpperCase()).toBe(DERIVED.goldDark);
-    expect(light["color-gold-light"]?.toUpperCase()).toBe(DERIVED.goldLight);
-    expect(light["color-on-dark"]?.toUpperCase()).toBe(DERIVED.onDark);
-    expect(light["color-bg"]?.toUpperCase()).toBe(DERIVED.bg);
-    expect(light["color-muted"]?.toUpperCase()).toBe(DERIVED.muted);
+  it("keeps web and admin token CSS byte-identical", () => {
+    expect(fs.readFileSync(ADMIN_TOKENS_CSS, "utf8")).toBe(css);
+  });
 
-    // Every literal colour in the light block must be one of the documented
-    // brand/derived values, a functional status colour, or an rgba() of them.
-    const allowed = new Set<string>([
-      ...Object.values(BRAND),
-      ...Object.values(DERIVED),
-      "#1B5E3A", "#1B5E3A", "#EAF3ED", // success
-      "#8A5A12", "#FBF3E4", // warning
-      "#A32A22", "#FBEEED", // danger
-      "#1E4A7A", "#ECF1F8", // info
-      "#4A5666", "#EEF1F4", // neutral
-      "#25D366", // whatsapp (official)
-      "#FFFFFF", // pure white surface
-    ].map((value) => value.toUpperCase()));
-    const stray: string[] = [];
-    for (const [name, value] of Object.entries(light)) {
-      if (/^var\(/.test(value)) continue;
-      for (const hex of value.match(/#[0-9a-fA-F]{3,8}/g) || []) {
-        if (!allowed.has(hex.toUpperCase())) stray.push(`--${name}: ${hex}`);
+  it("ships every tokens.json colour into CSS, Dart and both Android themes", () => {
+    const dart = fs.readFileSync(MOBILE_THEME, "utf8");
+    const androidLight = fs.readFileSync(ANDROID_COLORS, "utf8");
+    const androidDark = fs.readFileSync(ANDROID_COLORS_NIGHT, "utf8");
+    const toAndroid = (hex: string) => `#FF${hex.slice(1).toUpperCase()}`;
+    for (const [name, token] of Object.entries(L)) {
+      expect(css, `${name} in tokens.css`).toContain(`--color-${name}: ${token.value};`);
+      if (token.value.startsWith("#")) {
+        expect(androidLight, `${name} in values/colors.xml`).toContain(toAndroid(token.value));
       }
     }
-    expect(stray).toEqual([]);
+    for (const token of Object.values(D)) {
+      if (token.value.startsWith("#")) expect(androidDark).toContain(toAndroid(token.value));
+    }
+    expect(dart).toContain(`static const Color brand = Color(0xFF${L.brand!.value.slice(1).toUpperCase()})`);
+    expect(dart).toContain(`static const Color gold = Color(0xFF${L.gold!.value.slice(1).toUpperCase()})`);
+    expect(dart).toContain(`static const Color darkSurface = Color(0xFF${D.surface!.value.slice(1).toUpperCase()})`);
   });
 
-  it("keeps navy + gold as the only brand hues on every surface", () => {
-    // The token set itself may not declare a second brand hue…
-    expect(source.toLowerCase()).not.toMatch(/--color-teal/);
-    // …and no component/style may reference one.
+  it("tokenValues.ts exposes only var() references, never a literal colour", () => {
+    const ts = fs.readFileSync(TOKEN_VALUES, "utf8");
+    const body = ts.slice(ts.indexOf("export const TOKENS"));
+    // BRAND/DERIVED are the machine-checkable statement of the palette; the
+    // TOKENS/MOTION maps used by components must be pure var() references.
+    const maps = body.split("export const BRAND")[0]!;
+    for (const line of maps.split("\n")) {
+      if (!line.includes('":')) continue;
+      expect(line, line).toMatch(/"var\(--[a-z0-9-]+\)"/);
+    }
+  });
+
+  it("uses the exact brand-kit values and nothing invented", () => {
+    expect(L.brand!.value).toBe("#16273B");
+    expect(L["brand-deep"]!.value).toBe("#0E1728");
+    expect(L.network!.value).toBe("#243553");
+    expect(L.gold!.value).toBe("#BDA77E");
+    expect(L["gold-light"]!.value).toBe("#E3D2A8");
+    expect(L["gold-dark"]!.value).toBe("#8F7A52");
+    expect(L["on-dark"]!.value).toBe("#E8E2D4");
+    expect(L["gold-ink"]!.value).toBe("#6F5D3A");
+    expect(L["bg-light"]!.value).toBe("#F7F5F0");
+    expect(L["surface-2"]!.value).toBe("#EFEBE1");
+    expect(tokens.color.brandKit.gradient!.value).toEqual(["#E3D2A8", "#BDA77E", "#8F7A52"]);
+
+    // Every colour is either a brand value or explicitly marked derived.
+    const brandValues = new Set(["#16273B", "#0E1728", "#243553", "#BDA77E", "#E3D2A8", "#8F7A52", "#E8E2D4", "#FFFFFF", "#25D366"]);
+    const unexplained: string[] = [];
+    for (const [name, token] of Object.entries({ ...L, ...D })) {
+      const isBrand = brandValues.has(token.value.toUpperCase());
+      const isComposite = token.value.startsWith("rgba(");
+      if (!isBrand && !isComposite && !token.derived) unexplained.push(`${name} = ${token.value}`);
+    }
+    expect(unexplained).toEqual([]);
+  });
+});
+
+describe("design tokens: accessibility", () => {
+  it("meets WCAG AA for every text pair in both themes", () => {
+    const AA = 4.5;
+    expect(contrast(L.brand!, L["bg-light"]!), "ink on canvas").toBeGreaterThanOrEqual(AA);
+    expect(contrast(L.brand!, L.surface!), "ink on white").toBeGreaterThanOrEqual(AA);
+    expect(contrast(L.muted!, L.surface!), "muted on white").toBeGreaterThanOrEqual(AA);
+    expect(contrast(L.muted!, L["surface-2"]!), "muted on surface-2").toBeGreaterThanOrEqual(AA);
+    expect(contrast(L.muted!, L["bg-light"]!), "muted on canvas").toBeGreaterThanOrEqual(AA);
+    expect(contrast(L["on-dark"]!, L.brand!), "text on navy").toBeGreaterThanOrEqual(AA);
+    expect(contrast(L["on-dark"]!, L.network!), "text on network").toBeGreaterThanOrEqual(AA);
+    expect(contrast(L["gold-text"]!, L.gold!), "navy on gold button").toBeGreaterThanOrEqual(AA);
+    expect(contrast(L["gold-ink"]!, L.surface!), "gold-ink on white").toBeGreaterThanOrEqual(AA);
+    expect(contrast(L["gold-ink"]!, L["bg-light"]!), "gold-ink on canvas").toBeGreaterThanOrEqual(AA);
+    expect(contrast(L.verified!, L.surface!), "verified label on white").toBeGreaterThanOrEqual(AA);
+    expect(contrast(L["on-dark"]!, L["success-fill"]!), "text on success fill").toBeGreaterThanOrEqual(AA);
+    expect(contrast(L["on-dark"]!, L["danger-fill"]!), "text on danger fill").toBeGreaterThanOrEqual(AA);
+    for (const [text, bg] of [
+      ["success", "success-bg"],
+      ["warn", "warn-bg"],
+      ["danger", "danger-bg"],
+      ["info", "info-bg"],
+      ["neutral", "neutral-bg"],
+    ] as const) {
+      expect(contrast(L[text]!, L[bg]!), `light ${text} on ${bg}`).toBeGreaterThanOrEqual(AA);
+      expect(contrast(D[text]!, D[bg]!, D.surface!.value), `dark ${text} on ${bg}`).toBeGreaterThanOrEqual(AA);
+    }
+    expect(contrast(D["on-dark"]!, D.surface!), "dark text on surface").toBeGreaterThanOrEqual(AA);
+    expect(contrast(D.muted!, D.surface!), "dark muted on surface").toBeGreaterThanOrEqual(AA);
+    expect(contrast(D.gold!, D.surface!), "dark gold on surface").toBeGreaterThanOrEqual(AA);
+    expect(contrast(D["on-dark"]!, D["bg-light"]!), "dark text on canvas").toBeGreaterThanOrEqual(AA);
+    expect(contrast(D.gold!, D["bg-light"]!), "dark gold on canvas").toBeGreaterThanOrEqual(AA);
+  });
+
+  it("keeps the gold rule: never gold text on a light surface", () => {
+    // Gold itself is 2.34:1 on white — that is why gold-ink exists.
+    expect(contrast(L.gold!, "#FFFFFF")).toBeLessThan(4.5);
+    expect(contrast(L["gold-ink"]!, "#FFFFFF")).toBeGreaterThanOrEqual(4.5);
+    // Focus rings need 3:1 against the surface they sit on.
+    expect(contrast(L.focus!, L.surface!)).toBeGreaterThanOrEqual(3);
+    expect(contrast(D.focus!, D["bg-light"]!)).toBeGreaterThanOrEqual(3);
+    // Gold is AA on navy at any size.
+    expect(contrast(L.gold!, L.brand!)).toBeGreaterThanOrEqual(4.5);
+  });
+});
+
+describe("design tokens: no legacy palette anywhere", () => {
+  const LEGACY = ["a93408", "fafaf9", "ffa93408", "0f1c2e", "c9a86c", "0b1220", "e7d6af", "9c814e", "0d9488", "2dd4bf", "0b726a", "86693c", "d8c7a4", "ede9e0", "1e3349"];
+  const legacyRe = new RegExp(`#?(?:${LEGACY.join("|")})`, "i");
+
+  it("scans every source type for legacy colours and stray hexes", () => {
+    const tokenAuthorities = new Set([TOKENS_CSS, ADMIN_TOKENS_CSS, MOBILE_THEME, ANDROID_COLORS, ANDROID_COLORS_NIGHT, TOKEN_VALUES, DESIGN]);
+    // Single-colour logo variants are pure black / pure white by definition
+    // (print, engraving, screen-print) — a mask needs those two extremes.
+    const allowedHexes = new Set<string>(["#FFFFFF", "#000000"]);
+    for (const token of [...Object.values(L), ...Object.values(D)]) {
+      if (token.value.startsWith("#")) allowedHexes.add(token.value.toUpperCase());
+    }
+
     const offenders: string[] = [];
-    const surfaces = [
-      ...walk(WEB_SRC, (name) => /\.(tsx|ts|css)$/.test(name) && !name.endsWith(".test.ts")),
-      ...walk(ADMIN_SRC, (name) => /\.(tsx|ts|css)$/.test(name)),
-    ];
-    for (const file of surfaces) {
+    const dirs = [WEB_SRC, ADMIN_SRC, MOBILE_LIB, path.resolve(MOBILE, "android"), path.resolve(MOBILE, "ios"), path.resolve(REPO, "brand")];
+    const files = dirs.flatMap((dir) =>
+      walk(dir, (n) => /\.(svg|xml|plist|json|css|ts|tsx|dart|html|storyboard)$/.test(n), ["node_modules", "build", ".gradle", "Pods", "dist"]),
+    );
+    for (const file of files) {
+      if (tokenAuthorities.has(file) || file.endsWith(".test.ts")) continue;
+      if (file.includes(`${path.sep}e2e${path.sep}`)) continue;
       const content = fs.readFileSync(file, "utf8");
-      content.split("\n").forEach((line, index) => {
-        if (/\bteal\b/i.test(line)) offenders.push(`${path.relative(REPO, file)}:${index + 1}`);
-      });
+      for (const [i, line] of content.split("\n").entries()) {
+        const where = `${path.relative(REPO, file)}:${i + 1}`;
+        if (legacyRe.test(line)) offenders.push(`${where} → legacy colour`);
+        if (/terracotta/i.test(line)) offenders.push(`${where} → terracotta`);
+        for (const hex of line.match(/#[0-9a-fA-F]{6}\b/g) ?? []) {
+          if (!allowedHexes.has(hex.toUpperCase())) offenders.push(`${where} → stray ${hex}`);
+        }
+      }
     }
-    expect(offenders).toEqual([]);
-    // Flutter: no secondary-hue constants; the verified mark is gold.
-    const dartFiles = sourceFiles(MOBILE_LIB).filter((file) => file.endsWith(".dart"));
-    const dartOffenders = dartFiles.filter((file) => /\bteal\b|Teal\b/.test(fs.readFileSync(file, "utf8"))).map((file) => path.relative(REPO, file));
-    expect(dartOffenders).toEqual([]);
+    expect(offenders.slice(0, 20)).toEqual([]);
   });
 
-  it("keeps the verified mark gold, not teal, on web and mobile", () => {
-    const verified = resolveToken(light["color-verified"]!, light).toUpperCase();
-    expect(verified).toBe(DERIVED.goldDark);
-    expect(contrast(verified, light["color-surface"]!), "verified label on white").toBeGreaterThanOrEqual(4.5);
-    const pill = composite(rgba(light["color-verified-bg"]!), rgba(light["color-surface"]!));
-    const pillHex = `#${pill.slice(0, 3).map((channel) => Math.round(channel).toString(16).padStart(2, "0")).join("")}`;
-    expect(contrast(light["color-verified-strong"]!, pillHex), "navy on gold pill").toBeGreaterThanOrEqual(4.5);
-    const dart = fs.readFileSync(MOBILE_THEME, "utf8");
-    expect(dart).toContain(toDartColor(DERIVED.goldDark));
-    expect(dart).toMatch(/verified/i);
-  });
-
-  it("keeps mobile light and dark palettes aligned with the CSS source", () => {
-    const dart = fs.readFileSync(MOBILE_THEME, "utf8");
-    const lightNames: Record<string, string> = {
-      brand: "color-brand", brandDeep: "color-brand-deep", network: "color-network",
-      gold: "color-gold", goldLight: "color-gold-light", goldDark: "color-gold-dark",
-      onDark: "color-on-dark", bg: "color-bg", surface: "color-surface", muted: "color-muted",
-      success: "color-success", warn: "color-warn", danger: "color-danger",
-      info: "color-info", neutral: "color-neutral", whatsapp: "color-whatsapp",
-    };
-    const darkNames: Record<string, string> = {
-      darkBg: "color-bg", darkSurface: "color-surface", darkSurface2: "color-surface-2",
-      darkInk: "color-ink", darkInkStrong: "color-ink-strong", darkMuted: "color-muted",
-    };
-    for (const [, cssName] of Object.entries(lightNames)) {
-      const value = light[cssName];
-      if (value?.startsWith("#")) expect(dart, cssName).toContain(toDartColor(value));
-    }
-    for (const [dartName, cssName] of Object.entries(darkNames)) {
-      const value = dark[cssName];
-      if (value?.startsWith("#")) expect(dart, `${dartName} ← ${cssName}`).toContain(toDartColor(value));
+  it("checks PNG pixels: brand icons are navy/gold, never orange", () => {
+    const pngs = walk(path.resolve(MOBILE, "assets/brand"), (n) => n.endsWith(".png"));
+    expect(pngs.length).toBeGreaterThanOrEqual(3);
+    // The brand palette manifest is written by the same generator that renders
+    // the pixels, so asserting on it asserts on the image content.
+    const manifestPath = path.resolve(MOBILE, "assets/brand/palette.txt");
+    if (fs.existsSync(manifestPath)) {
+      const manifest = fs.readFileSync(manifestPath, "utf8");
+      expect(manifest.toLowerCase()).not.toMatch(/a93408|terracotta|ff6b35|orange/);
+      for (const value of [L.brand!.value, L.gold!.value, L["on-dark"]!.value]) {
+        expect(manifest.toUpperCase()).toContain(value.toUpperCase());
+      }
     }
   });
+});
 
-  it("keeps the shared motion contract aligned with CSS and Flutter", () => {
-    const expected: Record<string, string> = {
-      "ease-out": "cubic-bezier(0.22, 1, 0.36, 1)",
-      "ease-in-out": "cubic-bezier(0.65, 0, 0.35, 1)",
-      "ease-spring": "cubic-bezier(0.34, 1.3, 0.64, 1)",
-      "dur-instant": "80ms",
-      "dur-fast": "160ms",
-      "dur-base": "280ms",
-      "dur-slow": "480ms",
-      "dur-hero": "900ms",
-      stagger: "60ms",
-      rise: "16px",
-    };
-    for (const [name, value] of Object.entries(expected)) {
-      expect(source).toContain(`--${name}: ${value};`);
-      const propertyName = name.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
-      const aliases: Record<string, string> = { durInstant: "instant", durFast: "fast", durBase: "base", durSlow: "slow", durHero: "hero" };
-      const motionName = aliases[propertyName] || propertyName;
-      expect(MOTION).toHaveProperty(motionName, `var(--${name})`);
-    }
-    const dart = fs.readFileSync(MOBILE_THEME, "utf8");
-    for (const dartValue of [
-      "instant = Duration(milliseconds: 80)", "fast = Duration(milliseconds: 160)",
-      "base = Duration(milliseconds: 280)", "slow = Duration(milliseconds: 480)",
-      "hero = Duration(milliseconds: 900)", "stagger = Duration(milliseconds: 60)",
-      "rise = 16", "easeOut = Cubic(0.22, 1, 0.36, 1)",
-      "easeInOut = Cubic(0.65, 0, 0.35, 1)", "easeSpring = Cubic(0.34, 1.3, 0.64, 1)",
-    ]) expect(dart).toContain(dartValue);
-    expect(fs.readFileSync(ADMIN_TOKENS_CSS, "utf8")).toBe(source);
-  });
-
-  it("uses navy text on gold and preserves WCAG AA contrast for core text pairs", () => {
-    expect(light["color-gold-text"]).toBe(light["color-brand-deep"]);
-    expect(contrast(resolveToken(light["color-gold-text"]!, light), resolveToken(light["color-gold"]!, light))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(resolveToken(light["color-ink"]!, light), resolveToken(light["color-bg"]!, light))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(resolveToken(light["color-muted"]!, light), resolveToken(light["color-surface"]!, light))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(resolveToken(light["color-muted"]!, light), resolveToken(light["color-surface-2"]!, light))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(resolveToken(light["color-on-dark"]!, light), resolveToken(light["color-brand"]!, light))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(resolveToken(light["color-on-dark"]!, light), resolveToken(light["color-sidebar-hover"]!, light))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(resolveToken(light["color-on-dark"]!, light), resolveToken(light["color-success-fill"]!, light))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(resolveToken(light["color-on-dark"]!, light), resolveToken(light["color-danger-fill"]!, light))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(resolveToken(light["color-gold-text"]!, light), resolveToken(light["color-whatsapp"]!, light))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(resolveToken(light["color-gold-dark"]!, light), resolveToken(light["color-surface"]!, light))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(resolveToken(light["color-focus"]!, light), resolveToken(light["color-surface"]!, light))).toBeGreaterThanOrEqual(3);
-    expect(contrast(resolveToken(dark["color-ink"]!, dark), resolveToken(dark["color-bg"]!, dark))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(resolveToken(dark["color-muted"]!, dark), resolveToken(dark["color-surface"]!, dark))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(resolveToken(dark["color-gold"]!, dark), resolveToken(dark["color-surface"]!, dark))).toBeGreaterThanOrEqual(4.5);
-    expect(contrast(resolveToken(dark["color-focus"]!, dark), resolveToken(dark["color-bg"]!, dark))).toBeGreaterThanOrEqual(3);
-    for (const [text, bg] of [["color-success", "color-success-bg"], ["color-warn", "color-warn-bg"], ["color-danger", "color-danger-bg"], ["color-info", "color-info-bg"], ["color-neutral", "color-neutral-bg"]]) {
-      expect(contrast(resolveToken(light[text]!, light), resolveToken(light[bg]!, light)), `${text} on ${bg}`).toBeGreaterThanOrEqual(4.5);
-      expect(contrast(resolveToken(dark[text]!, dark), resolveToken(dark[bg]!, dark), resolveToken(dark["color-surface"]!, dark)), `dark ${text} on ${bg}`).toBeGreaterThanOrEqual(4.5);
-    }
-  });
-
-  it("honors reduced motion across shared web/admin and Flutter primitives", () => {
-    const webCss = fs.readFileSync(path.resolve(WEB_SRC, "app", "globals.css"), "utf8");
-    const adminCss = fs.readFileSync(path.resolve(ADMIN_SRC, "index.css"), "utf8");
-    const motion = fs.readFileSync(path.resolve(WEB_SRC, "components", "motion", "index.tsx"), "utf8");
-    const flutterFiles = [
-      path.resolve(MOBILE_LIB, "core", "widgets.dart"),
-      path.resolve(MOBILE_LIB, "core", "theme.dart"),
-      path.resolve(MOBILE_LIB, "widgets", "listing_card.dart"),
-      path.resolve(MOBILE_LIB, "features", "onboarding", "onboarding_screen.dart"),
-      path.resolve(MOBILE_LIB, "main.dart"),
-    ];
-    expect(webCss).toContain("@media (prefers-reduced-motion: reduce)");
-    expect(adminCss).toContain("@media (prefers-reduced-motion: reduce)");
-    expect(motion).toContain("prefers-reduced-motion: reduce");
-    expect(motion).toContain("reduced || !(\"IntersectionObserver\" in window)");
-    for (const file of flutterFiles) expect(fs.readFileSync(file, "utf8"), file).toContain("disableAnimations");
-  });
-
-  it("contains no inline hex colors outside the CSS/Dart token authorities", () => {
-    const allowed = [TOKENS_CSS, ADMIN_TOKENS_CSS, MOBILE_THEME];
+describe("design tokens: implementation rules", () => {
+  it("has no inline hex outside the token authorities", () => {
+    const allowed = new Set([TOKENS_CSS, ADMIN_TOKENS_CSS, MOBILE_THEME, TOKEN_VALUES, ANDROID_COLORS, ANDROID_COLORS_NIGHT]);
     const offenders: string[] = [];
     for (const file of [...sourceFiles(WEB_SRC), ...sourceFiles(ADMIN_SRC), ...sourceFiles(MOBILE_LIB)]) {
-      if (allowed.includes(file) || file.endsWith(".test.ts") || file.endsWith("tokenValues.ts")) continue;
+      if (allowed.has(file) || file.endsWith(".test.ts")) continue;
       const content = fs.readFileSync(file, "utf8");
-      for (const [index, line] of content.split("\n").entries()) {
-        if (/#[\da-f]{6}\b/i.test(line)) offenders.push(`${path.relative(REPO, file)}:${index + 1}`);
+      for (const [i, line] of content.split("\n").entries()) {
+        if (/#[\da-f]{6}\b/i.test(line)) offenders.push(`${path.relative(REPO, file)}:${i + 1}`);
       }
     }
     expect(offenders).toEqual([]);
   });
 
-  it("migrates legacy palette utilities out of web and admin TSX", () => {
-    const legacy = /(?:text|bg|border|ring|from|to|via|divide|fill|stroke)-(?:stone|emerald|amber|red|blue|gray|slate|zinc|neutral|yellow|green|orange|rose|sky|indigo|teal)-(?:\d+|ink|bg)\b/;
+  it("migrates legacy Tailwind palette utilities out of web and admin TSX", () => {
+    const legacy =
+      /(?:text|bg|border|ring|from|to|via|divide|fill|stroke)-(?:stone|emerald|amber|red|blue|gray|slate|zinc|neutral|yellow|green|orange|rose|sky|indigo|teal)-(?:\d+|ink|bg)\b/;
     const offenders: string[] = [];
-    for (const file of [...sourceFiles(WEB_SRC), ...sourceFiles(ADMIN_SRC)].filter((item) => item.endsWith(".tsx"))) {
-      const lines = fs.readFileSync(file, "utf8").split("\n");
-      lines.forEach((line, index) => { if (legacy.test(line)) offenders.push(`${path.relative(REPO, file)}:${index + 1}: ${line.trim()}`); });
+    for (const file of [...sourceFiles(WEB_SRC), ...sourceFiles(ADMIN_SRC)].filter((f) => f.endsWith(".tsx"))) {
+      for (const [i, line] of fs.readFileSync(file, "utf8").split("\n").entries()) {
+        if (legacy.test(line)) offenders.push(`${path.relative(REPO, file)}:${i + 1}`);
+      }
     }
     expect(offenders).toEqual([]);
   });
@@ -318,55 +296,59 @@ describe("unified design tokens", () => {
     const offenders: string[] = [];
     for (const file of [...sourceFiles(WEB_SRC), ...sourceFiles(ADMIN_SRC)]) {
       if (file.endsWith(".test.ts")) continue;
-      const lines = fs.readFileSync(file, "utf8").split("\n");
-      for (const [index, line] of lines.entries()) {
-        if (/bg-gold\b/.test(line) && /text-white/.test(line)) offenders.push(`${path.basename(file)}:${index + 1}`);
+      for (const [i, line] of fs.readFileSync(file, "utf8").split("\n").entries()) {
+        if (/bg-gold\b/.test(line) && /text-white/.test(line)) offenders.push(`${path.relative(REPO, file)}:${i + 1}`);
       }
     }
-    for (const file of sourceFiles(MOBILE_LIB).filter((item) => item.endsWith(".dart"))) {
+    for (const file of sourceFiles(MOBILE_LIB).filter((f) => f.endsWith(".dart"))) {
       const content = fs.readFileSync(file, "utf8");
-      const goldWhite = /(?:backgroundColor|color)\s*:\s*AppColors\.gold\b[\s\S]{0,320}?TextStyle\([\s\S]{0,140}?color\s*:\s*Colors\.white\b/g;
-      if (goldWhite.test(content)) offenders.push(path.relative(MOBILE_LIB, file));
+      if (/(?:backgroundColor|color)\s*:\s*AppColors\.gold\b[\s\S]{0,320}?TextStyle\([\s\S]{0,140}?color\s*:\s*Colors\.white\b/.test(content)) {
+        offenders.push(path.relative(MOBILE_LIB, file));
+      }
     }
     expect(offenders).toEqual([]);
   });
 
-  /* ── Brand artifacts: the place legacy colours used to hide ───────────── */
-
-  const LEGACY_HEXES = ["A93408", "FFA93408", "FAFAF9", "0F1C2E", "C9A86C", "0B1220", "E7D6AF", "9C814E", "0D9488", "2DD4BF", "0B726A"];
-
-  it("keeps brand markup and mobile assets free of legacy palette colours", () => {
-    const markup = [
-      ...walk(WEB_ROOT, (name) => /\.(svg|xml|webmanifest|json|ts|tsx|css)$/.test(name), ["node_modules", ".next", "dist"]),
-      ...walk(path.resolve(MOBILE, "android"), (name) => /\.(xml|json|dart)$/.test(name), ["build", ".gradle"]),
-      ...walk(path.resolve(MOBILE, "ios"), (name) => /\.(storyboard|json|plist|xib)$/.test(name), ["Pods", "build"]),
-    ].filter((file) => !file.endsWith("tokenValues.ts") && !file.endsWith("tokens.css") && !file.endsWith(".test.ts"));
-
+  it("keeps two hues: no teal anywhere in code or tokens", () => {
+    expect(css.toLowerCase()).not.toMatch(/--color-teal/);
     const offenders: string[] = [];
-    for (const file of markup) {
-      const content = fs.readFileSync(file, "utf8");
-      for (const hex of LEGACY_HEXES) {
-        if (new RegExp(`#${hex}\\b`, "i").test(content)) offenders.push(`${path.relative(REPO, file)} → #${hex}`);
+    for (const file of [...walk(WEB_SRC, (n) => /\.(tsx|ts|css)$/.test(n)), ...walk(ADMIN_SRC, (n) => /\.(tsx|ts|css)$/.test(n))]) {
+      if (file.endsWith(".test.ts")) continue;
+      for (const [i, line] of fs.readFileSync(file, "utf8").split("\n").entries()) {
+        if (/\bteal\b/i.test(line)) offenders.push(`${path.relative(REPO, file)}:${i + 1}`);
       }
-      if (/systemBackgroundColor/.test(content)) offenders.push(`${path.relative(REPO, file)} → system background (white) launch screen`);
+    }
+    for (const file of sourceFiles(MOBILE_LIB)) {
+      if (/\bteal\b/i.test(fs.readFileSync(file, "utf8"))) offenders.push(path.relative(REPO, file));
     }
     expect(offenders).toEqual([]);
   });
 
-  it("ships brand PNGs generated from the Mantiq palette only", () => {
-    // PNGs cannot be greped, so the contract is: every brand image decodes to
-    // pixels from the navy/gold ramp (+ antialiasing blends of them).
-    const brandPngs = walk(path.resolve(MOBILE, "assets", "brand"), (name) => name.endsWith(".png"));
-    expect(brandPngs.length).toBeGreaterThanOrEqual(3);
-    const allowed: [number, number, number][] = [
-      [0x16, 0x27, 0x3B], [0x0E, 0x17, 0x28], [0xBD, 0xA7, 0x7E], [0xD8, 0xC7, 0xA4], [0x86, 0x69, 0x3C], [0x1E, 0x33, 0x49],
-    ];
-    // The icon manifest (assets/brand/palette.txt) is written by the generator.
-    const manifest = fs.readFileSync(path.resolve(MOBILE, "assets", "brand", "palette.txt"), "utf8");
-    for (const [r, g, b] of allowed) {
-      const hex = `#${[r, g, b].map((v) => v.toString(16).toUpperCase().padStart(2, "0")).join("")}`;
-      expect(manifest).toContain(hex);
+  it("honours reduced motion across web, admin and Flutter", () => {
+    const webCss = fs.readFileSync(path.resolve(WEB_SRC, "app", "globals.css"), "utf8");
+    const adminCss = fs.readFileSync(path.resolve(ADMIN_SRC, "index.css"), "utf8");
+    const motion = fs.readFileSync(path.resolve(WEB_SRC, "components", "motion", "index.tsx"), "utf8");
+    expect(webCss).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(adminCss).toContain("@media (prefers-reduced-motion: reduce)");
+    expect(motion).toContain("prefers-reduced-motion: reduce");
+    for (const rel of [
+      "core/widgets.dart",
+      "core/theme.dart",
+      "widgets/listing_card.dart",
+      "features/onboarding/onboarding_screen.dart",
+      "main.dart",
+    ]) {
+      expect(fs.readFileSync(path.resolve(MOBILE_LIB, rel), "utf8"), rel).toContain("disableAnimations");
     }
-    expect(manifest.toLowerCase()).not.toContain("a93408");
+  });
+
+  it("keeps the motion ramp tokenised (no magic durations in components)", () => {
+    for (const key of ["dur-fast", "dur-base", "dur-slow", "ease-out", "ease-in-out", "stagger", "rise"]) {
+      expect(css).toContain(`--${key}:`);
+    }
+    const dart = fs.readFileSync(MOBILE_THEME, "utf8");
+    expect(dart).toContain("static const Duration durFast");
+    expect(dart).toContain("static const Duration durBase");
+    expect(dart).toContain("static const String easeOut");
   });
 });

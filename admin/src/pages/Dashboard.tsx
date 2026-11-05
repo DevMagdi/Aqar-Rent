@@ -119,7 +119,7 @@ export function Dashboard() {
         </Card>
         <Card title="Quick actions">
           <div className="flex flex-wrap gap-2">
-            <Link to="/moderation" className="rounded-xl bg-gold px-4 py-2 text-sm font-semibold text-gold-text hover:bg-gold-dark">
+            <Link to="/moderation" className="px-4 py-2 text-sm font-semibold btn-primary">
               Moderation queue
             </Link>
             <Link to="/verifications" className="rounded-xl border border-border-strong bg-surface px-4 py-2 text-sm font-semibold text-ink hover:bg-bg">

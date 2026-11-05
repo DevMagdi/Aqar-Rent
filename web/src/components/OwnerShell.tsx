@@ -1,5 +1,5 @@
 "use client";
-// Mantiq owner-area shell: dark navy sidebar + gold active state with a
+// Aqar owner-area shell: dark navy sidebar + gold active state with a
 // 3px inline-start indicator (RTL-correct via start-*). Public pages keep the
 // light header; owner/contracts areas sit inside this shell.
 import Link from "next/link";

@@ -433,7 +433,7 @@ export function ContractWizard({ editContract, onSaved }: { editContract?: Contr
             <button type="button" data-testid="btn-save-draft" disabled={busy} onClick={() => save(false)} className="rounded-xl border border-border-strong bg-surface px-4 py-2.5 text-sm font-semibold text-ink disabled:opacity-60">
               {t("draft_contract")}
             </button>
-            <button type="button" data-testid="btn-save-request" disabled={busy} onClick={() => save(true)} className="rounded-xl bg-gold px-4 py-2.5 text-sm font-bold text-gold-text hover:bg-gold-dark disabled:opacity-60">
+            <button type="button" data-testid="btn-save-request" disabled={busy} onClick={() => save(true)} className="px-4 py-2.5 text-sm font-bold disabled:opacity-60 btn-primary">
               {t("request_confirmation")}
             </button>
           </div>

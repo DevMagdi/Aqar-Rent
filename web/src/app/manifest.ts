@@ -2,7 +2,7 @@ import type { MetadataRoute } from "next";
 import { serverTokenColor } from "@/lib/serverColor";
 
 /**
- * Installable-web-app manifest in the Mantiq identity. Arabic-first, so the
+ * Installable-web-app manifest in the Aqar identity (navy + gold). Arabic-first, so the
  * name/description follow the default locale; colours come from tokens.css.
  */
 export default function manifest(): MetadataRoute.Manifest {

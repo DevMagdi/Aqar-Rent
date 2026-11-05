@@ -38,7 +38,7 @@ export function Login() {
         <div className="admin-login-art-inner">
           <div className="admin-login-art-mark"><BrandMark compact /></div>
           <p className="admin-login-art-wordmark">عقار رينت</p>
-          <p className="admin-login-art-tagline">Mantiq Staff Console · Aqar Rent</p>
+          <p className="admin-login-art-tagline">Aqar Rent · Staff Console</p>
           <ul className="admin-login-art-points">
             <li>Listings, verification and appeals</li>
             <li>Payments, reconciliation and audit trail</li>
@@ -118,7 +118,7 @@ export function Login() {
           type="submit"
           data-testid="btn-login"
           disabled={busy}
-          className="mt-6 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-[var(--radius-field)] bg-gold py-3 text-sm font-bold text-gold-text transition hover:bg-gold-light disabled:opacity-60"
+          className="mt-6 inline-flex w-full items-center justify-center gap-2 py-3 text-sm font-bold transition disabled:opacity-60 btn-primary"
         >
           {busy ? <span className="inline-flex items-center justify-center gap-2"><span className="login-spinner" aria-hidden />Signing in…</span> : "Sign in"}
         </button>

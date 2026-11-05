@@ -28,7 +28,7 @@ export function ContractsListView() {
         <h1 className="text-xl font-bold text-ink-strong" data-testid="contracts-title">
           {t("contracts")}
         </h1>
-        <Link href={`/${locale}/contracts/new`} data-testid="btn-new-contract" className="rounded-xl bg-gold px-4 py-2.5 text-sm font-bold text-gold-text hover:bg-gold-dark">
+        <Link href={`/${locale}/contracts/new`} data-testid="btn-new-contract" className="px-4 py-2.5 text-sm font-bold btn-primary">
           + {t("new_contract")}
         </Link>
       </div>
@@ -37,7 +37,7 @@ export function ContractsListView() {
         <EmptyState
           title={t("contracts_empty")}
           action={
-            <Link href={`/${locale}/contracts/new`} className="rounded-xl bg-gold px-5 py-2.5 text-sm font-semibold text-gold-text">
+            <Link href={`/${locale}/contracts/new`} className="px-5 py-2.5 text-sm font-semibold btn-primary">
               + {t("new_contract")}
             </Link>
           }

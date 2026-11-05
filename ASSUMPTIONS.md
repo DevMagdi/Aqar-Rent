@@ -415,38 +415,46 @@ Every decision the spec left open, made here so review is easy. Business rules
     `design/mantiq-tokens` branch (branch creation outside the session branch
     is not possible here).
 
-## Premium Visual Overhaul (unified identity, motion, dark mode) (115–123)
+## Premium Visual Overhaul (unified identity, motion, dark mode) (115–125)
 
 115. **Proposal-first**: exact token values, ratios and derivations were written
     to `docs/design/premium-tokens.md` **before** implementation; every number
     in that document is recomputed by the test suite / design e2e assertions.
-116. **Palette locked — CORRECTED to exact Mantiq values (supersedes the
-    earlier proposal)**. Identity is **Navy + Gold only**; the teal family is
-    gone and the verified badge is gold.
-    * Navy `#16273B` (15.14:1 on white), Navy Deep `#0E1728` (17.92:1),
-      network/hover `#1E3349` (derived, same hue +1 step).
+116. **Palette locked — exact brand-kit values, single source (v3).**
+    Identity is **Navy + Gold only**; the teal family is gone and the verified
+    badge is gold. Everything below lives in `design/tokens.json` and is
+    generated into the web/admin/Dart/Android files by `scripts/build-tokens.mjs`.
+    * Navy `#16273B` (14.97:1 on white), Deep Navy `#0E1728` (17.9:1),
+      Network Blue `#243553` (raised dark surface / hover — one navy family,
+      no extra invented step).
     * Gold `#BDA77E` (6.48 on navy; **2.34 on white → never text on light**),
-      gold-light `#D8C7A4` (derived, 9.10 on navy), gold-dark/focus/verified
-      `#86693C` (derived, **5.12 on white**), on-dark `#EDE9E0` (derived,
-      12.49 on navy), muted `#5B6472` (5.5 on canvas).
-    * Canvas `#FAF9F5` (derived warm off-white), surface `#FFFFFF`.
-    * Dark: canvas `#0E1728`, surface `#17293F` (derived), ink `#EDE9E0`
-      (12.9 on surface), muted `#A3ADB9` (6.3), gold `#BDA77E` (6.31).
+      gold-light `#E3D2A8` (10.13 on navy), gold-dark `#8F7A52` (4.14 on
+      white → large text / 3:1 UI only), gold-ink `#6F5D3A` (the gold-family
+      **text** colour on light, 6.36 on white), on-dark `#E8E2D4`
+      (11.72 on navy), muted `#5B6472` (5.98 on white).
+    * Canvas `#F7F5F0` (warm, derived), surface `#FFFFFF`, surface-2 `#EFEBE1`.
+    * Dark: canvas `#0E1728`, surface `#17293F`, surface-2 `#1C3049`,
+      ink `#E8E2D4` (11.41 on surface), ink-strong `#F7F4EE`, muted `#A3ADB9`
+      (6.48), gold `#BDA77E` (6.31).
     * Status colours stay functional-only (success/warn/danger/info/neutral)
       and are tuned to sit under navy/gold; they never carry brand meaning.
-    * Verification is mechanical: `web/src/styles/tokens.test.ts` asserts the
-      exact hexes and every contrast pair, and
-      `e2e/tests/design-system.spec.ts` asserts the computed CSS values in a
-      real browser (light + dark, ar + en).
-117. **Tokens stay byte-identical across web/admin**; mobile mirrors them in
-    `mobile/lib/core/theme.dart` — equality is enforced by
-    `web/src/styles/tokens.test.ts` (also rejects terracotta/orange leftovers
-    and any hex outside the three token files).
-118. **Gold-text rule reaffirmed**: navy-on-gold only (buttons = gold +
-    `#0E1728` text = 8.0:1; never white on gold). Gold on white is 2.34:1, so
-    gold is never text on a light surface — labels use ink, `text-verified`
-    (gold-dark `#86693C`, 5.12:1) carries the gold note, and `text-gold-dark`
-    is limited to WCAG-large text and ≥3:1 graphics. Test-enforced.
+    * Verification is mechanical: `build-tokens.mjs --check` proves the six
+      artefacts are byte-identical to a regeneration; `web/src/styles/
+      tokens.test.ts` asserts the exact hexes and every contrast pair, scans
+      for legacy/teal/stray hexes across nine file types, and
+      `e2e/tests/design-system.spec.ts` asserts the computed values in a browser.
+117. **One source, six generated mirrors.** `design/tokens.json` →
+    `scripts/build-tokens.mjs` → web CSS, admin CSS (byte-identical), the typed
+    TS map, Dart (`theme_generated.dart`), and both Android `colors.xml` files.
+    `theme.dart` re-exports the generated Dart and declares no colour.
+    `tokens.test.ts` rejects terracotta/orange/teal leftovers, any hex outside
+    the token authorities, and any drift from a regeneration.
+118. **Gold-text rule reaffirmed**: deep-navy-on-gold only (buttons = gold +
+    `#0E1728` text = 7.67:1; never white on gold). Gold on white is 2.34:1, so
+    gold is never text on a light surface — labels use ink, `--color-verified`
+    is `gold-ink #6F5D3A` (6.36:1) on light and `gold #BDA77E` (6.31:1) on
+    dark, and `gold-dark #8F7A52` is limited to WCAG-large text and ≥3:1
+    graphics. Test-enforced, including a `bg-gold` + `text-white` scan.
 119. **Dark mode**: class strategy on `<html>` (`aqar.theme` localStorage +
     `prefers-color-scheme` bootstrap script to avoid FOUC); Flutter follows
     system by default with an in-app toggle (persisted). Sidebars flip via
@@ -455,14 +463,23 @@ Every decision the spec left open, made here so review is easy. Business rules
     shadow, press scale, brand shimmer skeletons, toast slide-up) with a
     `prefers-reduced-motion` kill-switch; Flutter uses `PageTransitionsTheme`
     + `Hero` on listing images + `AnimatedScale` press.
-121. **Geometry/type upgrade**: cards22 / shells24 / buttons-fields14 / pill999;
-    base15/24 (Arabic line-height), titles26/36, KPI34/42; layered shadows
-    (`--shadow-card/pop/elevate`).
+121. **Geometry/type**: cards 18 / fields 12 / buttons pill 999 / sheets 28
+    (one language on web, admin and Flutter); type scale in **rem**
+    (0.8125 → 4), Arabic line-height 1.7, headings 1.25; navy-tinted layered
+    shadows (`--shadow-card/pop/elevate`) — never neutral grey.
 122. **Screenshots**: the PR carries a text before/after description; visual
     proof lives in the design e2e suite (`e2e/tests/design-system.spec.ts`
     computes styles + WCAG ratios on home ar/en, search, detail, dashboard,
     checkout, admin, dark mode, premium card) — this sandbox cannot capture
     pixel screenshots, so computed-style evidence is used instead.
-123. **Branch**: platform-fixed `arena/659701e4-aqar-rent` carries the PR with
-    the requested title (no `design/…` branch can be created here; deletion of
-    the session branch is not possible either — its content is in `main`).
+123. **Branch**: platform-fixed `arena/12304b3c-aqar-rent` carries the PRs
+    (branch names are assigned by the platform, not chosen).
+124. **`--color-brand` is a text token, never a surface.** It aliases ink and
+    therefore flips to light (`#E8E2D4`) in dark mode; painting it as a
+    background produced a grey-white haze across the home hero. Surfaces use
+    `--color-network` / `--color-sidebar` (dark chrome) or `--color-surface*`
+    (light). Enforced by eye + the hero screenshot, not by a grep test (the
+    alias is legitimate for text/borders, so a naive scan would false-positive).
+125. **The hero has exactly one gold glow**, `min(42vw, 460px)` at 8% (opacity
+    `.6` in dark). Large low-alpha gold reads as fog, not light — the earlier
+    58vw/14% circle is the regression to avoid.

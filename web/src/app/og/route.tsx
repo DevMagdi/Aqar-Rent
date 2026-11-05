@@ -9,7 +9,7 @@ export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 /**
- * Social card in the Mantiq identity: navy field, one gold rule, the real brand
+ * Social card in the Aqar identity: navy field, one gold rule, the real brand
  * mark, and real Arabic type.
  *
  * Arabic is rendered from the bundled El Messiri **WOFF** faces (Satori cannot

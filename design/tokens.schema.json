@@ -1,0 +1,293 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://aqarrent.app/schema/tokens.schema.json",
+  "title": "Aqar Rent design tokens",
+  "description": "The single source of truth for colour, type, geometry and motion. scripts/build-tokens.mjs generates every consumer from this file; web/src/styles/tokens.test.ts enforces it.",
+  "type": "object",
+  "required": [
+    "$schema",
+    "meta",
+    "color",
+    "font",
+    "fontSize",
+    "lineHeight",
+    "letterSpacing",
+    "space",
+    "radius",
+    "shadow",
+    "motion",
+    "shape"
+  ],
+  "additionalProperties": false,
+  "definitions": {
+    "token": {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "type": "string"
+        },
+        "derived": {
+          "type": "boolean",
+          "description": "true only for a value that is NOT in the brand kit. Requires `note` explaining the contrast or elevation reason."
+        },
+        "note": {
+          "type": "string",
+          "minLength": 3
+        }
+      },
+      "if": {
+        "properties": {
+          "derived": {
+            "const": true
+          }
+        },
+        "required": [
+          "derived"
+        ]
+      },
+      "then": {
+        "required": [
+          "note"
+        ]
+      }
+    },
+    "colour": {
+      "oneOf": [
+        {
+          "type": "string",
+          "pattern": "^#[0-9A-F]{6}$"
+        },
+        {
+          "type": "string",
+          "pattern": "^rgba\\(\\s*\\d{1,3},\\s*\\d{1,3},\\s*\\d{1,3},\\s*0?\\.?\\d+\\s*\\)$"
+        }
+      ]
+    },
+    "colourToken": {
+      "type": "object",
+      "required": [
+        "value"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/colour"
+        },
+        "derived": {
+          "type": "boolean"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "themeMap": {
+      "type": "object",
+      "minProperties": 10,
+      "additionalProperties": {
+        "$ref": "#/definitions/colourToken"
+      }
+    }
+  },
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "meta": {
+      "type": "object",
+      "required": [
+        "name",
+        "version",
+        "source",
+        "generated",
+        "palette"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "const": "Aqar Rent design tokens"
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "source": {
+          "const": "design/tokens.json"
+        },
+        "generated": {
+          "type": "string"
+        },
+        "palette": {
+          "type": "string",
+          "pattern": "Navy \\+ Gold"
+        }
+      }
+    },
+    "color": {
+      "type": "object",
+      "required": [
+        "light",
+        "dark",
+        "brandKit"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "light": {
+          "$ref": "#/definitions/themeMap"
+        },
+        "dark": {
+          "$ref": "#/definitions/themeMap"
+        },
+        "brandKit": {
+          "type": "object",
+          "required": [
+            "gradient"
+          ],
+          "properties": {
+            "gradient": {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "$ref": "#/definitions/colour"
+                  }
+                },
+                "note": {
+                  "type": "string"
+                }
+              }
+            },
+            "gradientStops": {
+              "type": "object",
+              "required": [
+                "value"
+              ],
+              "properties": {
+                "value": {
+                  "type": "array",
+                  "minItems": 3,
+                  "maxItems": 3,
+                  "items": {
+                    "type": "string",
+                    "pattern": "^\\d+%$"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "font": {
+      "type": "object",
+      "required": [
+        "display",
+        "sans",
+        "mono"
+      ],
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "value",
+          "stack"
+        ],
+        "properties": {
+          "value": {
+            "type": "string"
+          },
+          "stack": {
+            "type": "string",
+            "pattern": ","
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "fontSize": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/token",
+        "properties": {
+          "value": {
+            "type": "string",
+            "pattern": "^\\d+(\\.\\d+)?rem$"
+          }
+        }
+      }
+    },
+    "lineHeight": {
+      "type": "object",
+      "additionalProperties": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "pattern": "^\\d+(\\.\\d+)?$"
+          }
+        }
+      }
+    },
+    "letterSpacing": {
+      "type": "object",
+      "additionalProperties": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "pattern": "^-?\\d*\\.?\\d+em$"
+          }
+        }
+      }
+    },
+    "space": {
+      "type": "object",
+      "additionalProperties": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "pattern": "^\\d+px$"
+          }
+        }
+      }
+    },
+    "radius": {
+      "type": "object",
+      "additionalProperties": {
+        "properties": {
+          "value": {
+            "type": "string",
+            "pattern": "^(\\d+(\\.\\d+)?px|999px)$"
+          }
+        }
+      }
+    },
+    "shadow": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/token"
+      }
+    },
+    "motion": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/token"
+      }
+    },
+    "shape": {
+      "type": "object",
+      "additionalProperties": {
+        "$ref": "#/definitions/token"
+      }
+    }
+  }
+}

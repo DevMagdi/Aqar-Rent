@@ -6,6 +6,7 @@ import { makeT } from "@/lib/i18n";
 import { fetchServer } from "@/lib/server";
 import { LOCALES } from "@/lib/i18n";
 import type { Locale, Location, SearchResult } from "@/lib/types";
+import { MarkGlyph } from "@/components/BrandMark";
 
 export async function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -86,13 +87,9 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
           </div>
         </div>
         <div className="hero-glow" aria-hidden />
-        <div className="hero-mark" aria-hidden>
-          <svg viewBox="0 0 48 48" fill="none">
-            <path d="M11.5 22.4 24 12.2l12.5 10.2" stroke="var(--color-gold-light)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M15.1 22.2v10.9a2.6 2.6 0 0 0 2.6 2.6h12.6a2.6 2.6 0 0 0 2.6-2.6V22.2" stroke="var(--color-gold)" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            <circle cx="24" cy="30.5" r="2.4" fill="var(--color-gold)" />
-          </svg>
-        </div>
+        <span className="hero-grain" aria-hidden />
+        {/* the mark itself as the hero ornament — geometry, not a new drawing */}
+        <MarkGlyph id="hero-mark" className="hero-mark" tone="outline" stroke={1.5} />
       </section>
 
       <div className="home-search-overlap">

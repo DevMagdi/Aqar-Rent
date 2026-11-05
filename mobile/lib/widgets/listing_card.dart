@@ -2,6 +2,8 @@
 // -16:10 image with bottom gradient + dominant price overlay
 // - title → location → refined meta hierarchy
 // - premium gradient badges, press scale, Hero for shared-element detail
+import 'dart:ui' show FontFeature;
+
 import 'package:flutter/material.dart';
 
 import '../core/theme.dart';
@@ -28,7 +30,7 @@ class _ListingCardState extends State<ListingCard> {
   Widget build(BuildContext context) {
     final item = widget.item;
     final dark = Theme.of(context).brightness == Brightness.dark;
-    final radius = BorderRadius.circular(22); // spec: cards20–24
+    final radius = BorderRadius.circular(AppShape.radiusCard);
     final url = item.thumbUrl;
 
     final reduce = MediaQuery.of(context).disableAnimations;
@@ -113,8 +115,11 @@ class _ListingCardState extends State<ListingCard> {
                             style: TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              shadows: const [Shadow(blurRadius: 4, color: Colors.black54)],
+                              // on-dark, not pure white: the identity's warm off-white
+                              color: AppColors.onDark,
+                              // tabular figures: a column of prices must line up
+                              fontFeatures: const [FontFeature.tabularFigures()],
+                              shadows: const [Shadow(blurRadius: 4, color: AppColors.overlayScrim)],
                             ),
                           ),
                           Padding(
@@ -124,7 +129,7 @@ class _ListingCardState extends State<ListingCard> {
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
-                                color: Colors.white.withValues(alpha: 0.9),
+                                color: AppColors.onDark.withValues(alpha: 0.9),
                               ),
                             ),
                           ),

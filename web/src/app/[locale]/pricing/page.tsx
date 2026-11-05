@@ -107,7 +107,7 @@ export default async function PricingPage({ params }: { params: Promise<{ locale
             </p>
             <Link
               href={`/${l}/owner/new`}
-              className="mt-5 inline-flex rounded-xl bg-gold px-5 py-2.5 text-sm font-bold text-gold-text hover:bg-gold-dark"
+              className="mt-5 inline-flex px-5 py-2.5 text-sm font-bold btn-primary"
             >
               {ar ? "أضف إعلانك" : "Post a listing"}
             </Link>

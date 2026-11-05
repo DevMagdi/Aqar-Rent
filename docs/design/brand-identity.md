@@ -1,71 +1,106 @@
 # Aqar Rent — brand identity
 
-> **Authority:** `web/src/styles/tokens.css` (mirrored byte-for-byte into
-> `admin/src/styles/tokens.css`, mirrored by hand into
-> `mobile/lib/core/theme.dart`).
-> **Enforced by:** `web/src/styles/tokens.test.ts` (unit, every hex + ratio),
-> `e2e/tests/design-system.spec.ts` (real browser, light + dark, ar + en),
-> `scripts/brand_assets.py --check` (40 generated icon/splash files).
+> **Authority:** [`design/tokens.json`](../../design/tokens.json) — the single
+> source. `scripts/build-tokens.mjs` generates `web/src/styles/tokens.css`,
+> `admin/src/styles/tokens.css` (byte-identical), `web/src/styles/tokenValues.ts`,
+> `mobile/lib/core/theme_generated.dart` and both Android `colors.xml` files.
+> `mobile/lib/core/theme.dart` only re-exports the generated values.
+> **Measured ratios:** [`premium-tokens.md`](./premium-tokens.md).
+> **Brand kit:** [`brand/Aqar-Rent-Brand-Kit/`](../../brand/Aqar-Rent-Brand-Kit/)
+> (`npm run brand:build`).
+> **Enforced by:** `web/src/styles/tokens.test.ts`,
+> `e2e/tests/design-system.spec.ts`, `scripts/brand_assets.py --check`,
+> `scripts/build-brand-kit.mjs --check`, `scripts/check_mobile.py`.
+
+## 0. Name, taglines, voice
+
+**Aqar Rent / عقار رينت.** Arabic is primary in the UI; English is a first-class
+second locale, never a translation afterthought.
+
+* Arabic tagline: **«إيجارك مباشرة من المالك»**
+* English tagline: **"Rent direct. No brokers."**
+
+Voice: confident, simple, transparent about money, short sentences, clear verbs.
+Say the number and the fee in the same breath (`الإيجار 8,500 ج.م شهريًا، بدون
+عمولة`). Buttons are verbs (`انشر إعلانك`, `احفظ التغييرات`) — never "Submit".
 
 ## 1. The two hues
 
 | Role | Token | Value | Evidence |
 |---|---|---|---|
-| Navy (ink, chrome, primary surface) | `--color-brand` | `#16273B` | 15.14:1 on white |
-| Navy Deep (darkest) | `--color-brand-deep` | `#0E1728` | 17.92:1 on white |
-| Network (derived: navy +1 step) | `--color-network` | `#1E3349` | hover / fills |
-| **Gold (the only accent)** | `--color-gold` | `#BDA77E` | 6.48:1 on navy · **2.34:1 on white** |
-| Gold Light (derived: +1 step) | `--color-gold-light` | `#D8C7A4` | 9.10:1 on navy |
-| Gold Dark (derived: −1 step) | `--color-gold-dark` | `#86693C` | **5.12:1 on white** |
-| On-dark (derived warm white) | `--color-on-dark` | `#EDE9E0` | 12.49:1 on navy |
-| Canvas (derived warm off-white) | `--color-bg` | `#FAF9F5` | — |
+| Aqar Navy (ink, chrome, primary surface) | `--color-brand` | `#16273B` | 14.97:1 on white |
+| Deep Navy (darkest) | `--color-brand-deep` | `#0E1728` | 17.9:1 on white |
+| Network Blue (raised dark surface) | `--color-network` | `#243553` | hover / fills on navy |
+| **Aqar Gold (the only accent)** | `--color-gold` | `#BDA77E` | 6.48:1 on navy · **2.34:1 on white** |
+| Gold Light (gradient start) | `--color-gold-light` | `#E3D2A8` | 10.13:1 on navy |
+| Gold Dark (gradient end) | `--color-gold-dark` | `#8F7A52` | 4.14:1 on white — large text / 3:1 UI only |
+| Gold Ink (gold *text* on light) | `--color-gold-ink` | `#6F5D3A` | 6.36:1 on white |
+| Text on Dark | `--color-on-dark` | `#E8E2D4` | 11.72:1 on navy |
+| Canvas | `--color-bg-light` | `#F7F5F0` | warm page background |
+| Surface 2 | `--color-surface-2` | `#EFEBE1` | inset panels, table stripes |
 | Muted | `--color-muted` | `#5B6472` | 5.98:1 on white |
+
+Gold gradient: `#E3D2A8 → #BDA77E → #8F7A52` at **135°** (top-inline-start →
+bottom-inline-end), stops 0/50/100%.
 
 **Rules**
 
-1. Gold is **never** text on a light surface (2.34:1). Labels are ink; the
-   gold *note* uses `--color-verified` (`#86693C`, 5.12:1) or
-   `--color-gold-dark` at WCAG-large sizes only.
-2. Buttons are gold with **navy** labels (`--color-gold-text` = `#0E1728`,
-   8.79:1). White-on-gold is banned.
+1. Gold is **never** text on a light surface (2.34:1). Gold-family text on
+   light is `--color-gold-ink` (6.36:1) or `--color-gold-dark` at WCAG-large
+   sizes only.
+2. Buttons are gold with **deep-navy** labels (`--color-gold-text` = `#0E1728`,
+   7.67:1). White-on-gold is banned and a test fails on it.
 3. Status colours (success / warn / danger / info / neutral) are
    *functional only* — badges, alerts, validation. They never carry brand
    meaning and are tuned to sit quietly under navy + gold.
 4. **The verified mark is gold.** There is no second brand hue; teal was
-   removed (`--color-teal*` no longer exists in any token file).
+   removed (`--color-teal*` exists nowhere).
+5. **70/20/10:** 70% navy and neutrals, 20% text and borders, 10% gold. Gold is
+   never a large background.
+6. Every derived value is marked `derived: true` with a `note` in
+   `design/tokens.json`, and exists only for contrast or one-step elevation.
 
 ## 2. Dark mode
 
 | Role | Token | Value |
 |---|---|---|
-| Canvas | `--color-bg` | `#0E1728` |
+| Canvas | `--color-bg-light` | `#0E1728` |
 | Surface (derived +1) | `--color-surface` | `#17293F` |
 | Surface 2 | `--color-surface-2` | `#1C3049` |
-| Ink | `--color-ink` | `#EDE9E0` (12.9:1) |
-| Muted | `--color-muted` | `#A3ADB9` (6.3:1) |
+| Ink | `--color-on-dark` | `#E8E2D4` (11.41:1 on surface) |
+| Muted | `--color-muted` | `#A3ADB9` (6.48:1) |
 | Gold | `--color-gold` | `#BDA77E` (6.31:1) |
 
 Dark mode is **token overrides only** — there is no per-component dark code on
 either web app. `<html class="dark">` is set by a pre-paint bootstrap script
 from `aqar.theme` (falls back to `prefers-color-scheme`), so there is no flash.
 Flutter follows the system theme with the same in-app toggle, persisted in
-secure storage.
+secure storage. Elevation in dark mode is a **hairline border** plus a very
+faint gold glow on the active element — not a shadow, which reads as mud on navy.
 
 ## 3. Logo
 
-The mark is geometry, not a glyph (so it never depends on a font): a navy tile
-with a 12.5/48 corner ratio, a gold-light roof stroke, a gold body with
-rounded shoulders, and a gold dot with a navy keyhole centre. It is defined in
-exactly three places and must stay identical:
+The mark is one drawing, not four interpretations: a **hexagon**
+(`24,2 43,13 43,35 24,46 5,35 5,13` on a 48 viewBox, the Mantiq geometry
+exactly) filled with the gold gradient, with the **house** carved out of it as
+negative space — a roof curve whose apex leans like the bowl of «ع», a body, and
+a keyhole. One stroke weight for roof and body, rounded ends.
 
 | Surface | Implementation |
 |---|---|
-| Web / admin | `web/src/components/BrandMark.tsx` (also copied in admin via the shared atom) |
-| Flutter | `AqarMark` / `AqarLockup` in `mobile/lib/core/widgets.dart` (`CustomPainter`) |
-| Icons & splash | `scripts/brand_assets.py` → PNG masters consumed by the iOS/Android sets |
+| Brand kit (all SVGs + PNGs) | `brand/Aqar-Rent-Brand-Kit/` — generated by `scripts/build-brand-kit.mjs` |
+| Web | `web/src/components/BrandMark.tsx` (`MarkGlyph`) |
+| Admin / owner console | `admin/src/components/BrandMark.tsx` (same geometry) |
+| Flutter | `AqarMark` / `AqarLockup` in `mobile/lib/core/widgets.dart` |
+| Web tab icon | `web/src/app/icon.svg` — written by the brand-kit generator |
+| Store icons & splash | `scripts/brand_assets.py` (same palette, read from tokens.json) |
 
 `AqarLockup` (mark + El Messiri wordmark) is the app-bar lockup on mobile; the
-web header uses `BrandMark` with the wordmark.
+web header uses `BrandMark` with the wordmark and an optional
+`RENT DIRECT`-style subtitle. Clear space is one hex height; minimums are 16px
+for the mark and 90px wide for the horizontal lockup. The wordmarks ship as
+**outlines** (`design/wordmark-outlines.json`), so no font is ever required to
+render the logo.
 
 ## 4. Typography
 
@@ -76,7 +111,12 @@ web header uses `BrandMark` with the wordmark.
 * Numerals: **Latin digits in both languages** (amounts, dates, refs). Wording
   stays Arabic; the numerals are scannable at a glance and match the payment
   gateway and contract PDFs (`ar-EG-u-nu-latn`).
-* Scale: base 15/24, titles 26/36, KPI 34/42; Arabic gets +1px line-height.
+* Scale (rem, so browser zoom and OS text size both work): 0.8125 / 0.9375 /
+  1 / 1.125 / 1.375 / 1.75 / 2.25 / 3 / 4. Arabic body line-height 1.7,
+  headings 1.25.
+* Figures are **tabular** in tables and price lists (web
+  `font-variant-numeric: tabular-nums`; Flutter
+  `FontFeature.tabularFigures()`), so a column of prices never jitters.
 
 ## 5. Motion
 
@@ -87,7 +127,7 @@ Motion must *show something changed* or *direct attention* — never decorate.
 | Page fade-up (`aqar-page-in`) | route enter | `--dur-base`, `--ease-out` |
 | Reveal / stagger | section entrances | `--dur-slow`, ≤7 items, 60ms stagger |
 | Card lift | listing cards, KPI cards | `translateY(-4px)` + `--shadow-elevate` |
-| Press | every enabled button | `translateY(1px) scale(.985)`, 80ms |
+| Press | every enabled button | `translateY(1px) scale(var(--press-scale))`, `--dur-fast` |
 | Theme swap | light ⇄ dark | 160ms colour-only transition |
 | Toast | feedback | `translateY(14px) → 0`, 220ms |
 
@@ -98,7 +138,8 @@ duration to `0.01ms` and removes the transforms; on Flutter the equivalent is
 
 ## 6. Iconography
 
-One inline SVG set, 1.7px strokes, `currentColor`, 24×24 viewBox:
+One inline SVG set, **1.75px** strokes, rounded caps and joins, `currentColor`,
+24×24 viewBox. Sets are never mixed:
 
 * web: `web/src/components/Icon.tsx`
 * admin: `admin/src/components/Icon.tsx` (same file)

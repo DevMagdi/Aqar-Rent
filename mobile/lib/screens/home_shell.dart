@@ -106,7 +106,7 @@ class _HomeLanding extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(AppShape.radiusSheet),
             border: Border.all(color: AppColors.gold.withValues(alpha: .28)),
             gradient: LinearGradient(
               begin: AlignmentDirectional.topStart,
