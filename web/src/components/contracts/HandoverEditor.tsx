@@ -439,7 +439,7 @@ export function HandoverEditor({
               type="button"
               data-testid="btn-handover-pdf"
               onClick={() => void downloadAuthed(`/handovers/${handoverId}/pdf`, `handover-${kind}.pdf`)}
-              className="inline-flex min-h-11 items-center gap-1.5 rounded-[var(--radius-field)] bg-gold px-4 text-sm font-bold text-gold-text transition-colors hover:bg-gold-dark"
+              className="inline-flex items-center gap-1.5 px-4 text-sm font-bold btn-primary"
             >
               <Icon name="download" size={15} />
               {t("download_handover_pdf")}

@@ -1,32 +1,39 @@
 /**
- * Admin brand mark — identical geometry to the public web mark (same logo,
- * same tokens), plus the login draw-on animation hooks used by index.css.
+ * Admin / owner-console brand mark — the same geometry as the public web mark
+ * and the brand kit (hexagon + house negative space + keyhole), drawn from
+ * tokens only. The login screen adds its own draw-on hooks in index.css.
  */
-export function BrandMark({ compact = false }: { compact?: boolean }) {
+export function MarkGlyph({ id = "admin-mark", className }: { id?: string; className?: string }) {
+  const maskId = `${id}-cut`;
+  const gradId = `${id}-grad`;
+  return (
+    <svg viewBox="0 0 48 48" className={className} aria-hidden focusable="false">
+      <defs>
+        <linearGradient id={gradId} x1="6" y1="4" x2="42" y2="44" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stopColor="var(--color-gold-light)" />
+          <stop offset="0.5" stopColor="var(--color-gold)" />
+          <stop offset="1" stopColor="var(--color-gold-dark)" />
+        </linearGradient>
+        <mask id={maskId}>
+          <rect width="48" height="48" fill="#000" />
+          <path d="M24 2 43 13 43 35 24 46 5 35 5 13Z" fill="#fff" />
+          <g fill="none" stroke="#000" strokeWidth="3.1" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M10.5 22.6 24 11.6 37.5 22.6" />
+            <path d="M15.1 22.4v8.2a2.6 2.6 0 0 0 2.6 2.6h12.6a2.6 2.6 0 0 0 2.6-2.6v-8.2" />
+          </g>
+          <path d="M24 25.4a2.55 2.55 0 0 1 1.65 4.5l.55 2.3h-4.4l.55-2.3A2.55 2.55 0 0 1 24 25.4Z" fill="#000" />
+        </mask>
+      </defs>
+      <path d="M24 2 43 13 43 35 24 46 5 35 5 13Z" fill={`url(#${gradId})`} mask={`url(#${maskId})`} />
+    </svg>
+  );
+}
+
+export function BrandMark({ compact = false, wordmark = "عقار رينت" }: { compact?: boolean; wordmark?: string }) {
   return (
     <span className="brand-lockup" aria-label="Aqar Rent">
-      <svg className="brand-mark" viewBox="0 0 48 48" aria-hidden focusable="false">
-        <defs>
-          <linearGradient id="admin-gold-mark" x1="7" y1="3" x2="41" y2="45" gradientUnits="userSpaceOnUse">
-            <stop stopColor="var(--color-gold-light)" />
-            <stop offset="0.55" stopColor="var(--color-gold)" />
-            <stop offset="1" stopColor="var(--color-gold-dark)" />
-          </linearGradient>
-        </defs>
-        <rect className="brand-mark-fill" width="48" height="48" rx="12.5" fill="var(--color-brand-deep)" />
-        <path
-          className="brand-mark-outline"
-          d="M11.5 22.4 24 12.2l12.5 10.2"
-          fill="none"
-          stroke="var(--color-gold)"
-          strokeWidth="2.7"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path d="M15.1 22.2v10.9a2.6 2.6 0 0 0 2.6 2.6h12.6a2.6 2.6 0 0 0 2.6-2.6V22.2" fill="none" stroke="url(#admin-gold-mark)" strokeWidth="2.7" strokeLinecap="round" strokeLinejoin="round" />
-        <path className="brand-mark-keyhole" d="M24 27.4c1.95 2.4 3.05 3.9 3.05 5.05a3.05 3.05 0 0 1-6.1 0c0-1.15 1.1-2.65 3.05-5.05Z" fill="var(--color-gold)" />
-      </svg>
-      {!compact && <span className="brand-wordmark">Aqar Rent</span>}
+      <MarkGlyph className="brand-mark" />
+      {!compact && <span className="brand-wordmark">{wordmark}</span>}
     </span>
   );
 }

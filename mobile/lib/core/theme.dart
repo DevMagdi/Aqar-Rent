@@ -1,110 +1,15 @@
-// Aqar Rent premium theme — SINGLE SOURCE OF TRUTH for mobile colours.
-// Byte-verified against web tokens by web/src/styles/tokens.test.ts.
-// Identity: Mantiq Navy #16273B + Mantiq Gold #BDA77E, navy/gold only.
-// Light in the base constants; dark in AppColors.dark*.
+// Aqar Rent theme — the *generated* palette is the only place colours exist.
+//
+//   design/tokens.json  ──(node scripts/build-tokens.mjs)──▶  theme_generated.dart
+//                                                              ↑ re-exported here
+//
+// Nothing in this file declares a hex: AppColors/AppMotion/AppShape come from
+// the generator, so web, admin, Android XML and Flutter can never drift.
 import 'package:flutter/material.dart';
 
-class AppColors {
-  AppColors._();
+import 'theme_generated.dart';
 
-  /* ── Brand: the two hues from the Mantiq logo ── */
-  static const brand = Color(0xFF16273B); // Mantiq Navy — ink and chrome
-  static const brandDeep = Color(0xFF0E1728); // Mantiq Navy Deep — darkest / dark canvas
-  static const network = Color(0xFF1E3349); // derived navy +1: hover/raised navy
-  static const gold = Color(0xFFBDA77E); // Mantiq Gold — the single accent
-  static const goldLight = Color(0xFFD8C7A4); // derived gold +1: gradients, gold on navy
-  static const goldDark = Color(0xFF86693C); // derived gold −1: 5.12:1 text on white
-  static const onDark = Color(0xFFEDE9E0); // derived warm white: 12.49:1 on navy
-  static const goldText = brandDeep; // label on a gold surface (never white)
-
-  /* ── Verified = GOLD (the trust mark), never a second hue ── */
-  static const verified = goldDark; // icon + 12px label on light surfaces
-  static const verifiedStrong = brandDeep; // navy label inside a gold pill
-  static const verifiedBg = Color(0xFFF3EFE8); // gold 18% over white
-  static const verifiedBorder = Color(0x6B86693C); // gold 42% outline
-
-  /* ── Surfaces (light) ── */
-  static const bg = Color(0xFFFAF9F5);
-  static const surface = Color(0xFFFFFFFF);
-  static const surface2 = Color(0xFFF3F0E9);
-  static const ink = brand;
-  static const muted = Color(0xFF5B6472);
-  static const border = Color(0xFFE4E1D9); // derived rgba(22,39,59,.10)
-  static const track = Color(0xFFECEAE3); // derived rgba(22,39,59,.07)
-  static const goldTint12 = Color(0xFFF7F2E8); // gold 12% on white
-  static const goldTint14 = Color(0xFFF5EFE4); // gold 14% on white
-
-  /* ── Status (functional, AA-proven under navy/gold) ── */
-  static const success = Color(0xFF1B5E3A);
-  static const successBg = Color(0xFFEAF3ED);
-  static const warn = Color(0xFF8A5A12);
-  static const warnBg = Color(0xFFFBF3E4);
-  static const danger = Color(0xFFA32A22);
-  static const dangerBg = Color(0xFFFBEEED);
-  static const info = Color(0xFF1E4A7A);
-  static const infoBg = Color(0xFFECF1F8);
-  static const neutral = Color(0xFF4A5666);
-  static const neutralBg = Color(0xFFEEF1F4);
-
-  static const whatsapp = Color(0xFF25D366); // official integration colour
-
-  /* ── Neutral overlays (scrims, not brand colours) ── */
-  static const overlayScrim = Color(0xBF000000);
-  static const overlayMid = Color(0x66000000);
-  static const shadowSoft = Color(0x40000000);
-  static const scrim = Color(0x8C0E1728); // navy scrim for sheets/dialogs
-
-  /* ── Dark mode ── */
-  static const darkBg = Color(0xFF0E1728);
-  static const darkSurface = Color(0xFF17293F);
-  static const darkSurface2 = Color(0xFF1C3049);
-  static const darkInk = Color(0xFFEDE9E0);
-  static const darkInkStrong = Color(0xFFF7F4EE);
-  static const darkMuted = Color(0xFFA3ADB9); // 6.48:1 on the dark surface
-  static const darkBorder = Color(0x1AEDE9E0); // rgba(237,233,224,.10)
-  static const darkTrack = Color(0xFF233750);
-  static const darkSidebar = Color(0xFF0C1727);
-  static const darkGoldText = gold; // 6.31:1 on the dark surface
-  static const darkGoldTint = Color(0xFF2A3242); // gold 16% on the dark surface
-  static const darkSuccess = Color(0xFF6FD3A2);
-  static const darkSuccessBg = Color(0xFF1B3329);
-  static const darkWarn = Color(0xFFE4B263);
-  static const darkWarnBg = Color(0xFF372D1C);
-  static const darkDanger = Color(0xFFF2938A);
-  static const darkDangerBg = Color(0xFF3A2220);
-  static const darkInfo = Color(0xFF8FB6E8);
-  static const darkInfoBg = Color(0xFF1B2A3D);
-}
-
-/// Motion tokens mirror web/src/styles/tokens.css. Entrances stay restrained,
-/// serve meaning, animate transform/opacity only, and always check
-/// MediaQuery.disableAnimations.
-class AppMotion {
-  AppMotion._();
-
-  static const Duration instant = Duration(milliseconds: 80);
-  static const Duration fast = Duration(milliseconds: 160);
-  static const Duration base = Duration(milliseconds: 280);
-  static const Duration slow = Duration(milliseconds: 480);
-  static const Duration hero = Duration(milliseconds: 900);
-  static const Duration stagger = Duration(milliseconds: 60);
-  static const double rise = 16;
-  static const Cubic easeOut = Cubic(0.22, 1, 0.36, 1);
-  static const Cubic easeInOut = Cubic(0.65, 0, 0.35, 1);
-  static const Cubic easeSpring = Cubic(0.34, 1.3, 0.64, 1);
-}
-
-/// Geometry that must match the web tokens (radius scale) plus mobile-only
-/// touch-target minimums (48dp ≥ the 44px web minimum).
-class AppShape {
-  AppShape._();
-
-  static const double radiusCard = 20;
-  static const double radiusShell = 28;
-  static const double radiusField = 14;
-  static const double tapMin = 48; // Material minimum touch target
-  static const double gutter = 16;
-}
+export 'theme_generated.dart' show AppColors, AppMotion, AppShape;
 
 class AqarPageTransitionsBuilder extends PageTransitionsBuilder {
   const AqarPageTransitionsBuilder();
@@ -114,7 +19,7 @@ class AqarPageTransitionsBuilder extends PageTransitionsBuilder {
     if (MediaQuery.of(context).disableAnimations) return child;
     final rtl = Directionality.of(context) == TextDirection.rtl;
     final begin = rtl ? const Offset(-0.035, 0) : const Offset(0.035, 0);
-    final curve = CurvedAnimation(parent: animation, curve: AppMotion.easeOut, reverseCurve: AppMotion.easeOut);
+    final curve = CurvedAnimation(parent: animation, curve: AppMotion.easeOutCurve, reverseCurve: AppMotion.easeOutCurve);
     return FadeTransition(opacity: animation, child: SlideTransition(position: Tween<Offset>(begin: begin, end: Offset.zero).animate(curve), child: child));
   }
 }
@@ -219,7 +124,8 @@ class AppTheme {
           backgroundColor: accent,
           foregroundColor: onAccent, // gold + deep navy (never white)
           minimumSize: const Size(0, AppShape.tapMin),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppShape.radiusField)),
+          // buttons are pills on web and admin too — one shape language
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppShape.radiusPill)),
           textStyle: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
         ),
       ),
@@ -234,7 +140,7 @@ class AppTheme {
           foregroundColor: ink,
           side: BorderSide(color: outline),
           minimumSize: const Size(0, AppShape.tapMin),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppShape.radiusField)),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppShape.radiusPill)),
           textStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 14),
         ),
       ),
@@ -288,13 +194,13 @@ class AppTheme {
         backgroundColor: surface,
         modalBarrierColor: AppColors.scrim,
         shape: const RoundedRectangleBorder(
-          borderRadius: BorderRadius.vertical(top: Radius.circular(AppShape.radiusShell)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(AppShape.radiusSheet)),
         ),
       ),
       dialogTheme: DialogThemeData(
         backgroundColor: surface,
         barrierColor: AppColors.scrim,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppShape.radiusCard)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppShape.radiusSheet)),
         titleTextStyle: textTheme.titleLarge,
         contentTextStyle: textTheme.bodyMedium,
       ),
@@ -320,6 +226,8 @@ class AppTheme {
   }
 
   static TextTheme _textTheme(Color ink) {
+    // Tabular figures: prices in a list must line up in a column, and a KPI
+    // that changes 8→9 must not shift its neighbours.
     final base = Typography.englishLike2021.apply(
       bodyColor: ink,
       displayColor: ink,

@@ -237,7 +237,7 @@ export function OrderView({ locale, orderId }: { locale: Locale; orderId: string
               target="_blank"
               rel="noreferrer"
               data-testid="link-gateway"
-              className="block w-full rounded-xl bg-gold py-3 text-center font-bold text-gold-text hover:bg-gold-dark"
+              className="block w-full py-3 text-center font-bold btn-primary"
             >
               {t("pay_now")}
             </a>

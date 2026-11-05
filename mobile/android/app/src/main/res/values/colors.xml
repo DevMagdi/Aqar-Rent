@@ -1,11 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Mantiq identity: navy + gold only. Mirrors web/src/styles/tokens.css. -->
+<!-- GENERATED FILE — do not edit. Source: design/tokens.json
+     Regenerate: node scripts/build-tokens.mjs -->
 <resources>
-    <color name="brand_navy">#FF16273B</color>
-    <color name="brand_navy_deep">#FF0E1728</color>
-    <color name="brand_gold">#FFBDA77E</color>
-    <!-- Launcher icon background (adaptive icon) -->
-    <color name="brand">@color/brand_navy_deep</color>
-    <!-- Splash: same navy in light and dark, so there is no white flash -->
-    <color name="splash_background">@color/brand_navy_deep</color>
+  <color name="brand">#FF16273B</color>
+  <color name="brand_deep">#FF0E1728</color>
+  <color name="network">#FF243553</color>
+  <color name="gold">#FFBDA77E</color>
+  <color name="gold_light">#FFE3D2A8</color>
+  <color name="gold_dark">#FF8F7A52</color>
+  <color name="gold_ink">#FF6F5D3A</color>
+  <color name="on_dark">#FFE8E2D4</color>
+  <color name="bg_light">#FFF7F5F0</color>
+  <color name="surface">#FFFFFFFF</color>
+  <color name="surface_2">#FFEFEBE1</color>
+  <color name="ink_strong">#FF0E1728</color>
+  <color name="muted">#FF5B6472</color>
+  <color name="border">#1A16273B</color>
+  <color name="border_strong">#2916273B</color>
+  <color name="track">#1216273B</color>
+  <color name="focus">#FF6F5D3A</color>
+  <color name="gold_text">#FF0E1728</color>
+  <color name="verified">#FF6F5D3A</color>
+  <color name="verified_strong">#FF16273B</color>
+  <color name="verified_bg">#2EBDA77E</color>
+  <color name="verified_border">#6B6F5D3A</color>
+  <color name="sidebar">#FF16273B</color>
+  <color name="sidebar_text">#FFE8E2D4</color>
+  <color name="sidebar_active">#FFBDA77E</color>
+  <color name="sidebar_active_bg">#24BDA77E</color>
+  <color name="sidebar_hover">#FF243553</color>
+  <color name="sidebar_muted">#A3E8E2D4</color>
+  <color name="gold_tint_8">#14BDA77E</color>
+  <color name="gold_tint_12">#1FBDA77E</color>
+  <color name="gold_tint_14">#24BDA77E</color>
+  <color name="success">#FF1B5E3A</color>
+  <color name="success_fill">#FF1B5E3A</color>
+  <color name="success_bg">#FFEAF3ED</color>
+  <color name="warn">#FF8A5A12</color>
+  <color name="warn_bg">#FFFBF3E4</color>
+  <color name="danger">#FFA32A22</color>
+  <color name="danger_fill">#FFA32A22</color>
+  <color name="danger_bg">#FFFBEEED</color>
+  <color name="info">#FF1E4A7A</color>
+  <color name="info_bg">#FFECF1F8</color>
+  <color name="neutral">#FF4A5666</color>
+  <color name="neutral_bg">#FFEEF1F4</color>
+  <color name="whatsapp">#FF25D366</color>
+  <color name="hero_chip_bg">#6B0E1728</color>
+  <color name="scrim">#940E1728</color>
 </resources>

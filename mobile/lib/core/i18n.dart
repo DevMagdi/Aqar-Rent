@@ -22,8 +22,8 @@ class LocaleController extends ChangeNotifier {
 const Map<String, Map<String, String>> _kStrings = {
   'brand': {'ar': 'عقار رينت', 'en': 'Aqar Rent'},
   'tagline': {
-    'ar': 'منصة الإيجار الأكثر شفافية في مصر — تواصل مباشر مع المالك أو مكتب موثّق',
-    'en': "Egypt's most transparent rental platform — deal with owners or verified offices",
+    'ar': 'إيجارك مباشرة من المالك — بلا عمولة على الإيجار',
+    'en': 'Rent direct from the owner — no rent commission',
   },
   'welcome': {'ar': 'أهلاً بك في عقار رينت', 'en': 'Welcome to Aqar Rent'},
   'onboarding_1_title': {'ar': 'تواصل مباشر… أو عبر مكتب', 'en': 'Direct… or through an office'},

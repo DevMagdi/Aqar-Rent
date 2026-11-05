@@ -1,0 +1,22 @@
+# Generated from design/tokens.json by scripts/build-brand-kit.mjs — do not hand-edit.
+# Aqar Rent brand palette (brand-kit values only; nothing invented).
+
+Aqar Navy        #16273B
+Deep Navy        #0E1728
+Network Blue     #243553
+Aqar Gold        #BDA77E
+Gold Light       #E3D2A8
+Gold Dark        #8F7A52
+Text on Dark     #E8E2D4
+
+# Derived — contrast only, each with a measured reason (docs/design/premium-tokens.md)
+Gold Ink         #6F5D3A  text-size gold on light: 6.36:1 on white
+Background Light #F7F5F0  page canvas
+Surface 2        #EFEBE1  inset panels
+Border           rgba(22, 39, 59, 0.10)  navy 10%
+Border Strong    rgba(22, 39, 59, 0.16)  navy 16%
+Dark Border      rgba(232, 226, 212, 0.09)  on-dark 9%
+Dark Border Strong rgba(232, 226, 212, 0.16)  on-dark 16%
+
+# Gold gradient   #E3D2A8 → #BDA77E → #8F7A52  @ 135deg (top-inline-start → bottom-inline-end), stops 0%, 50%, 100%
+# 70/20/10       navy+neutrals / text+borders / gold. Gold is never a large background.

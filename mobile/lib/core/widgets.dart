@@ -29,7 +29,7 @@ class AqarPageRoute<T> extends PageRouteBuilder<T> {
       if (MediaQuery.of(context).disableAnimations) return child;
       final rtl = Directionality.of(context) == TextDirection.rtl;
       final offset = rtl ? const Offset(-0.035, 0) : const Offset(0.035, 0);
-      final curved = CurvedAnimation(parent: animation, curve: AppMotion.easeOut, reverseCurve: AppMotion.easeOut);
+      final curved = CurvedAnimation(parent: animation, curve: AppMotion.easeOutCurve, reverseCurve: AppMotion.easeOutCurve);
       return FadeTransition(
         opacity: animation,
         child: SlideTransition(position: Tween<Offset>(begin: offset, end: Offset.zero).animate(curved), child: child),
@@ -78,11 +78,11 @@ class _MotionRevealState extends State<MotionReveal> {
     return AnimatedOpacity(
       opacity: _visible ? 1 : 0,
       duration: duration,
-      curve: AppMotion.easeOut,
+      curve: AppMotion.easeOutCurve,
       child: AnimatedSlide(
         offset: _visible || reduce ? Offset.zero : const Offset(0, 0.04),
         duration: duration,
-        curve: AppMotion.easeOut,
+        curve: AppMotion.easeOutCurve,
         child: widget.child,
       ),
     );
@@ -236,73 +236,120 @@ class OfflineBanner extends StatelessWidget {
 }
 
 
-/// The Aqar Rent mark, drawn with geometry (navy tile, gold roof + keyhole).
-/// Mirrors the web `<BrandMark />` and the launcher icon, so the logo is the
-/// same object everywhere and never depends on a font being loaded.
+/// The Aqar Rent mark — the brand-kit geometry, drawn with one [Path].
+///
+/// Hexagon (`24,2 43,13 43,35 24,46 5,35 5,13` on a 48 grid) filled with the
+/// gold gradient, with the house roof, house body and keyhole **subtracted** —
+/// the house is the surface behind the logo, exactly like the SVG mask in
+/// `brand/Aqar-Rent-Brand-Kit/` and `<MarkGlyph />` on the web. One stroke
+/// weight for roof and body, rounded caps and joins.
 class AqarMark extends StatelessWidget {
-  const AqarMark({super.key, this.size = 36, this.tile = true});
+  const AqarMark({super.key, this.size = 36, this.tile = false, this.gold = true});
   final double size;
+  /// Rounded navy plate behind the mark (favicon-style contexts).
   final bool tile;
+  /// `false` → a single ink colour (print, engraving, one-colour surfaces).
+  final bool gold;
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: size,
       height: size,
-      child: CustomPaint(painter: _AqarMarkPainter(tile: tile)),
+      child: CustomPaint(painter: _AqarMarkPainter(tile: tile, gold: gold)),
     );
   }
 }
 
 class _AqarMarkPainter extends CustomPainter {
-  _AqarMarkPainter({required this.tile});
+  _AqarMarkPainter({required this.tile, required this.gold});
   final bool tile;
+  final bool gold;
+
+  /// 48-grid units. Roof and body share one weight, as in the brand kit.
+  static const double _stroke = 3.1;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final unit = size.width / 48;
+    final u = size.width / 48;
+    final rect = Offset.zero & size;
+
     if (tile) {
-      final rect = Rect.fromLTWH(0, 0, size.width, size.height);
       canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, Radius.circular(12.5 * unit)),
+        RRect.fromRectAndRadius(rect, Radius.circular(AppShape.radiusMark * u)),
         Paint()..color = AppColors.brandDeep,
       );
     }
-    final gold = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.7 * unit
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..color = AppColors.gold;
-    final goldLight = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.7 * unit
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..color = AppColors.goldLight;
 
-    Offset at(double x, double y) => Offset(x * unit, y * unit);
+    // Hexagon: exactly the brand-kit geometry (same points as the SVG).
+    final hex = Path()
+      ..moveTo(24 * u, 2 * u)
+      ..lineTo(43 * u, 13 * u)
+      ..lineTo(43 * u, 35 * u)
+      ..lineTo(24 * u, 46 * u)
+      ..lineTo(5 * u, 35 * u)
+      ..lineTo(5 * u, 13 * u)
+      ..close();
+
+    // The house: roof curve, body with rounded shoulders, keyhole.
     final roof = Path()
-      ..moveTo(11.5 * unit, 22.4 * unit)
-      ..lineTo(24 * unit, 12.2 * unit)
-      ..lineTo(36.5 * unit, 22.4 * unit);
-    canvas.drawPath(roof, goldLight);
+      ..moveTo(10.5 * u, 22.6 * u)
+      ..lineTo(24 * u, 11.6 * u)
+      ..lineTo(37.5 * u, 22.6 * u);
+    final bodyPath = Path()
+      ..moveTo(15.1 * u, 22.4 * u)
+      ..lineTo(15.1 * u, 30.6 * u)
+      ..cubicTo(15.1 * u, 32.04 * u, 16.26 * u, 33.2 * u, 17.7 * u, 33.2 * u)
+      ..lineTo(30.3 * u, 33.2 * u)
+      ..cubicTo(31.74 * u, 33.2 * u, 32.9 * u, 32.04 * u, 32.9 * u, 30.6 * u)
+      ..lineTo(32.9 * u, 22.4 * u);
+    final keyhole = Path()..addOval(Rect.fromCircle(center: Offset(24 * u, 30.4 * u), radius: 2.6 * u));
 
-    final body = Path()
-      ..moveTo(15.1 * unit, 22.2 * unit)
-      ..lineTo(15.1 * unit, 30.7 * unit)
-      ..quadraticBezierTo(15.1 * unit, 35.7 * unit, 20.2 * unit, 35.7 * unit)
-      ..lineTo(27.8 * unit, 35.7 * unit)
-      ..quadraticBezierTo(32.9 * unit, 35.7 * unit, 32.9 * unit, 30.7 * unit)
-      ..lineTo(32.9 * unit, 22.2 * unit);
-    canvas.drawPath(body, gold);
+    final inkColor = tile ? AppColors.brandDeep : AppColors.brand;
+    final plate = Paint()
+      ..style = PaintingStyle.fill
+      ..isAntiAlias = true
+      ..color = inkColor;
+    if (gold) {
+      plate.shader = const LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [AppColors.goldLight, AppColors.gold, AppColors.goldDark],
+        stops: [0.0, 0.5, 1.0],
+      ).createShader(rect);
+    }
 
-    canvas.drawCircle(at(24, 30.5), 3.05 * unit, Paint()..color = AppColors.gold);
-    canvas.drawCircle(at(24, 29.9), 1.05 * unit, Paint()..color = AppColors.brandDeep);
+    final cut = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _stroke * u
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round
+      ..isAntiAlias = true;
+
+    if (gold) {
+      // True negative space: paint the hexagon into a layer, then erase the
+      // house out of it. Whatever is behind the widget shows through, which is
+      // the same behaviour as the SVG `mask` on web.
+      canvas.saveLayer(rect, Paint());
+      canvas.drawPath(hex, plate);
+      cut.blendMode = BlendMode.clear;
+      canvas.drawPath(roof, cut);
+      canvas.drawPath(bodyPath, cut);
+      canvas.drawPath(keyhole, Paint()..blendMode = BlendMode.clear..isAntiAlias = true);
+      canvas.restore();
+      return;
+    }
+
+    // One-colour rendering (print, engraving, monochrome surfaces).
+    canvas.drawPath(hex, plate);
+    canvas.drawPath(roof, cut..color = inkColor);
+    canvas.drawPath(bodyPath, cut);
+    canvas.drawPath(keyhole, Paint()..color = inkColor);
   }
 
   @override
-  bool shouldRepaint(covariant _AqarMarkPainter oldDelegate) => oldDelegate.tile != tile;
+  bool shouldRepaint(covariant _AqarMarkPainter oldDelegate) =>
+      oldDelegate.tile != tile || oldDelegate.gold != gold;
 }
 
 /// Wordmark + mark lockup used in the app bar.
@@ -343,13 +390,13 @@ class TrustBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final verified = level == 'ownership' || level == 'premium';
     final dark = Theme.of(context).brightness == Brightness.dark;
-    // Verified = a gold pill with navy text (12.49:1) in both modes.
+    // Verified = a gold pill with deep-navy text (7.67:1) in both modes.
     final foreground = verified ? AppColors.brandDeep : (dark ? AppColors.darkMuted : AppColors.muted);
     final background = verified ? AppColors.gold : (dark ? AppColors.darkTrack : AppColors.track);
     if (!verified && compact) return const SizedBox.shrink();
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(20)),
+      decoration: BoxDecoration(color: background, borderRadius: BorderRadius.circular(AppShape.radiusCard)),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -392,7 +439,7 @@ class AsyncView<T> extends StatelessWidget {
     }
     return AnimatedSwitcher(
       duration: reduce ? Duration.zero : AppMotion.base,
-      switchInCurve: AppMotion.easeOut,
+      switchInCurve: AppMotion.easeOutCurve,
       child: child,
     );
   }

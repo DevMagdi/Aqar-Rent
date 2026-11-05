@@ -139,7 +139,7 @@ class _Hero extends StatelessWidget {
   Widget build(BuildContext context) => Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(AppShape.radiusCard),
           gradient: LinearGradient(
             colors: Theme.of(context).brightness == Brightness.dark
                 ? [AppColors.darkGoldTint, AppColors.darkSurface]
@@ -166,7 +166,7 @@ class _Hero extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
         decoration: BoxDecoration(
           color: Theme.of(context).brightness == Brightness.dark ? AppColors.darkSurface2 : AppColors.surface,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(AppShape.radiusCard),
         ),
         child: Text(text, style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.w700)),
       );

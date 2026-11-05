@@ -1,0 +1,14 @@
+{
+  "name": "aqar-rent-brand",
+  "private": true,
+  "description": "Brand kit + design-token toolchain for Aqar Rent (not shipped to users).",
+  "scripts": {
+    "tokens:build": "node scripts/build-tokens.mjs",
+    "tokens:check": "node scripts/build-tokens.mjs --check",
+    "brand:build": "node scripts/build-brand-kit.mjs",
+    "brand:check": "node scripts/build-brand-kit.mjs --check"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2"
+  }
+}

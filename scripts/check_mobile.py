@@ -128,8 +128,16 @@ def main() -> int:
             if not target.exists():
                 problems.append(f"IMPORT {f.relative_to(ROOT)}: missing {uri}")
                 continue
-            tt, _ = parse(target)
+            tt, tdata = parse(target)
             names = declared_names(tt)
+            # A file that re-exports (`export 'x.dart' show A, B;`) makes those
+            # symbols part of *this* import's surface, so resolve them too.
+            # NOTE: the trailing `show A, B;` means the naive
+            # `^export\s+'([^']+)';` pattern does not match — capture the URI only.
+            for exp in re.findall(r"^export\s+'([^']+)'", tdata.decode("utf-8", "replace"), re.M):
+                exp_target = (target.parent / exp).resolve()
+                if exp_target.exists():
+                    names |= declared_names(parse(exp_target)[0])
             if names and not (names & ids):
                 problems.append(f"UNUSED {f.relative_to(ROOT)}: {uri}")
 

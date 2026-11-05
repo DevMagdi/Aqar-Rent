@@ -91,7 +91,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             TweenAnimationBuilder<double>(
                               tween: Tween(begin: reduceMotion ? 1.0 : 0.8, end: 1),
                               duration: reduceMotion ? Duration.zero : AppMotion.slow,
-                              curve: reduceMotion ? Curves.linear : AppMotion.easeSpring,
+                              curve: reduceMotion ? Curves.linear : AppMotion.easeSpringCurve,
                               builder: (_, scale, child) => Transform.scale(scale: scale, child: child),
                               child: Container(
                                 width: 132,
@@ -140,7 +140,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                     if (_index == _pages.length - 1) {
                       _finish();
                     } else {
-                      _page.nextPage(duration: reduceMotion ? Duration.zero : AppMotion.fast, curve: AppMotion.easeInOut);
+                      _page.nextPage(duration: reduceMotion ? Duration.zero : AppMotion.fast, curve: AppMotion.easeInOutCurve);
                     }
                   },
                   child: Text(_index == _pages.length - 1 ? s('start') : s('next')),

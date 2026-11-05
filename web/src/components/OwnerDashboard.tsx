@@ -156,7 +156,7 @@ export function OwnerDashboard() {
                     <Link
                       href={`/${locale}/owner/checkout?listing=${l.id}`}
                       data-testid="btn-renew"
-                      className="inline-flex min-h-9 items-center rounded-[var(--radius-field)] bg-gold px-3 text-xs font-semibold text-gold-text transition-colors hover:bg-gold-dark"
+                      className="inline-flex items-center rounded-[var(--radius-field)] bg-gold px-3 text-xs font-semibold text-gold-text transition-colors hover:bg-gold-dark"
                     >
                       {t("renew")}
                     </Link>

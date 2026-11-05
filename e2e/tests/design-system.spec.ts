@@ -1,5 +1,5 @@
 /**
- * Design-system verification (Mantiq / ADR-034) — scripted "manual" checks of
+ * Design-system verification (Aqar identity / ADR-034) — scripted "manual" checks of
  * the key screens in Arabic + English: computed styles, WCAG AA contrast for
  * critical pairs, focus visibility, RTL indicator placement, and that no
  * existing e2e selectors broke.
@@ -7,16 +7,17 @@
 import { expect, test, type Page } from "@playwright/test";
 import { ADMIN, PHONES, adminLogin, makeActiveListing } from "../utils/api";
 
-// Exact Mantiq identity values (see docs/design/brand-identity.md).
-const GOLD = "rgb(189, 167, 126)"; // #BDA77E Mantiq Gold
-const GOLD_DARK = "rgb(134, 105, 60)"; // #86693C derived gold-dark (5.12:1 on white)
-const GOLD_LIGHT = "rgb(216, 199, 164)"; // #D8C7A4 derived gold-light
-const NAVY = "rgb(22, 39, 59)"; // #16273B Mantiq Navy
-const NAVY_DEEP = "rgb(14, 23, 40)"; // #0E1728 Mantiq Navy Deep
-const BG = "rgb(250, 249, 245)"; // #FAF9F5 derived warm canvas
+// Exact identity values — mirrors design/tokens.json (the single source).
+const GOLD = "rgb(189, 167, 126)"; // #BDA77E Aqar Gold
+const GOLD_LIGHT = "rgb(227, 210, 168)"; // #E3D2A8 gradient start
+const GOLD_DARK = "rgb(143, 122, 82)"; // #8F7A52 gradient end (large text / 3:1 UI)
+const GOLD_INK = "rgb(111, 93, 58)"; // #6F5D3A gold-family TEXT on light (6.36:1)
+const NAVY = "rgb(22, 39, 59)"; // #16273B Aqar Navy
+const NAVY_DEEP = "rgb(14, 23, 40)"; // #0E1728 Deep Navy
+const BG = "rgb(247, 245, 240)"; // #F7F5F0 warm canvas
 const DARK_BG = "rgb(14, 23, 40)"; // #0E1728
-const DARK_SURFACE = "rgb(23, 41, 63)"; // #17293F derived dark surface
-const DARK_INK = "rgb(237, 233, 224)"; // #EDE9E0
+const DARK_SURFACE = "rgb(23, 41, 63)"; // #17293F dark surface
+const DARK_INK = "rgb(232, 226, 212)"; // #E8E2D4 text on dark
 
 function parseRgb(c: string): [number, number, number, number] {
   const m = c.match(/rgba?\(([\d.]+),\s*([\d.]+),\s*([\d.]+)(?:,\s*([\d.]+))?\)/);
@@ -51,7 +52,7 @@ async function assertFonts(page: Page, locale: "ar" | "en") {
 
 test.describe.configure({ mode: "serial" });
 
-test("Mantiq design system: public web (ar + en)", async ({ page, request }) => {
+test("design system: public web (ar + en)", async ({ page, request }) => {
   // ── Home AR ─────────────────────────────────────────────────────────────
   await page.goto("/ar");
   await assertFonts(page, "ar");
@@ -59,19 +60,25 @@ test("Mantiq design system: public web (ar + en)", async ({ page, request }) => 
   let bodyColor = await page.evaluate(() => getComputedStyle(document.body).color);
   expect(bodyColor).toBe(NAVY);
 
-  // primary CTA: gold bg + deep-navy text + AA contrast
+  // primary CTA: gold fill (a two-stop gradient, so the *image* is checked
+  // rather than backgroundColor) + deep-navy text + AA contrast
   const submit = page.getByTestId("search-submit");
   await expect(submit).toBeVisible();
-  const btnBg = await submit.evaluate((el) => getComputedStyle(el).backgroundColor);
+  const btnBg = await submit.evaluate((el) => getComputedStyle(el).backgroundImage);
   const btnFg = await submit.evaluate((el) => getComputedStyle(el).color);
-  expect(btnBg, "primary button = Mantiq Gold").toBe(GOLD);
+  expect(btnBg, "primary button = gold gradient").toContain("227, 210, 168");
+  expect(btnBg, "primary button = gold gradient").toContain("189, 167, 126");
   expect(btnFg, "text on gold = Deep Navy").toBe(NAVY_DEEP);
-  expect(contrast(btnFg, btnBg), "AA on primary button").toBeGreaterThanOrEqual(4.5);
+  expect(contrast(btnFg, GOLD), "AA on primary button").toBeGreaterThanOrEqual(4.5);
+  // buttons are pills, 44px+ tall
+  expect(await submit.evaluate((el) => getComputedStyle(el).borderTopLeftRadius)).toBe("999px");
+  const btnBox = await submit.boundingBox();
+  expect(btnBox!.height, "44px touch target").toBeGreaterThanOrEqual(44);
 
-  // focus ring = gold-dark, visible
+  // focus ring = gold-ink (6.36:1 on white), visible
   await page.getByTestId("search-input").focus();
   const outline = await page.getByTestId("search-input").evaluate((el) => getComputedStyle(el).outlineColor);
-  expect(outline, "focus ring = gold-dark").toBe(GOLD_DARK);
+  expect(outline, "focus ring = gold-ink").toBe(GOLD_INK);
 
   // body contrast AA (ink on bg)
   expect(contrast(bodyColor, BG)).toBeGreaterThanOrEqual(4.5);
@@ -98,7 +105,7 @@ test("Mantiq design system: public web (ar + en)", async ({ page, request }) => 
   const verifiedCss = await page.evaluate(() =>
     getComputedStyle(document.documentElement).getPropertyValue("--color-verified").trim(),
   );
-  expect(verifiedCss.toUpperCase()).toBe("#86693C");
+  expect(verifiedCss.toUpperCase()).toBe("#6F5D3A");
 
   // ── Listing detail (created for real) ─────────────────────────────────
   const detailId = await makeActiveListing(request, PHONES.journeyOwner, "apiG", `ديزاين ${Date.now().toString(36)}`);
@@ -111,10 +118,11 @@ test("Mantiq design system: public web (ar + en)", async ({ page, request }) => 
   await expect(page.getByTestId("listing-detail")).toBeVisible();
   await assertFonts(page, "ar");
   const priceColor = await page.getByTestId("listing-price").evaluate((el) => getComputedStyle(el).color);
-  expect(priceColor, "accent text on white = gold-dark").toBe(GOLD_DARK);
-  // price is24px extrabold → WCAG "large text" threshold is3:1 (spec keeps
-  // gold-dark for large accents; normal-size text never uses gold on white)
-  expect(contrast(priceColor, "rgb(255, 255, 255)"), "AA-large on price").toBeGreaterThanOrEqual(3);
+  expect(priceColor, "price uses the gold-family text colour").toBe(GOLD_INK);
+  // gold-ink is 6.36:1 on white — AA for normal text, not just large text
+  expect(contrast(priceColor, "rgb(255, 255, 255)"), "AA on price").toBeGreaterThanOrEqual(4.5);
+  // prices line up in a column: tabular figures
+  expect(await page.getByTestId("listing-price").evaluate((el) => getComputedStyle(el).fontVariantNumeric)).toContain("tabular-nums");
 
   // ── Owner dashboard: navy sidebar + gold active + indicator ────────────
   const designOwner = PHONES.designOwner;
@@ -148,14 +156,14 @@ test("Mantiq design system: public web (ar + en)", async ({ page, request }) => 
   // primary owner CTA
   const addBtn = page.getByTestId("btn-add-listing");
   await expect(addBtn).toBeVisible();
-  const ctaBg = await addBtn.evaluate((el) => getComputedStyle(el).backgroundColor);
+  const ctaBg = await addBtn.evaluate((el) => getComputedStyle(el).backgroundImage);
   const ctaFg = await addBtn.evaluate((el) => getComputedStyle(el).color);
-  expect(ctaBg).toBe(GOLD);
+  expect(ctaBg).toContain("189, 167, 126");
   expect(ctaFg).toBe(NAVY_DEEP);
-  expect(contrast(ctaFg, ctaBg)).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(ctaFg, GOLD)).toBeGreaterThanOrEqual(4.5);
 });
 
-test("Mantiq design system: checkout + admin console", async ({ page, request }) => {
+test("design system: checkout + admin console", async ({ page, request }) => {
   // ── Checkout (owner area, after sidebar) ───────────────────────────────
   const designOwner = PHONES.designOwner;
   await makeActiveListing(request, designOwner, "apiG", `تشيك اوت ${Date.now().toString(36)}`);
@@ -177,11 +185,11 @@ test("Mantiq design system: checkout + admin console", async ({ page, request })
   await expect(page.getByTestId("checkout-form")).toBeVisible();
   await expect(page.getByTestId("owner-sidebar")).toBeVisible();
   const createBtn = page.getByTestId("btn-create-order");
-  const bg = await createBtn.evaluate((el) => getComputedStyle(el).backgroundColor);
+  const bg = await createBtn.evaluate((el) => getComputedStyle(el).backgroundImage);
   const fg = await createBtn.evaluate((el) => getComputedStyle(el).color);
-  expect(bg).toBe(GOLD);
+  expect(bg).toContain("189, 167, 126");
   expect(fg).toBe(NAVY_DEEP);
-  expect(contrast(fg, bg)).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(fg, GOLD)).toBeGreaterThanOrEqual(4.5);
 
   // ── Admin: login → sidebar/dashboard → moderation queue ────────────────
   await page.goto("http://localhost:5180/login");
@@ -225,7 +233,7 @@ test("Mantiq design system: checkout + admin console", async ({ page, request })
   await expect(page.locator('[data-testid="admin-sidebar"] a[aria-current="page"]')).toHaveCount(1);
 });
 
-test("Mantiq dark mode: full support (persisted, AA)", async ({ page }) => {
+test("dark mode: full support (persisted, AA)", async ({ page }) => {
   await page.goto("/ar");
   // explicit dark choice persists across reloads (no flash: init script runs pre-paint)
   await page.getByTestId("theme-toggle").click();
@@ -239,10 +247,10 @@ test("Mantiq dark mode: full support (persisted, AA)", async ({ page }) => {
   expect(bodyBg, "dark canvas #0E1728").toBe(DARK_BG);
   expect(contrast(bodyFg, bodyBg), "AA: ink on dark bg").toBeGreaterThanOrEqual(4.5);
   await expect(page.getByTestId("search-submit")).toBeVisible();
-  const btnBg = await page.getByTestId("search-submit").evaluate((el) => getComputedStyle(el).backgroundColor);
-  expect(btnBg, "gold buttons unchanged in dark").toBe(GOLD);
+  const btnBg = await page.getByTestId("search-submit").evaluate((el) => getComputedStyle(el).backgroundImage);
+  expect(btnBg, "gold buttons unchanged in dark").toContain("189, 167, 126");
   const btnFg = await page.getByTestId("search-submit").evaluate((el) => getComputedStyle(el).color);
-  expect(contrast(btnFg, btnBg)).toBeGreaterThanOrEqual(4.5);
+  expect(contrast(btnFg, GOLD)).toBeGreaterThanOrEqual(4.5);
 
   await page.reload();
   await expect(page.locator("html"), "preference persisted").toHaveClass(/dark/);
@@ -292,7 +300,7 @@ test("premium ListingCard: cinematic layout + motion hooks", async ({ page, requ
   await expect(card.getByTestId("badge-premium")).toBeVisible(); // "متاح الآن" gradient badge
   const price = card.locator("p.text-2xl").first();
   await expect(price).toBeVisible();
-  // price sits ON the image gradient: warm on-dark (#EDE9E0), AA against the scrim
+  // price sits ON the image gradient: warm on-dark (#E8E2D4), AA against the scrim
   expect(await price.evaluate((el) => getComputedStyle(el).color)).toBe(DARK_INK);
   // hover lift (card-lift class → scale + elevate)
   await expect(card).toHaveClass(/card-lift/);

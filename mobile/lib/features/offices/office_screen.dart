@@ -109,7 +109,7 @@ class _OfficeScreenState extends State<OfficeScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppShape.radiusCard),
               color: AppColors.ink,
             ),
             child: Column(

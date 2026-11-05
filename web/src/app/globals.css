@@ -1,4 +1,6 @@
-/* Aqar Rent — global styles. Palette source of truth: src/styles/tokens.css */
+/* Aqar Rent — global styles.
+ * Palette + scale source of truth: design/tokens.json → src/styles/tokens.css.
+ * No hex value may appear below: everything resolves through a token. */
 
 @import "@fontsource/el-messiri/600.css";
 @import "@fontsource/ibm-plex-sans-arabic/500.css";
@@ -131,23 +133,22 @@
   --color-white: var(--color-on-dark);
   --color-black: var(--color-brand-deep);
 
-  /* typography scale (spec:14/22 base,24/32 title,30/36 KPI,13/20 sub) */
+  /* typography scale — rem only, from design/tokens.json (fixed px does not
+   * scale with the OS text setting; rem does) */
   --font-sans: var(--font-sans);
   --font-display: var(--font-display);
-  --text-base-size: var(--text-base-size);
+  --text-xs: var(--text-2xs);
+  --text-sm: var(--text-xs);
   --text-base: var(--text-base-size);
-  --text-base--line-height: var(--text-base-line);
-  --text-sm: 14px;
-  --text-sm--line-height: 21px;
-  --text-2xl: 26px;
-  --text-2xl--line-height: 36px;
-  --text-3xl: 34px;
-  --text-3xl--line-height: 42px;
+  --text-lg: var(--text-md);
+  --text-xl: var(--text-lg);
+  --text-2xl: var(--text-xl);
+  --text-3xl: var(--text-2xl);
 
   /* geometry */
   --radius-xl: var(--radius-field);
   --radius-2xl: var(--radius-card);
-  --radius-3xl: var(--radius-shell);
+  --radius-3xl: var(--radius-sheet);
   --shadow-sm: var(--shadow-card);
   --shadow-lg: var(--shadow-pop);
   --shadow-xl: var(--shadow-pop);
@@ -176,8 +177,9 @@ body {
   color: var(--color-ink);
 }
 
-/* Focus ring: Mantiq gold-dark on light chrome, gold-light on dark.
-   WCAG 2.4.11/1.4.11 — 5.12:1 on white, 10.8:1 on the dark canvas. */
+/* Focus ring: gold-ink on light chrome (6.36:1 on white), gold-light on dark
+   (11.99:1 on the dark canvas). Measured in docs/design/premium-tokens.md and
+   asserted in web/src/styles/tokens.test.ts. */
 :focus-visible {
   outline: 3px solid var(--color-focus);
   outline-offset: 2px;
@@ -218,17 +220,16 @@ html[data-js="true"] .page-enter {
 
 /* tactile press for every button (unless disabled) */
 button:not(:disabled):active {
-  transform: translateY(1px) scale(0.985);
-  transition: transform 80ms ease;
+  transform: translateY(1px) scale(var(--press-scale));
+  transition: transform var(--dur-fast) var(--ease-out);
 }
 
 /* cinematic card lift — used by .card-lift (ListingCard, dashboards) */
 .card-lift {
-  transition: transform var(--transition-card) cubic-bezier(0.22, 1, 0.36, 1),
-    box-shadow var(--transition-card) ease;
+  transition: transform var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out);
 }
 .card-lift:hover {
-  transform: translateY(-4px);
+  transform: translateY(var(--lift));
   box-shadow: var(--shadow-elevate);
 }
 /* press feedback: 1px, not a bounce — it reads as "touched", not "pressed down" */
@@ -243,9 +244,12 @@ button:not(:disabled):active {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
-  .card-lift:hover {
+  .card-lift:hover,
+  .btn-primary:hover {
     transform: none;
   }
+  button:not(:disabled):active { transform: none; }
+  html { scroll-behavior: auto; }
 }
 
 
@@ -256,22 +260,39 @@ h1, h2, h3, h4, .font-display, [data-display], [data-kpi-value] {
   font-variant-numeric: lining-nums tabular-nums;
 }
 
+/* Buttons are pills (radius.pill) — the one shape that never competes with the
+ * hexagon. Fields keep radius.field, cards keep radius.card. */
+.btn-primary, .btn-secondary, .btn-ghost {
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: var(--tap-min); padding: 12px 24px; font-weight: 600;
+  border-radius: var(--radius-pill);
+  transition: background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-base) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
 .btn-primary {
-  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-  min-height: 44px; padding: 12px 22px; border: 1px solid transparent;
-  border-radius: var(--radius-field); background: var(--color-gold); color: var(--color-gold-text);
-  font-weight: 600; transition: background-color 150ms ease, transform 150ms ease, box-shadow 150ms ease;
+  border: 1px solid transparent;
+  background: linear-gradient(135deg, var(--color-gold-light), var(--color-gold));
+  color: var(--color-gold-text);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--color-gold-light) 70%, transparent) inset;
 }
-.btn-primary:hover { background: var(--color-gold-light); box-shadow: var(--shadow-card); }
+.btn-primary:hover { box-shadow: var(--shadow-card); transform: translateY(-1px); }
+.btn-primary:active { transform: translateY(0) scale(var(--press-scale)); }
+/* `--color-brand` is ink; a *surface* must never use it (in dark mode it is
+ * the light text colour). Secondary actions sit on the network step. */
 .btn-secondary {
-  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-  min-height: 44px; padding: 12px 22px; border: 1px solid var(--color-brand);
-  border-radius: var(--radius-field); background: var(--color-brand-deep); color: var(--color-on-dark); font-weight: 600;
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-network); color: var(--color-on-dark);
 }
+.btn-secondary:hover { background: var(--color-network); }
 .btn-ghost {
-  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-  min-height: 44px; padding: 12px 22px; border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-field); background: transparent; color: var(--color-ink); font-weight: 600;
+  border: 1px solid var(--color-border-strong);
+  background: transparent; color: var(--color-ink);
+}
+.btn-ghost:hover { background: var(--color-surface-2); }
+.btn-primary:disabled, .btn-secondary:disabled, .btn-ghost:disabled {
+  opacity: .55; transform: none; cursor: not-allowed;
 }
 
 /* Gold is always paired with navy, never white. */
@@ -293,44 +314,46 @@ button[class*="bg-gold"], a[class*="bg-gold"] { color: var(--color-gold-text); }
 }
 
 /* Public landing page visual system */
-.brand-lockup { display: inline-flex; align-items: center; gap: .65rem; }
-.brand-mark { width: 42px; height: 42px; flex: none; }
-.brand-wordmark { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; line-height: 1.15; }
+.brand-lockup { display: inline-flex; align-items: center; gap: .6rem; }
+.brand-mark { width: 40px; height: 40px; flex: none; }
+.brand-text { display: grid; line-height: 1.05; }
+.brand-wordmark { font-family: var(--font-display); font-size: 1.0625rem; font-weight: 700; line-height: 1.2; letter-spacing: .01em; }
+.brand-subtitle { color: var(--color-muted); font-size: .6875rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; }
 .site-header { box-shadow: 0 1px 0 var(--color-border); }
-.home-hero {
-  position: relative; isolation: isolate; overflow: hidden; min-height: 365px;
-  padding: clamp(30px, 5vw, 64px); padding-block-end: 112px;
-  border-radius: var(--radius-shell); color: var(--color-on-dark);
-  background:
-    radial-gradient(ellipse at 88% 0%, var(--color-gold-tint-14), transparent 36%),
-    repeating-linear-gradient(135deg, transparent 0 27px, var(--color-gold-tint-8) 28px 29px, transparent 30px 58px),
-    linear-gradient(128deg, var(--color-network), var(--color-brand-deep) 78%);
-}
 .home-hero-content { position: relative; z-index: 1; max-width: 760px; }
 .home-trust-chip {
   display: inline-flex; align-items: center; gap: .5rem; border: 1px solid var(--color-hero-chip-border);
   border-radius: var(--radius-pill); padding: .4rem .8rem; background: var(--color-hero-chip-bg);
   color: var(--color-gold-light); font-size: 12px; font-weight: 600; backdrop-filter: blur(12px);
 }
-.home-hero-title { margin-block: 1.2rem .7rem; max-width: 780px; font-size: clamp(34px, 5vw, 58px); font-weight: 700; line-height: 1.12; letter-spacing: -.025em; color: var(--color-on-dark); }
+.home-hero-title { margin-block: 1.2rem .7rem; max-width: 780px; font-size: clamp(2.125rem, 5vw, 3.625rem); font-weight: 700; line-height: 1.12; letter-spacing: -.025em; color: var(--color-on-dark); text-wrap: balance; }
 .home-hero-title span { color: var(--color-gold); }
-.home-hero-subtitle { max-width: 650px; color: var(--color-on-dark); opacity: .88; font-size: clamp(15px, 1.7vw, 18px); line-height: 1.75; }
-.hero-glow { position: absolute; z-index: 0; inset-block-start: -45%; inset-inline-end: -5%; width: min(58vw, 620px); aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, var(--color-gold-tint-14), transparent 68%); pointer-events: none; }
+.home-hero-subtitle { max-width: 650px; color: var(--color-on-dark); opacity: .9; font-size: clamp(0.9375rem, 1.7vw, 1.125rem); line-height: 1.75; }
+/* One soft gold glow. It is deliberately small and low-alpha: at 14% over a
+ * whole quadrant it reads as grey haze on navy, which is the opposite of
+ * "premium". 8% over a circle the size of the mark's clear space reads as light. */
+.hero-glow {
+  position: absolute; z-index: 0; inset-block-start: -30%; inset-inline-end: -2%;
+  width: min(42vw, 460px); aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle, var(--color-gold-tint-8), transparent 64%);
+  opacity: .9; pointer-events: none;
+}
+:root[data-theme="dark"] .hero-glow, .dark .hero-glow { opacity: .6; }
 .home-search-overlap { position: relative; z-index: 3; margin-block-start: -56px !important; margin-inline: clamp(10px, 3vw, 36px); }
 .home-search-overlap > div { padding: clamp(14px, 2.2vw, 24px); border: 1px solid var(--color-border); border-radius: var(--radius-card); background: var(--color-surface); box-shadow: var(--shadow-pop); }
 .home-search-overlap fieldset { border: 0; padding: 0; margin: 0; }
 .home-search-overlap select, .home-search-overlap input { min-width: 0; }
 .trust-strip { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
 .trust-stat-card { display: flex; min-height: 120px; flex-direction: column; justify-content: center; gap: 4px; border: 1px solid var(--color-border); border-radius: var(--radius-card); padding: 18px; background: var(--color-surface); box-shadow: var(--shadow-card); }
-.trust-stat-value { color: var(--color-gold-dark); font-size: clamp(28px, 3vw, 38px); font-weight: 700; line-height: 1.05; }
+.trust-stat-value { color: var(--color-verified); font-size: clamp(1.75rem, 3vw, 2.375rem); font-weight: 700; line-height: 1.05; font-variant-numeric: tabular-nums; }
 .trust-stat-card span { color: var(--color-muted); font-size: 13px; font-weight: 600; }
-.eyebrow { color: var(--color-verified); font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.section-title { margin-block-start: .2rem; color: var(--color-ink-strong); font-size: clamp(24px, 3vw, 32px); font-weight: 700; }
+.eyebrow { color: var(--color-verified); font-size: 0.75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.section-title { margin-block-start: .2rem; color: var(--color-ink-strong); font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 700; }
 .listing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
 .how-card { min-height: 170px; padding: 24px; }
-.how-number { display: block; margin-block-end: 16px; color: var(--color-gold-dark); font-size: 38px; font-weight: 700; }
+.how-number { display: block; margin-block-end: 16px; color: var(--color-verified); font-size: 2.375rem; font-weight: 700; font-variant-numeric: tabular-nums; }
 .how-card p { color: var(--color-ink); font-size: 15px; font-weight: 600; line-height: 1.65; }
-.home-cta { display: flex; align-items: center; justify-content: space-between; gap: 24px; border-radius: var(--radius-shell); padding: clamp(24px, 4vw, 40px); background: linear-gradient(120deg, var(--color-gold-light), var(--color-gold)); color: var(--color-gold-text); }
+.home-cta { display: flex; align-items: center; justify-content: space-between; gap: 24px; border-radius: var(--radius-sheet); padding: clamp(24px, 4vw, 40px); background: linear-gradient(120deg, var(--color-gold-light), var(--color-gold)); color: var(--color-gold-text); }
 .home-cta .eyebrow { color: var(--color-gold-text); }
 
 /* Dark-mode compatibility for legacy utility markup across every page. */
@@ -376,10 +399,10 @@ html[data-js="true"] .reveal-stagger:not([data-revealed="true"]) > .stagger-item
 .press { transition: transform var(--dur-instant) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }
 .press:active { transform: scale(.985); }
 .link-underline { position: relative; text-decoration: none; }
-.link-underline::after { position: absolute; inset-inline: 0; inset-block-end: -.16em; height: 1px; content: ""; background: var(--color-gold-dark); transform: scaleX(0); transform-origin: left center; transition: transform 200ms var(--ease-out); }
+.link-underline::after { position: absolute; inset-inline: 0; inset-block-end: -.16em; height: 1px; content: ""; background: var(--color-verified); transform: scaleX(0); transform-origin: left center; transition: transform 200ms var(--ease-out); }
 .link-underline:hover::after, .link-underline:focus-visible::after { transform: scaleX(1); }
 :dir(rtl) .link-underline::after { transform-origin: right center; }
-.focus-ring:focus-visible { outline: 3px solid var(--color-gold-dark); outline-offset: 3px; }
+.focus-ring:focus-visible { outline: 3px solid var(--color-focus); outline-offset: 3px; }
 @keyframes aqar-shimmer { from { transform: translateX(-110%); } to { transform: translateX(110%); } }
 @keyframes aqar-shimmer-rtl { from { transform: translateX(110%); } to { transform: translateX(-110%); } }
 .shimmer, .skeleton { position: relative; overflow: hidden; isolation: isolate; background: var(--color-track); border-radius: var(--radius-card); }
@@ -394,8 +417,8 @@ html[data-hidden] .shimmer::after, html[data-hidden] .skeleton::after { animatio
 @keyframes aqar-hero-rise { from { transform: translateY(12px); } to { transform: translateY(0); } }
 @keyframes aqar-hero-search { from { opacity: 0; transform: translateY(32px) scale(.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 @keyframes aqar-hero-background { from { opacity: 0; } to { opacity: 1; } }
-.home-hero::before { position: absolute; inset: 0; z-index: -1; content: ""; background: radial-gradient(ellipse at 88% 0%, var(--color-gold-tint-14), transparent 42%); opacity: 1; }
 html[data-js="true"] .home-hero::before { opacity: 0; animation: aqar-hero-background var(--dur-hero) var(--ease-out) both; }
+@media (prefers-reduced-motion: reduce) { html[data-js="true"] .home-hero::before { opacity: .9; animation: none; } }
 html[data-js="true"] .home-trust-chip { animation: aqar-hero-reveal 480ms var(--ease-out) 100ms both; }
 .home-hero-title .hero-title-line { display: block; }
 .hero-shimmer-word { position: relative; display: inline-block; }
@@ -536,7 +559,7 @@ body > #root, #root { min-height: 100vh; }
   z-index: 2000;
   transform: translateY(-160%);
   border-radius: var(--radius-field);
-  background: var(--color-brand);
+  background: var(--color-sidebar);
   color: var(--color-on-dark);
   padding: 12px 18px;
   font-weight: 600;
@@ -565,26 +588,60 @@ h1, h2, h3, h4, p, li, label, button, a { overflow-wrap: anywhere; }
  * tokens.css only.
  * ════════════════════════════════════════════════════════════════════════ */
 
+/* ── Hero ────────────────────────────────────────────────────────────────
+ * Three layers, all CSS:
+ *   1. navy field with one warm radial (gold at 14%) and one lifted navy radial
+ *   2. a very faint hexagon lattice — the mark's own geometry, at 4.5% stroke
+ *   3. 3.5% grain, only here (dark hero surfaces are the only place it earns
+ *      its keep; on light surfaces it just looks like a dirty screen)
+ * The inner gold hairline is the "premium" tell: one line, 10px inset.
+ * ---------------------------------------------------------------------- */
 .home-hero {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
   min-height: clamp(380px, 46vw, 520px);
   padding: clamp(28px, 4.4vw, 64px);
   padding-block-end: clamp(96px, 12vw, 132px);
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-shell);
+  border-radius: var(--radius-sheet);
   color: var(--color-on-dark);
   background:
-    radial-gradient(120% 90% at 88% -20%, var(--color-gold-tint-14), transparent 58%),
+    radial-gradient(90% 70% at 88% -20%, var(--color-gold-tint-14), transparent 62%),
     radial-gradient(70% 60% at 6% 108%, var(--color-network), transparent 62%),
-    linear-gradient(126deg, var(--color-brand) 0%, var(--color-brand-deep) 82%);
+    linear-gradient(126deg, var(--color-network) 0%, var(--color-sidebar) 82%);
   box-shadow: var(--shadow-pop);
 }
+/* Hexagon lattice — the mark's own geometry, at 4.5% stroke, fading out
+ * towards the copy so it never competes with text. */
+.home-hero::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='56' height='96' viewBox='0 0 56 96'%3E%3Cg fill='none' stroke='%23E8E2D4' stroke-opacity='0.045' stroke-width='1'%3E%3Cpath d='M28 2 54 16v28L28 58 2 44V16z'/%3E%3Cpath d='M28 50 54 64v28L28 106 2 92V64z'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 56px 96px;
+  mask-image: radial-gradient(130% 120% at 12% 0%, #000 22%, transparent 88%);
+}
+/* Grain: its own 3.5% layer. Turbulence is grey noise, so `overlay` would
+ * lighten it — plain opacity over navy is the honest 3.5%. */
+.hero-grain {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.035;
+  border-radius: inherit;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
 .home-hero::after {
-  /* a single 1px gold hairline inside the frame — the "premium" tell */
+  /* the single 1px gold hairline inside the frame */
   content: "";
   position: absolute;
   inset: 10px;
   border: 1px solid var(--color-hero-chip-border);
-  border-radius: calc(var(--radius-shell) - 8px);
+  border-radius: calc(var(--radius-sheet) - 8px);
   pointer-events: none;
 }
 .home-hero-content { max-width: 46rem; }
@@ -623,10 +680,10 @@ h1, h2, h3, h4, p, li, label, button, a { overflow-wrap: anywhere; }
 .hero-link:hover { color: var(--color-gold-light); opacity: 1; }
 .hero-link-sep { color: var(--color-gold-dark); }
 .hero-mark {
-  position: absolute; z-index: 0; inset-block-end: clamp(-14px, -1vw, 10px); inset-inline-end: clamp(20px, 5vw, 84px);
-  width: clamp(96px, 13vw, 150px); aspect-ratio: 1; opacity: .5; pointer-events: none;
+  position: absolute; z-index: 0; inset-block-end: clamp(-10px, -0.6vw, 18px); inset-inline-end: clamp(20px, 5vw, 84px);
+  width: clamp(110px, 15vw, 190px); aspect-ratio: 1; pointer-events: none;
+  color: var(--color-gold); opacity: .3;
 }
-.hero-mark svg { width: 100%; height: 100%; }
 .flip-rtl:dir(rtl) { transform: scaleX(-1); }
 
 /* Cards: softer surface, gold hairline on hover, no shadow stacking */
@@ -640,7 +697,7 @@ h1, h2, h3, h4, p, li, label, button, a { overflow-wrap: anywhere; }
 }
 .how-card { background: var(--color-surface); }
 .how-number { color: var(--color-gold-dark); font-size: clamp(30px, 3vw, 40px); letter-spacing: .02em; }
-.home-cta { border-radius: var(--radius-shell); }
+.home-cta { border-radius: var(--radius-sheet); }
 
 @media (max-width: 899px) {
   .home-hero { min-height: 0; padding-block-end: 96px; }
